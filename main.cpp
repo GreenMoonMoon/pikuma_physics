@@ -1,6 +1,22 @@
-#include <iostream>
+#include "raylib.h"
+
+import Vectors;
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(840, 680, "Pikuma Physics");
+
+    while(!WindowShouldClose()){
+        PollInputEvents();
+
+        ClearBackground(BLACK);
+
+        BeginDrawing();
+
+        EndDrawing();
+    }
+
+    CloseWindow();
     return 0;
 }

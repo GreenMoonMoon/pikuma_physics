@@ -11,5 +11,6 @@ FETCHCONTENT_DECLARE(
 )
 FETCHCONTENT_MAKEAVAILABLE(raylib)
 
-add_executable(pikuma_physics main.cpp)
+add_executable(pikuma_physics main.cpp
+        modules/vectors.ixx)
 target_link_libraries(pikuma_physics PRIVATE raylib)
