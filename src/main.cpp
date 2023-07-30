@@ -1,6 +1,5 @@
 #include "raylib.h"
-
-import Vectors;
+#include "vectors.h"
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);

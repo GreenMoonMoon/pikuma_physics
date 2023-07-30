@@ -1,16 +1,16 @@
 //
 // Created by moonmoon on 29/07/23.
 //
+#include <cmath>
 
-export module Vectors;
-export namespace Vectors {
+namespace Vectors {
     struct Vector2 {
         float X;
         float Y;
 
-        Vector2() : X(0), Y(0) {}
+        Vector2();
 
-        Vector2(float X, float Y) : X(X), Y(Y) {}
+        Vector2(float X, float Y);
 
         ~Vector2() = default;
 
@@ -18,13 +18,9 @@ export namespace Vectors {
 
         void Subtract(const Vector2 &vector);
 
-        void Scale(const float scalar);
+        void Scale(float scalar);
 
-        void Multiply(const Vector2 &vector);
-
-        void Divide(const Vector2 &vector);
-
-        void Rotate(const float angle) const;
+        Vector2 Rotate(float angle) const;
 
         float MagnitudeSquare() const;
 

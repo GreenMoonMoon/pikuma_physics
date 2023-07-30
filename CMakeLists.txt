@@ -4,13 +4,13 @@ project(pikuma_physics)
 set(CMAKE_CXX_STANDARD 23)
 
 include(FetchContent)
-FETCHCONTENT_DECLARE(
+FetchContent_Declare(
         raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
         GIT_TAG 4.5.0
 )
-FETCHCONTENT_MAKEAVAILABLE(raylib)
+FetchContent_MakeAvailable(raylib)
 
-add_executable(pikuma_physics main.cpp
-        modules/vectors.ixx)
+add_executable(pikuma_physics src/main.cpp
+        src/vectors.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib)
