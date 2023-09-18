@@ -1,8 +1,6 @@
 #include "raylib.h"
 #include "particles.h"
-
-constexpr float FRAME_RATE = 1.0f / 24.0f;
-constexpr float MAX_FRAME_TIME = 2.0f * FRAME_RATE;
+#include "physic_constants.h"
 
 class Application {
 private:
@@ -41,13 +39,7 @@ public:
     }
 
     void Update() {
-        elapsed_time += GetFrameTime();
-        if(elapsed_time >= FRAME_RATE) {
-            elapsed_time -=  FRAME_RATE;
-            particles->Position = Vector2Add(particles->Position, Vector2Scale(particles->Velocity, GetFrameTime()));
-        } else if (elapsed_time > MAX_FRAME_TIME) {
-            elapsed_time -= MAX_FRAME_TIME;
-        }
+        particles->Position = Vector2Add(particles->Position, Vector2Scale(particles->Velocity, GetFrameTime()));
     }
 
     void Render() {
