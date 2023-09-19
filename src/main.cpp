@@ -31,7 +31,8 @@ public:
 
     void Setup() {
         particles = new Particle(50, 100, 1.0);
-        particles->Velocity = Vector2(200.0f, 100.0f);
+        particles->Velocity = Vector2(0.0f, 0.0f);
+        particles->Acceleration = Vector2(15.0f, 25.0f);
     }
 
     void Input() {
@@ -39,7 +40,31 @@ public:
     }
 
     void Update() {
+        // Update velocity
+        particles->Velocity = Vector2Add(particles->Velocity, Vector2Scale(particles->Acceleration, GetFrameTime()));
+        particles->Velocity = Vector2Add(particles->Velocity,
+                                         Vector2Scale({0.0f, 9.8 * PIXEL_PER_METER}, GetFrameTime()));
+
+        // Integrate velocity
         particles->Position = Vector2Add(particles->Position, Vector2Scale(particles->Velocity, GetFrameTime()));
+
+        // Boundary collisions
+        if (particles->Position.x > 838.0f) {
+            particles->Position.x = 838.0f;
+            particles->Velocity.x *= -1.0f;
+        }
+        if (particles->Position.x < 2.0f) {
+            particles->Position.x = 2.0f;
+            particles->Velocity.x *= -1.0f;
+        }
+        if (particles->Position.y > 678.0f) {
+            particles->Position.y = 678.0f;
+            particles->Velocity.y *= -1.0f;
+        }
+        if (particles->Position.y < 2.0f) {
+            particles->Position.y = 2.0f;
+            particles->Velocity.y *= -1.0f;
+        }
     }
 
     void Render() {
@@ -60,11 +85,11 @@ public:
 int main() {
     Application app;
 
-    while(app.IsRunning()){
+    while (app.IsRunning()) {
         app.Input();
         app.Update();
         app.Render();
     }
 
-    return  0;
+    return 0;
 }
