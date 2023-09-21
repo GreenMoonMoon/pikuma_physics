@@ -49,21 +49,21 @@ public:
         particles->Position = Vector2Add(particles->Position, Vector2Scale(particles->Velocity, GetFrameTime()));
 
         // Boundary collisions
-        if (particles->Position.x > 838.0f) {
-            particles->Position.x = 838.0f;
-            particles->Velocity.x *= -1.0f;
+        if (particles->Position.x > 836.0f) {
+            particles->Position.x = 836.0f;
+            particles->Velocity.x *= -0.9f;
         }
-        if (particles->Position.x < 2.0f) {
-            particles->Position.x = 2.0f;
-            particles->Velocity.x *= -1.0f;
+        if (particles->Position.x < 4.0f) {
+            particles->Position.x = 4.0f;
+            particles->Velocity.x *= -0.9f;
         }
-        if (particles->Position.y > 678.0f) {
-            particles->Position.y = 678.0f;
-            particles->Velocity.y *= -1.0f;
+        if (particles->Position.y > 676.0f) {
+            particles->Position.y = 676.0f;
+            particles->Velocity.y *= -0.9f;
         }
-        if (particles->Position.y < 2.0f) {
-            particles->Position.y = 2.0f;
-            particles->Velocity.y *= -1.0f;
+        if (particles->Position.y < 4.0f) {
+            particles->Position.y = 4.0f;
+            particles->Velocity.y *= -0.9f;
         }
     }
 
