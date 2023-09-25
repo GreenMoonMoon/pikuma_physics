@@ -32,7 +32,8 @@ public:
     void Setup() {
         particles = new Particle(50, 100, 1.0);
         particles->Velocity = Vector2(0.0f, 0.0f);
-        particles->Acceleration = Vector2(15.0f, 25.0f);
+        particles->Acceleration = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
+        particles->Acceleration = Vector2Add(particles->Acceleration, {0.0f, 9.8f * PIXEL_PER_METER});
     }
 
     void Input() {
@@ -40,13 +41,7 @@ public:
     }
 
     void Update() {
-        // Update velocity
-        particles->Velocity = Vector2Add(particles->Velocity, Vector2Scale(particles->Acceleration, GetFrameTime()));
-        particles->Velocity = Vector2Add(particles->Velocity,
-                                         Vector2Scale({0.0f, 9.8 * PIXEL_PER_METER}, GetFrameTime()));
-
-        // Integrate velocity
-        particles->Position = Vector2Add(particles->Position, Vector2Scale(particles->Velocity, GetFrameTime()));
+        particles->Integrate(GetFrameTime());
 
         // Boundary collisions
         if (particles->Position.x > 836.0f) {

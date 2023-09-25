@@ -17,6 +17,8 @@ struct Particle {
     Particle(Vector2 position, float mass);
     Particle(float x, float y, float mass);
     ~Particle() = default;
+
+    void Integrate(double deltaTime);
 };
 
 #endif //PIKUMA_PHYSICS_PARTICLES_H
