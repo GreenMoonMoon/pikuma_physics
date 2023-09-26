@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "particles.h"
 #include "physic_constants.h"
-#include "glm/glm.hpp"
+#include "glm/vec2.hpp"
 #include <vector>
 
 class Application {

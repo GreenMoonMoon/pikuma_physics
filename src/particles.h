@@ -5,7 +5,7 @@
 #ifndef PIKUMA_PHYSICS_PARTICLES_H
 #define PIKUMA_PHYSICS_PARTICLES_H
 
-#include "glm/glm.hpp"
+#include "glm/vec2.hpp"
 using glm::vec2;
 
 struct Particle {
