@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "particles.h"
 #include "physic_constants.h"
+#include "glm/glm.hpp"
 #include <vector>
 
 class Application {
@@ -41,16 +42,16 @@ public:
     }
 
     void Update() {
-        const Vector2 wind = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
+        const glm::vec2 wind = glm::vec2(1.0f, 0.0f) * PIXEL_PER_METER;
         // Adding Forces
         for (auto &particle: particles) {
             particle.AddForce(wind);
         }
 
-        const Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
+        const vec2 gravity = vec2(0.0f, 9.8f) * PIXEL_PER_METER;
         // Adding Gravity
         for (auto &particle: particles) {
-            particle.AddForce(Vector2Scale(gravity, particle.Mass));
+            particle.AddForce(gravity * particle.Mass);
         }
         // Force integration
         for (auto &particle: particles) {

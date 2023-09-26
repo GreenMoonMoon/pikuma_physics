@@ -4,36 +4,36 @@
 
 #include "particles.h"
 
-Particle::Particle(Vector2 position, float mass) : Position(position), Velocity(Vector2()), Acceleration(Vector2()), Mass(mass), InverseMass(1.0f), TotalForce(Vector2()) {
+Particle::Particle(vec2 position, float mass) : Position(position), Velocity(vec2()), Acceleration(vec2()), Mass(mass), InverseMass(0.0f), TotalForce(vec2()) {
     if(mass != 0.0f){
         InverseMass = 1.0f / mass;
     }
 }
 
-Particle::Particle(float x, float y, float mass) : Position(Vector2(x, y)), Velocity(Vector2()), Acceleration(Vector2()), Mass(mass),  InverseMass(1.0f), TotalForce(Vector2()) {
+Particle::Particle(float x, float y, float mass) : Position(vec2(x, y)), Velocity(vec2()), Acceleration(vec2()), Mass(mass),  InverseMass(0.0f), TotalForce(vec2()) {
     if(mass != 0.0f) {
         InverseMass = 1.0f / mass;
     }
 }
 
-void Particle::Integrate(double deltaTime) {
+void Particle::Integrate(float deltaTime) {
     // Find the acceleration from the forces applied
-    Acceleration = Vector2Scale(TotalForce, InverseMass);
+    Acceleration = TotalForce * InverseMass;
 
     // Integrate acceleration
-    Velocity = Vector2Add(Velocity, Vector2Scale(Acceleration, deltaTime));
+    Velocity = Velocity + Acceleration * deltaTime;
 
     // Integrate velocity
-    Position = Vector2Add(Position, Vector2Scale(Velocity, deltaTime));
+    Position = Position + Velocity * deltaTime;
 
     ClearForces();
 }
 
-void Particle::AddForce(const Vector2 &force) {
-    TotalForce = Vector2Add(TotalForce, force);
+void Particle::AddForce(const vec2 &force) {
+    TotalForce += force;
 }
 
 void Particle::ClearForces() {
-    TotalForce = Vector2Zero();
+    TotalForce = vec2(0.0f);
 }
 

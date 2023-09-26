@@ -11,6 +11,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
+include_directories(external/glm)
+
 add_executable(pikuma_physics src/main.cpp
         src/vectors.cpp
         src/particles.cpp

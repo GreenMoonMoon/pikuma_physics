@@ -5,23 +5,24 @@
 #ifndef PIKUMA_PHYSICS_PARTICLES_H
 #define PIKUMA_PHYSICS_PARTICLES_H
 
-#include "raymath.h"
+#include "glm/glm.hpp"
+using glm::vec2;
 
 struct Particle {
-    Vector2 Position;
-    Vector2 Velocity;
-    Vector2 Acceleration;
+    vec2 Position;
+    vec2 Velocity;
+    vec2 Acceleration;
 
     float Mass;
     float InverseMass;
-    Vector2 TotalForce;
+    vec2 TotalForce;
 
-    Particle(Vector2 position, float mass);
+    Particle(vec2 position, float mass);
     Particle(float x, float y, float mass);
     ~Particle() = default;
 
-    void Integrate(double deltaTime);
-    void AddForce(const Vector2 &force);
+    void Integrate(float deltaTime);
+    void AddForce(const vec2 &force);
     void ClearForces();
 };
 
