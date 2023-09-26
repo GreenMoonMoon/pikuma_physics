@@ -36,4 +36,3 @@ void Particle::AddForce(const vec2 &force) {
 void Particle::ClearForces() {
     TotalForce = vec2(0.0f);
 }
-
