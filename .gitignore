@@ -1,2 +1,15 @@
 cmake-*
 .idea
+
+#GLM
+external/glm/cmake
+external/glm/doc
+external/glm/test
+external/glm/util
+external/glm/.appveyor.yml
+external/glm/.gitignore
+external/glm/.travis.yml
+external/glm/CMakeLists.txt
+external/glm/copying.txt
+external/glm/manual.md
+external/glm/readme.md
