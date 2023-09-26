@@ -41,16 +41,21 @@ public:
     }
 
     void Update() {
-        Vector2 wind = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
-        Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
-        for (Particle &particle: particles) {
+        const Vector2 wind = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
+        const Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
 
+        // Adding Forces
+        for (auto &particle: particles) {
             particle.AddForce(wind);
             particle.AddForce(gravity);
-
+        }
+        // Force integration
+        for (auto &particle: particles) {
             particle.Integrate(GetFrameTime());
+        }
 
-            // Boundary collisions
+        // Boundary collisions
+        for (auto &particle: particles) {
             if (particle.Position.x > 836.0f) {
                 particle.Position.x = 836.0f;
                 particle.Velocity.x *= -0.9f;
@@ -75,7 +80,7 @@ public:
 
         BeginDrawing();
 
-        for (Particle &particle: particles) {
+        for (auto &particle: particles) {
             DrawCircle(particle.Position.x, particle.Position.y, 4.0f, WHITE);
         }
 
@@ -83,6 +88,7 @@ public:
     }
 
     void Cleanup() {
+        particles.clear();
     }
 };
 
