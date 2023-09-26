@@ -42,12 +42,15 @@ public:
 
     void Update() {
         const Vector2 wind = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
-        const Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
-
         // Adding Forces
         for (auto &particle: particles) {
             particle.AddForce(wind);
-            particle.AddForce(gravity);
+        }
+
+        const Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
+        // Adding Gravity
+        for (auto &particle: particles) {
+            particle.AddForce(Vector2Scale(gravity, particle.Mass));
         }
         // Force integration
         for (auto &particle: particles) {
