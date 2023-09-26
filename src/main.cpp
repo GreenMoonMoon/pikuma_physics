@@ -1,15 +1,17 @@
 #include "raylib.h"
 #include "particles.h"
 #include "physic_constants.h"
+#include <vector>
 
 class Application {
 private:
     bool running;
-    Particle *particles;
+    std::vector<Particle> particles;
+
     float elapsed_time;
 
 public:
-    Application() : running(true), particles(nullptr), elapsed_time(0.0f) {
+    Application() : running(true), particles({}), elapsed_time(0.0f) {
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(840, 680, "Pikuma Physics");
@@ -30,10 +32,8 @@ public:
     }
 
     void Setup() {
-        particles = new Particle(50, 100, 1.0);
-        particles->Velocity = Vector2(0.0f, 0.0f);
-        particles->Acceleration = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
-        particles->Acceleration = Vector2Add(particles->Acceleration, {0.0f, 9.8f * PIXEL_PER_METER});
+        particles.push_back(Particle(50, 100, 1.0));
+        particles.push_back(Particle(25, 200, 2.0));
     }
 
     void Input() {
@@ -41,24 +41,32 @@ public:
     }
 
     void Update() {
-        particles->Integrate(GetFrameTime());
+        Vector2 wind = Vector2Scale(Vector2(1.0f, 0.0f), PIXEL_PER_METER);
+        Vector2 gravity = Vector2Scale(Vector2(0.0f, 9.8f), PIXEL_PER_METER);
+        for (Particle &particle: particles) {
 
-        // Boundary collisions
-        if (particles->Position.x > 836.0f) {
-            particles->Position.x = 836.0f;
-            particles->Velocity.x *= -0.9f;
-        }
-        if (particles->Position.x < 4.0f) {
-            particles->Position.x = 4.0f;
-            particles->Velocity.x *= -0.9f;
-        }
-        if (particles->Position.y > 676.0f) {
-            particles->Position.y = 676.0f;
-            particles->Velocity.y *= -0.9f;
-        }
-        if (particles->Position.y < 4.0f) {
-            particles->Position.y = 4.0f;
-            particles->Velocity.y *= -0.9f;
+            particle.AddForce(wind);
+            particle.AddForce(gravity);
+
+            particle.Integrate(GetFrameTime());
+
+            // Boundary collisions
+            if (particle.Position.x > 836.0f) {
+                particle.Position.x = 836.0f;
+                particle.Velocity.x *= -0.9f;
+            }
+            if (particle.Position.x < 4.0f) {
+                particle.Position.x = 4.0f;
+                particle.Velocity.x *= -0.9f;
+            }
+            if (particle.Position.y > 676.0f) {
+                particle.Position.y = 676.0f;
+                particle.Velocity.y *= -0.9f;
+            }
+            if (particle.Position.y < 4.0f) {
+                particle.Position.y = 4.0f;
+                particle.Velocity.y *= -0.9f;
+            }
         }
     }
 
@@ -67,13 +75,14 @@ public:
 
         BeginDrawing();
 
-        DrawCircle(particles->Position.x, particles->Position.y, 4.0f, WHITE);
+        for (Particle &particle: particles) {
+            DrawCircle(particle.Position.x, particle.Position.y, 4.0f, WHITE);
+        }
 
         EndDrawing();
     }
 
     void Cleanup() {
-        delete particles;
     }
 };
 

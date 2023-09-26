@@ -13,12 +13,15 @@ struct Particle {
     Vector2 Acceleration;
 
     float Mass;
+    Vector2 TotalForce;
 
     Particle(Vector2 position, float mass);
     Particle(float x, float y, float mass);
     ~Particle() = default;
 
     void Integrate(double deltaTime);
+    void AddForce(const Vector2 &force);
+    void ClearForces();
 };
 
 #endif //PIKUMA_PHYSICS_PARTICLES_H
