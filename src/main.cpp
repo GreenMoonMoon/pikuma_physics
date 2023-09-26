@@ -33,7 +33,7 @@ public:
 
     void Setup() {
         particles.push_back(Particle(50, 100, 1.0));
-        particles.push_back(Particle(25, 200, 2.0));
+        particles.push_back(Particle(25, 150, 2.0));
     }
 
     void Input() {

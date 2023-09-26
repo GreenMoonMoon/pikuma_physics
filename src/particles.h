@@ -13,6 +13,7 @@ struct Particle {
     Vector2 Acceleration;
 
     float Mass;
+    float InverseMass;
     Vector2 TotalForce;
 
     Particle(Vector2 position, float mass);
