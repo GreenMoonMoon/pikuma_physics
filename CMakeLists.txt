@@ -14,8 +14,6 @@ FetchContent_MakeAvailable(raylib)
 include_directories(external/glm)
 
 add_executable(pikuma_physics src/main.cpp
-        src/vectors.cpp
-        src/particles.cpp
-        src/particles.h
-        src/physic_constants.h)
+        src/forces.cpp
+        src/particles.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib)

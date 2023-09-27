@@ -5,7 +5,6 @@
 #include "glm/vec2.hpp"
 #include <vector>
 
-
 static glm::vec2 push;
 static Rectangle liquid;
 
@@ -72,23 +71,26 @@ public:
         const glm::vec2 wind = glm::vec2(1.0f, 0.0f) * PIXEL_PER_METER;
         const vec2 gravity = vec2(0.0f, 9.8f) * PIXEL_PER_METER;
         for (auto &particle: particles) {
-            // Applying forces depending on the liquid
-            // Adding wind force
-            // Adding Drag force
-            vec2 dragForce;
-            if (particle.Position.y > liquid.height) {
-                dragForce = Force::GenerateDragForce(particle.Velocity, 0.05f);
-                particle.AddForce(dragForce);
-            } else {
-                particle.AddForce(wind);
-            }
-
             // Adding push force
             particle.AddForce(push);
 
-            // Adding Gravity
-            particle.AddForce(gravity * particle.Mass);
+            // Applying friction
+            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle.Velocity, 10.0 * PIXEL_PER_METER);
+            particle.AddForce(frictionForce);
 
+//            // Applying forces depending on the liquid
+//            // Adding wind force
+//            // Adding Drag force
+//            vec2 dragForce;
+//            if (particle.Position.y > liquid.height) {
+//                dragForce = Force::GenerateDragForce(particle.Velocity, 0.05f);
+//                particle.AddForce(dragForce);
+//            } else {
+//                particle.AddForce(wind);
+//            }
+//
+//            // Adding Gravity (Weight Force)
+//            particle.AddForce(gravity * particle.Mass);
         }
 
         // Force integration
