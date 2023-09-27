@@ -53,13 +53,18 @@ public:
     }
 
     void Input() {
-        PollInputEvents();
-
         push = vec2(0.0f);
         if(IsKeyDown(KEY_S)) push.y += 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_W)) push.y -= 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_D)) push.x += 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_A)) push.x -= 15.0f * PIXEL_PER_METER;
+
+//        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+            particles.emplace_back(GetMousePosition().x, GetMousePosition().y, 1.0);
+        }
+
+        PollInputEvents();
     }
 
     void Update() {
