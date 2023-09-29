@@ -7,18 +7,18 @@
 
 using glm::vec2;
 
-vec2 Force::GenerateDragForce(const vec2 &velocity, float dragCoefficient) {
-    float magnitudeSquared = glm::length2(velocity);
+vec2 Force::GenerateDragForce(const Particle &p, float dragCoefficient) {
+    float magnitudeSquared = glm::length2(p.Velocity);
     if (magnitudeSquared > 0.0f) {
-        return dragCoefficient * magnitudeSquared * (glm::normalize(velocity) * -1.0f);
+        return dragCoefficient * magnitudeSquared * (glm::normalize(p.Velocity) * -1.0f);
     } else {
         return vec2(0.0f);
     }
 }
 
-vec2 Force::GenerateFrictionForce(const vec2 &velocity, float frictionCoefficient) {
-    if (glm::length2(velocity) != 0.0f) {
-        return (glm::normalize(velocity) * -1.0f) * frictionCoefficient;
+vec2 Force::GenerateFrictionForce(const Particle &p, float frictionCoefficient) {
+    if (glm::length2(p.Velocity) != 0.0f) {
+        return (glm::normalize(p.Velocity) * -1.0f) * frictionCoefficient;
     }
     return vec2(0.0f);
 }
@@ -31,4 +31,14 @@ vec2 Force::GenerateGravitationalForce(const Particle &a, const Particle &b, flo
     float attractionMagnitude = g * (a.Mass * b.Mass) / glm::clamp(distanceSquared, minDistance, maxDistance);
 
     return attractionDirection * attractionMagnitude;
+}
+
+glm::vec2 Force::GenerateSpringForce(const Particle &p, vec2 anchor, float restLength, float springConstant) {
+    vec2 distance = p.Position - anchor;
+    float displacement = glm::length(distance) - restLength;
+
+    vec2 springDirection = glm::normalize(distance);
+    float springMagnitude = -springConstant * displacement;
+
+    return springDirection * springMagnitude;
 }

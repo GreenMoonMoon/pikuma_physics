@@ -28,7 +28,7 @@ void Particle::Integrate(float deltaTime) {
     // Integrate velocity
     Position = Position + Velocity * deltaTime;
 
-//    ClearForces();
+    ClearForces();
 }
 
 void Particle::AddForce(const vec2 &force) {
