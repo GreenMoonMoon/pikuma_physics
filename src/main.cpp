@@ -44,7 +44,12 @@ public:
     }
 
     void Setup() {
-        particles.emplace_back(50, 100, 1.0f);
+        particles.emplace_back(screenWidth / 2, 100, 1.0f);
+        particles.emplace_back(screenWidth / 2, 120, 1.0f);
+        particles.emplace_back(screenWidth / 2, 140, 1.0f);
+        particles.emplace_back(screenWidth / 2, 160, 1.0f);
+        particles.emplace_back(screenWidth / 2, 180, 1.0f);
+        particles.emplace_back(screenWidth / 2, 200, 1.0f);
 
         push = glm::vec2(0.0f);
 
@@ -54,8 +59,8 @@ public:
 //        liquid.width = screenWidth;
 //        liquid.height = screenHeight / 2;
 
-        springRestDistance = 240.0f;
-        springStiffness = 100.0f;
+        springRestDistance = 80.0f;
+        springStiffness = 500.0f;
     }
 
     void Input() {
@@ -82,21 +87,35 @@ public:
         // Adding forces
         for (auto &particle: particles) {
             // FRICTION
-            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle, 10.0f * PIXEL_PER_METER);
+            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle, 1.0f * PIXEL_PER_METER);
             particle.AddForce(frictionForce);
 
+            // PUSH
+            particle.AddForce(push);
+
             // DRAG
-            glm::vec2 dragForce = Force::GenerateDragForce(particle, 0.01f);
+            glm::vec2 dragForce = Force::GenerateDragForce(particle, 0.001f);
             particle.AddForce(dragForce);
 
-            // SPRING
-            glm::vec2 springForce = Force::GenerateSpringForce(
-                    particle,
-                    glm::vec2(screenWidth * 0.5f, screenHeight * 0.5f),
-                    springRestDistance,
-                    springStiffness
-            );
-            particle.AddForce(springForce);
+            // WEIGHT
+            glm::vec2 weightForce(0.0f, particle.Mass * 9.8f * PIXEL_PER_METER);
+            particle.AddForce(weightForce);
+        }
+
+
+        // SPRING
+
+        glm::vec2 sp = Force::GenerateSpringForce(
+                particles[0],
+                glm::vec2(screenWidth * 0.5f, 50.0f),
+                springRestDistance,
+                springStiffness
+        );
+        particles[0].AddForce(sp);
+        for (int i = 1; i < particles.size(); ++i) {
+            sp = Force::GenerateSpringForce(particles[i], particles[i - 1], springRestDistance, springStiffness);
+            particles[i].AddForce(sp);
+            particles[i -1].AddForce(-sp);
         }
 
         // Force integration
@@ -136,6 +155,21 @@ public:
         for (auto &particle: particles) {
             DrawCircle((int)particle.Position.x, (int)particle.Position.y, pointRadius, WHITE);
         }
+
+        DrawLine((int)particles[0].Position.x,
+                 (int)particles[0].Position.y,
+                 screenWidth / 2,
+                 50,
+                 RAYWHITE);
+        for (int i = 1; i < particles.size(); ++i) {
+            DrawLine((int)particles[i].Position.x,
+                     (int)particles[i].Position.y,
+                     (int)particles[i - 1].Position.x,
+                     (int)particles[i - 1].Position.y,
+                     RAYWHITE);
+        }
+
+        DrawFPS(10, 10);
 
         EndDrawing();
     }

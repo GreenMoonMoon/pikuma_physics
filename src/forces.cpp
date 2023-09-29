@@ -46,3 +46,13 @@ glm::vec2 Force::GenerateSpringForce(const Particle &p, vec2 anchor, float restL
 
     return springDirection * springMagnitude;
 }
+
+glm::vec2 Force::GenerateSpringForce(const Particle &a, const Particle &b, float restLength, float springConstant) {
+    vec2 distance = a.Position - b.Position;
+    float displacement = glm::length(distance) - restLength;
+
+    vec2 springDirection = glm::normalize(distance);
+    float springMagnitude = -springConstant * displacement;
+
+    return springDirection * springMagnitude;
+}
