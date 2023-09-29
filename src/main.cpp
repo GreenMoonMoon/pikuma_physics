@@ -54,7 +54,7 @@ public:
 //        liquid.width = screenWidth;
 //        liquid.height = screenHeight / 2;
 
-        springRestDistance = 10.0f;
+        springRestDistance = 240.0f;
         springStiffness = 100.0f;
     }
 
@@ -65,10 +65,10 @@ public:
         if(IsKeyDown(KEY_D)) push.x += 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_A)) push.x -= 15.0f * PIXEL_PER_METER;
 
-        if(IsKeyPressed(KEY_UP)) springRestDistance += 0.5f;
-        if(IsKeyPressed(KEY_DOWN)) springRestDistance -= 0.5f;
-        if(IsKeyPressed(KEY_RIGHT)) springRestDistance += 5.0f;
-        if(IsKeyPressed(KEY_LEFT)) springRestDistance -= 5.0f;
+        if(IsKeyDown(KEY_UP)) springRestDistance += 5.0f;
+        if(IsKeyDown(KEY_DOWN)) springRestDistance -= 5.0f;
+        if(IsKeyDown(KEY_RIGHT)) springStiffness += 2.0f;
+        if(IsKeyDown(KEY_LEFT)) springStiffness -= 2.0f;
 
 //        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
@@ -81,14 +81,19 @@ public:
     void Update() {
         // Adding forces
         for (auto &particle: particles) {
-            // Applying friction
+            // FRICTION
             glm::vec2 frictionForce = Force::GenerateFrictionForce(particle, 10.0f * PIXEL_PER_METER);
             particle.AddForce(frictionForce);
 
+            // DRAG
+            glm::vec2 dragForce = Force::GenerateDragForce(particle, 0.01f);
+            particle.AddForce(dragForce);
+
+            // SPRING
             glm::vec2 springForce = Force::GenerateSpringForce(
                     particle,
                     glm::vec2(screenWidth * 0.5f, screenHeight * 0.5f),
-                    springRestDistance * PIXEL_PER_METER,
+                    springRestDistance,
                     springStiffness
             );
             particle.AddForce(springForce);

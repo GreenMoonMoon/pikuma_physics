@@ -3,12 +3,16 @@
 //
 
 #include "forces.h"
-#include "glm/gtx/norm.hpp"
+#include "glm/geometric.hpp"
 
 using glm::vec2;
 
+static float length2(vec2 v) {
+    return (v.x * v.x + v.y * v.y);
+}
+
 vec2 Force::GenerateDragForce(const Particle &p, float dragCoefficient) {
-    float magnitudeSquared = glm::length2(p.Velocity);
+    float magnitudeSquared = length2(p.Velocity);
     if (magnitudeSquared > 0.0f) {
         return dragCoefficient * magnitudeSquared * (glm::normalize(p.Velocity) * -1.0f);
     } else {
@@ -17,7 +21,7 @@ vec2 Force::GenerateDragForce(const Particle &p, float dragCoefficient) {
 }
 
 vec2 Force::GenerateFrictionForce(const Particle &p, float frictionCoefficient) {
-    if (glm::length2(p.Velocity) != 0.0f) {
+    if (length2(p.Velocity) != 0.0f) {
         return (glm::normalize(p.Velocity) * -1.0f) * frictionCoefficient;
     }
     return vec2(0.0f);
@@ -25,7 +29,7 @@ vec2 Force::GenerateFrictionForce(const Particle &p, float frictionCoefficient) 
 
 vec2 Force::GenerateGravitationalForce(const Particle &a, const Particle &b, float g, float minDistance, float maxDistance) {
     vec2 direction = b.Position - a.Position;
-    float distanceSquared = glm::length2(direction);
+    float distanceSquared = length2(direction);
 
     vec2 attractionDirection = glm::normalize(direction);
     float attractionMagnitude = g * (a.Mass * b.Mass) / glm::clamp(distanceSquared, minDistance, maxDistance);
