@@ -23,12 +23,12 @@ vec2 Force::GenerateFrictionForce(const vec2 &velocity, float frictionCoefficien
     return vec2(0.0f);
 }
 
-vec2 Force::GenerateGravitationalForce(const Particle &a, const Particle &b, float g) {
+vec2 Force::GenerateGravitationalForce(const Particle &a, const Particle &b, float g, float minDistance, float maxDistance) {
     vec2 direction = b.Position - a.Position;
     float distanceSquared = glm::length2(direction);
 
     vec2 attractionDirection = glm::normalize(direction);
-    float attractionMagnitude = g * (a.Mass * b.Mass) / distanceSquared;
+    float attractionMagnitude = g * (a.Mass * b.Mass) / glm::clamp(distanceSquared, minDistance, maxDistance);
 
     return attractionDirection * attractionMagnitude;
 }

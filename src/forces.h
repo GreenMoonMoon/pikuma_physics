@@ -11,7 +11,7 @@
 namespace Force {
     glm::vec2 GenerateDragForce(const glm::vec2 &velocity, float dragCoefficient);
     glm::vec2 GenerateFrictionForce(const glm::vec2 &velocity, float frictionCoefficient);
-    glm::vec2 GenerateGravitationalForce(const Particle &a, const Particle &b, float g);
+    glm::vec2 GenerateGravitationalForce(const Particle &a, const Particle &b, float g, float minDistance, float maxDistance);
 }
 
 #endif //PIKUMA_PHYSICS_FORCES_H

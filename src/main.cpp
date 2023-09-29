@@ -42,8 +42,8 @@ public:
     }
 
     void Setup() {
-        particles.emplace_back(50, 100, 1.0);
-        particles.emplace_back(100, 150, 100.0);
+        particles.emplace_back(50, 100, 1.0f);
+        particles.emplace_back(100, 150, 200.0f);
 
         push = glm::vec2(0.0f);
 
@@ -77,12 +77,16 @@ public:
             particle.AddForce(push);
 
             // Applying friction
-//            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle.Velocity, 10.0f * PIXEL_PER_METER);
-//            particle.AddForce(frictionForce);
+            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle.Velocity, 10.0f * PIXEL_PER_METER);
+            particle.AddForce(frictionForce);
         }
 
         // Applying gravitational force
-        glm::vec2 gravitationalForce = Force::GenerateGravitationalForce(particles[0], particles[1], 10000.0f * PIXEL_PER_METER);
+        glm::vec2 gravitationalForce = Force::GenerateGravitationalForce(particles[0],
+                                                                         particles[1],
+                                                                         1000.0f * PIXEL_PER_METER,
+                                                                         5.0f * PIXEL_PER_METER,
+                                                                         100.0f * PIXEL_PER_METER);
         particles[0].AddForce(gravitationalForce);
         particles[1].AddForce(-gravitationalForce);
 
