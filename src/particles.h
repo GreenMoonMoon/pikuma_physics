@@ -6,23 +6,22 @@
 #define PIKUMA_PHYSICS_PARTICLES_H
 
 #include "glm/vec2.hpp"
-using glm::vec2;
 
 struct Particle {
-    vec2 Position;
-    vec2 Velocity;
-    vec2 Acceleration;
+    glm::vec2 Position;
+    glm::vec2 Velocity;
+    glm::vec2 Acceleration;
 
     float Mass;
     float InverseMass;
-    vec2 TotalForce;
+    glm::vec2 TotalForce;
 
-    Particle(vec2 position, float mass);
+    Particle(glm::vec2 position, float mass);
     Particle(float x, float y, float mass);
     ~Particle() = default;
 
     void Integrate(float deltaTime);
-    void AddForce(const vec2 &force);
+    void AddForce(const glm::vec2 &force);
     void ClearForces();
 };
 

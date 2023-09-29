@@ -3,24 +3,32 @@
 //
 
 #include "forces.h"
+#include "glm/gtx/norm.hpp"
 
-glm::vec2 Force::GenerateDragForce(const glm::vec2 &velocity, float dragCoefficient) {
-    float magnitudeSquared = (velocity.x * velocity.x + velocity.y * velocity.y);
+using glm::vec2;
+
+vec2 Force::GenerateDragForce(const vec2 &velocity, float dragCoefficient) {
+    float magnitudeSquared = glm::length2(velocity);
     if (magnitudeSquared > 0.0f) {
         return dragCoefficient * magnitudeSquared * (glm::normalize(velocity) * -1.0f);
     } else {
-        return glm::vec2(0.0f);
+        return vec2(0.0f);
     }
 }
 
-glm::vec2 Force::GenerateFrictionForce(const glm::vec2 &velocity, float frictionCoefficient) {
-//    glm::vec2 force(0.0f);
-    if ((velocity.x * velocity.x + velocity.y * velocity.y) != 0.0f) {
-//        glm::vec2 direction = glm::normalize(velocity) * -1.0f;
-//        float magnitude = frictionCoefficient;
-//        force = direction * magnitude;
+vec2 Force::GenerateFrictionForce(const vec2 &velocity, float frictionCoefficient) {
+    if (glm::length2(velocity) != 0.0f) {
         return (glm::normalize(velocity) * -1.0f) * frictionCoefficient;
     }
-//    return force;
-    return glm::vec2(0.0f);
+    return vec2(0.0f);
+}
+
+vec2 Force::GenerateGravitationalForce(const Particle &a, const Particle &b, float g) {
+    vec2 direction = b.Position - a.Position;
+    float distanceSquared = glm::length2(direction);
+
+    vec2 attractionDirection = glm::normalize(direction);
+    float attractionMagnitude = g * (a.Mass * b.Mass) / distanceSquared;
+
+    return attractionDirection * attractionMagnitude;
 }

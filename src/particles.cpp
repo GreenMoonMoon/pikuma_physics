@@ -4,6 +4,8 @@
 
 #include "particles.h"
 
+using glm::vec2;
+
 Particle::Particle(vec2 position, float mass) : Position(position), Velocity(vec2()), Acceleration(vec2()), Mass(mass), InverseMass(0.0f), TotalForce(vec2()) {
     if(mass != 0.0f){
         InverseMass = 1.0f / mass;
@@ -26,7 +28,7 @@ void Particle::Integrate(float deltaTime) {
     // Integrate velocity
     Position = Position + Velocity * deltaTime;
 
-    ClearForces();
+//    ClearForces();
 }
 
 void Particle::AddForce(const vec2 &force) {

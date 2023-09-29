@@ -43,12 +43,9 @@ public:
 
     void Setup() {
         particles.emplace_back(50, 100, 1.0);
-//        particles.emplace_back(25, 150, 0.5);
-//        particles.emplace_back(100, 160, 3.0);
-//        particles.emplace_back(45, 170, 4.0);
-//        particles.emplace_back(75, 180, 5.0);
+        particles.emplace_back(100, 150, 100.0);
 
-        push = vec2(0.0f);
+        push = glm::vec2(0.0f);
 
 //        // Liquid rectangle
 //        liquid.x = 0;
@@ -58,7 +55,7 @@ public:
     }
 
     void Input() {
-        push = vec2(0.0f);
+        push = glm::vec2(0.0f);
         if(IsKeyDown(KEY_S)) push.y += 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_W)) push.y -= 15.0f * PIXEL_PER_METER;
         if(IsKeyDown(KEY_D)) push.x += 15.0f * PIXEL_PER_METER;
@@ -74,30 +71,20 @@ public:
 
     void Update() {
         // Adding forces
-        const glm::vec2 wind = glm::vec2(1.0f, 0.0f) * PIXEL_PER_METER;
-        const vec2 gravity = vec2(0.0f, 9.8f) * PIXEL_PER_METER;
         for (auto &particle: particles) {
+            particle.ClearForces();
             // Adding push force
             particle.AddForce(push);
 
             // Applying friction
-            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle.Velocity, 10.0f * PIXEL_PER_METER);
-            particle.AddForce(frictionForce);
-
-//            // Applying forces depending on the liquid
-//            // Adding wind force
-//            // Adding Drag force
-//            vec2 dragForce;
-//            if (particle.Position.y > liquid.height) {
-//                dragForce = Force::GenerateDragForce(particle.Velocity, 0.05f);
-//                particle.AddForce(dragForce);
-//            } else {
-//                particle.AddForce(wind);
-//            }
-//
-//            // Adding Gravity (Weight Force)
-//            particle.AddForce(gravity * particle.Mass);
+//            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle.Velocity, 10.0f * PIXEL_PER_METER);
+//            particle.AddForce(frictionForce);
         }
+
+        // Applying gravitational force
+        glm::vec2 gravitationalForce = Force::GenerateGravitationalForce(particles[0], particles[1], 10000.0f * PIXEL_PER_METER);
+        particles[0].AddForce(gravitationalForce);
+        particles[1].AddForce(-gravitationalForce);
 
         // Force integration
         for (auto &particle: particles) {
@@ -133,9 +120,22 @@ public:
 
         DrawRectangleRec(liquid, BLUE);
 
-        for (auto &particle: particles) {
-            DrawCircle((int)particle.Position.x, (int)particle.Position.y, pointRadius, WHITE);
-        }
+//        for (auto &particle: particles) {
+//            DrawCircle((int)particle.Position.x, (int)particle.Position.y, pointRadius, WHITE);
+//        }
+        DrawCircle((int)particles[0].Position.x, (int)particles[0].Position.y, pointRadius, RED);
+        DrawLine((int)particles[0].Position.x,
+                 (int)particles[0].Position.y,
+                 (int)(particles[0].Position.x + particles[0].TotalForce.x * 0.1f),
+                 (int)(particles[0].Position.y + particles[0].TotalForce.y * 0.1f),
+                 RED);
+
+        DrawCircle((int)particles[1].Position.x, (int)particles[1].Position.y, pointRadius, BLUE);
+        DrawLine((int)particles[1].Position.x,
+                 (int)particles[1].Position.y,
+                 (int)(particles[1].Position.x + particles[1].TotalForce.x * 0.1f),
+                 (int)(particles[1].Position.y + particles[1].TotalForce.y * 0.1f),
+                 BLUE);
 
         EndDrawing();
     }
