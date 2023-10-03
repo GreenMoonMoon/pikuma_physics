@@ -6,14 +6,14 @@
 #define PIKUMA_PHYSICS_FORCES_H
 
 #include "glm/vec2.hpp"
-#include "particles.h"
+#include "body.h"
 
 namespace Force {
-    glm::vec2 GenerateDragForce(const Particle &p, float dragCoefficient);
-    glm::vec2 GenerateFrictionForce(const Particle &p, float frictionCoefficient);
-    glm::vec2 GenerateGravitationalForce(const Particle &a, const Particle &b, float g, float minDistance, float maxDistance);
-    glm::vec2 GenerateSpringForce(const Particle &p, glm::vec2 anchor, float restLength, float springConstant);
-    glm::vec2 GenerateSpringForce(const Particle &a, const Particle &b, float restLength, float springConstant);
+    glm::vec2 GenerateDragForce(const Body &p, float dragCoefficient);
+    glm::vec2 GenerateFrictionForce(const Body &p, float frictionCoefficient);
+    glm::vec2 GenerateGravitationalForce(const Body &a, const Body &b, float g, float minDistance, float maxDistance);
+    glm::vec2 GenerateSpringForce(const Body &p, glm::vec2 anchor, float restLength, float springConstant);
+    glm::vec2 GenerateSpringForce(const Body &a, const Body &b, float restLength, float springConstant);
 }
 
 #endif //PIKUMA_PHYSICS_FORCES_H

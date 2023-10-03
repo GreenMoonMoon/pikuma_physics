@@ -1,5 +1,5 @@
 #include "raylib.h"
-#include "particles.h"
+#include "body.h"
 #include "physic_constants.h"
 #include "forces.h"
 #include "glm/vec2.hpp"
@@ -11,19 +11,18 @@ static Rectangle liquid;
 static float springRestDistance;
 static float springStiffness;
 
-const float pointRadius = 8.0;
 const int screenWidth = 840;
 const int screenHeight = 680;
 
 class Application {
 private:
     bool running;
-    std::vector<Particle> particles;
+    std::vector<Body> bodies;
 
     float elapsed_time;
 
 public:
-    Application() : running(true), particles({}), elapsed_time(0.0f) {
+    Application() : running(true), bodies({}), elapsed_time(0.0f) {
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(screenWidth, screenHeight, "Pikuma Physics");
@@ -44,12 +43,7 @@ public:
     }
 
     void Setup() {
-        particles.emplace_back(screenWidth / 2, 100, 1.0f);
-        particles.emplace_back(screenWidth / 2, 120, 1.0f);
-        particles.emplace_back(screenWidth / 2, 140, 1.0f);
-        particles.emplace_back(screenWidth / 2, 160, 1.0f);
-        particles.emplace_back(screenWidth / 2, 180, 1.0f);
-        particles.emplace_back(screenWidth / 2, 200, 1.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f);
 
         push = glm::vec2(0.0f);
 
@@ -75,73 +69,69 @@ public:
         if(IsKeyDown(KEY_RIGHT)) springStiffness += 2.0f;
         if(IsKeyDown(KEY_LEFT)) springStiffness -= 2.0f;
 
-//        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-            particles.emplace_back(GetMousePosition().x, GetMousePosition().y, 1.0);
-        }
-
         PollInputEvents();
     }
 
     void Update() {
         // Adding forces
-        for (auto &particle: particles) {
+        for (auto &body: bodies) {
             // FRICTION
-            glm::vec2 frictionForce = Force::GenerateFrictionForce(particle, 1.0f * PIXEL_PER_METER);
-            particle.AddForce(frictionForce);
+            glm::vec2 frictionForce = Force::GenerateFrictionForce(body, 1.0f * PIXEL_PER_METER);
+            body.AddForce(frictionForce);
 
             // PUSH
-            particle.AddForce(push);
+            body.AddForce(push);
 
             // DRAG
-            glm::vec2 dragForce = Force::GenerateDragForce(particle, 0.001f);
-            particle.AddForce(dragForce);
+            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
+            body.AddForce(dragForce);
 
             // WEIGHT
-            glm::vec2 weightForce(0.0f, particle.Mass * 9.8f * PIXEL_PER_METER);
-            particle.AddForce(weightForce);
+            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
+            body.AddForce(weightForce);
         }
 
 
         // SPRING
 
         glm::vec2 sp = Force::GenerateSpringForce(
-                particles[0],
+                bodies[0],
                 glm::vec2(screenWidth * 0.5f, 50.0f),
                 springRestDistance,
                 springStiffness
         );
-        particles[0].AddForce(sp);
-        for (int i = 1; i < particles.size(); ++i) {
-            sp = Force::GenerateSpringForce(particles[i], particles[i - 1], springRestDistance, springStiffness);
-            particles[i].AddForce(sp);
-            particles[i -1].AddForce(-sp);
+        bodies[0].AddForce(sp);
+        for (int i = 1; i < bodies.size(); ++i) {
+            sp = Force::GenerateSpringForce(bodies[i], bodies[i - 1], springRestDistance, springStiffness);
+            bodies[i].AddForce(sp);
+            bodies[i -1].AddForce(-sp);
         }
 
         // Force integration
-        for (auto &particle: particles) {
-            particle.Integrate(GetFrameTime());
+        for (auto &body: bodies) {
+            body.Integrate(GetFrameTime());
         }
 
         // Boundary collisions
-        for (auto &particle: particles) {
-            float widthBoundary = screenWidth - pointRadius;
-            float heightBoundary = screenHeight - pointRadius;
-            if (particle.Position.x > widthBoundary) {
-                particle.Position.x = widthBoundary;
-                particle.Velocity.x *= -0.9f;
+        for (auto &body: bodies) {
+            float radius = dynamic_cast<CircleShape*>(body.shape)->radius;
+            float widthBoundary = screenWidth - radius;
+            float heightBoundary = screenHeight - radius;
+            if (body.Position.x > widthBoundary) {
+                body.Position.x = widthBoundary;
+                body.Velocity.x *= -0.9f;
             }
-            if (particle.Position.x < pointRadius) {
-                particle.Position.x = pointRadius;
-                particle.Velocity.x *= -0.9f;
+            if (body.Position.x < radius) {
+                body.Position.x = radius;
+                body.Velocity.x *= -0.9f;
             }
-            if (particle.Position.y > heightBoundary) {
-                particle.Position.y = heightBoundary;
-                particle.Velocity.y *= -0.9f;
+            if (body.Position.y > heightBoundary) {
+                body.Position.y = heightBoundary;
+                body.Velocity.y *= -0.9f;
             }
-            if (particle.Position.y < pointRadius) {
-                particle.Position.y = pointRadius;
-                particle.Velocity.y *= -0.9f;
+            if (body.Position.y < radius) {
+                body.Position.y = radius;
+                body.Velocity.y *= -0.9f;
             }
         }
     }
@@ -150,23 +140,14 @@ public:
         ClearBackground(DARKGREEN);
         BeginDrawing();
 
-        DrawRectangleRec(liquid, BLUE);
+//        DrawRectangleRec(liquid, BLUE);
 
-        for (auto &particle: particles) {
-            DrawCircle((int)particle.Position.x, (int)particle.Position.y, pointRadius, WHITE);
-        }
-
-        DrawLine((int)particles[0].Position.x,
-                 (int)particles[0].Position.y,
-                 screenWidth / 2,
-                 50,
-                 RAYWHITE);
-        for (int i = 1; i < particles.size(); ++i) {
-            DrawLine((int)particles[i].Position.x,
-                     (int)particles[i].Position.y,
-                     (int)particles[i - 1].Position.x,
-                     (int)particles[i - 1].Position.y,
-                     RAYWHITE);
+        // Draw Circle shape
+        for (auto &body: bodies) {
+            DrawCircle((int)body.Position.x,
+                       (int)body.Position.y,
+                       dynamic_cast<CircleShape*>(body.shape)->radius,
+                       WHITE);
         }
 
         DrawFPS(10, 10);
@@ -175,7 +156,7 @@ public:
     }
 
     void Cleanup() {
-        particles.clear();
+        bodies.clear();
     }
 };
 
