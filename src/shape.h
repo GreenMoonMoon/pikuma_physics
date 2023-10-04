@@ -35,7 +35,7 @@ struct CircleShape: public Shape {
 };
 
 struct PolygonShape : public Shape {
-    std::vector<glm::vec2> vertices;
+    std::vector<glm::vec2> Vertices;
 
     PolygonShape(const std::vector<glm::vec2> vertices);
     virtual ~PolygonShape();

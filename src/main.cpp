@@ -43,7 +43,8 @@ public:
     }
 
     void Setup() {
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
+//        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
+        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
 
         push = glm::vec2(0.0f);
 
@@ -80,9 +81,9 @@ public:
 //            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
 //            body.AddForce(dragForce);
 
-            // WEIGHT
-            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
-            body.AddForce(weightForce);
+//            // WEIGHT
+//            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
+//            body.AddForce(weightForce);
 
             // TORQUE
             float torqueForce = 200.0f;
@@ -135,6 +136,16 @@ public:
                                       a, a + 360.0f,
                                       0,
                                       WHITE);
+            } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
+                std::vector<glm::vec2> vertices = dynamic_cast<PolygonShape*>(body.shape)->Vertices;
+
+                // Custom draw polygon function
+                glm::vec2 lastPoint = body.Position + vertices.back();
+                for (auto vertex : vertices) {
+                    glm::vec2 currentPoint = body.Position + vertex;
+                    DrawLine((int)lastPoint.x, (int)lastPoint.y, (int)currentPoint.x, (int)currentPoint.y, WHITE);
+                    lastPoint = currentPoint;
+                }
             }
         }
 

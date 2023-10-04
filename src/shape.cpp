@@ -23,7 +23,7 @@ float CircleShape::GetMomentOfInertia() const {
     return 0.5 * (radius * radius);
 };
 
-PolygonShape::PolygonShape(const std::vector<glm::vec2> vertices) : vertices(vertices) {}
+PolygonShape::PolygonShape(const std::vector<glm::vec2> vertices) : Vertices(vertices) {}
 
 PolygonShape::~PolygonShape() {
     std::cout << "Polygon destructor called." << std::endl;
@@ -34,14 +34,19 @@ ShapeType PolygonShape::GetType() const {
 }
 
 Shape *PolygonShape::Copy() const {
-    return new PolygonShape(this->vertices);
+    return new PolygonShape(this->Vertices);
 }
 
 float PolygonShape::GetMomentOfInertia() const {
     return 0;
 }
 
-BoxShape::BoxShape(float width, float height) : width(width), height(height), PolygonShape(std::vector<glm::vec2>(4)){}
+BoxShape::BoxShape(float width, float height) : width(width), height(height), PolygonShape(std::vector<glm::vec2>()){
+    Vertices.emplace_back(-0.5f * width, -0.5f * height);
+    Vertices.emplace_back(0.5f * width, -0.5f * height);
+    Vertices.emplace_back(0.5f * width, 0.5f * height);
+    Vertices.emplace_back(-0.5f * width, 0.5f * height);
+}
 
 BoxShape::~BoxShape() {
     std::cout << "Box destructor called." << std::endl;
