@@ -3,7 +3,7 @@
 #include "physic_constants.h"
 #include "forces.h"
 #include "glm/vec2.hpp"
-#include "glm/gtx/rotate_vector.hpp"
+#include "glm/ext/scalar_common.hpp"
 #include <vector>
 
 static glm::vec2 push;
@@ -43,7 +43,7 @@ public:
     }
 
     void Setup() {
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
 
         push = glm::vec2(0.0f);
 
@@ -69,25 +69,30 @@ public:
     void Update() {
         // Adding forces
         for (auto &body: bodies) {
-            // FRICTION
-            glm::vec2 frictionForce = Force::GenerateFrictionForce(body, 1.0f * PIXEL_PER_METER);
-            body.AddForce(frictionForce);
+//            // FRICTION
+//            glm::vec2 frictionForce = Force::GenerateFrictionForce(body, 1.0f * PIXEL_PER_METER);
+//            body.AddForce(frictionForce);
 
-            // PUSH
-            body.AddForce(push);
+//            // PUSH
+//            body.AddForce(push);
 
-            // DRAG
-            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
-            body.AddForce(dragForce);
+//            // DRAG
+//            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
+//            body.AddForce(dragForce);
 
             // WEIGHT
             glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
             body.AddForce(weightForce);
+
+            // TORQUE
+            float torqueForce = 200.0f;
+            body.AddTorque(torqueForce);
         }
 
         // Force integration
         for (auto &body: bodies) {
-            body.Integrate(GetFrameTime());
+            body.IntegrateLinear(GetFrameTime());
+            body.IntegrateAngular(GetFrameTime());
         }
 
         // Boundary collisions
@@ -120,34 +125,22 @@ public:
         ClearBackground(DARKGREEN);
         BeginDrawing();
 
-        static float angle = 0.0f;
-
         // Draw Circle shape
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
                 float radius = dynamic_cast<CircleShape *>(body.shape)->radius;
-
-                DrawCircleLines((int) body.Position.x,
-                                (int) body.Position.y,
-                                radius,
-                                WHITE);
-                glm::vec2 line = glm::vec2(radius, 0.0f);
-                line = glm::rotate(line, angle);
-                line += body.Position;
-                DrawLine((int) body.Position.x,
-                         (int) body.Position.y,
-                         (int) line.x,
-                         (int) line.y,
-                         WHITE);
-
+                float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
+                DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y),
+                                      radius,
+                                      a, a + 360.0f,
+                                      0,
+                                      WHITE);
             }
         }
 
         DrawFPS(10, 10);
 
         EndDrawing();
-
-        angle += 0.01f;
     }
 
     void Cleanup() {

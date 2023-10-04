@@ -6,10 +6,14 @@
 
 using glm::vec2;
 
-Body::Body(const Shape &shape, float x, float y, float mass) : Position(vec2(x, y)), Velocity(vec2()), Acceleration(vec2()), Mass(mass), TotalForce(vec2()) {
+Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Position(vec2(x, y)), Rotation(angle), Mass(mass) {
     this->shape = shape.Copy();
+    this->I = shape.GetMomentOfInertia() * mass;
     if(mass != 0.0f) {
         InverseMass = 1.0f / mass;
+    }
+    if (this->I != 0) {
+        InverseI = -1.0f / this->I;
     }
 }
 
@@ -17,23 +21,44 @@ Body::~Body() {
     delete shape;
 }
 
-void Body::Integrate(float deltaTime) {
+void Body::IntegrateLinear(float deltaTime) {
     // Find the acceleration from the forces applied
     Acceleration = TotalForce * InverseMass;
 
     // Integrate acceleration
-    Velocity = Velocity + Acceleration * deltaTime;
+    Velocity += Acceleration * deltaTime;
 
     // Integrate velocity
-    Position = Position + Velocity * deltaTime;
+    Position += Velocity * deltaTime;
 
     ClearForces();
+}
+
+void Body::IntegrateAngular(float deltaTime) {
+    // Find the angular acceleration form the total torque applied
+    AngularAcceleration = TotalTorque * InverseI;
+
+    // Integrate angular acceleration
+    AngularVelocity += AngularAcceleration * deltaTime;
+
+    // Integrate angular velocity
+    Rotation += AngularVelocity * deltaTime;
+
+    ClearTorques();
 }
 
 void Body::AddForce(const vec2 &force) {
     TotalForce += force;
 }
 
+void Body::AddTorque(float torque) {
+    TotalTorque += torque;
+}
+
 void Body::ClearForces() {
     TotalForce = vec2(0.0f);
+}
+
+void Body::ClearTorques() {
+    TotalTorque = 0.0f;
 }
