@@ -5,6 +5,7 @@
 #include "glm/vec2.hpp"
 #include "glm/ext/scalar_common.hpp"
 #include <vector>
+#include "raylib_extension.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -137,15 +138,16 @@ public:
                                       0,
                                       WHITE);
             } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
-                std::vector<glm::vec2> vertices = dynamic_cast<PolygonShape*>(body.shape)->Vertices;
+                DrawPolygon(dynamic_cast<PolygonShape*>(body.shape)->Vertices, body.Position, body.Rotation, WHITE);
 
-                // Custom draw polygon function
-                glm::vec2 lastPoint = body.Position + vertices.back();
-                for (auto vertex : vertices) {
-                    glm::vec2 currentPoint = body.Position + vertex;
-                    DrawLine((int)lastPoint.x, (int)lastPoint.y, (int)currentPoint.x, (int)currentPoint.y, WHITE);
-                    lastPoint = currentPoint;
-                }
+//                std::vector<glm::vec2> vertices = dynamic_cast<PolygonShape*>(body.shape)->Vertices;
+//                // Custom draw polygon function
+//                glm::vec2 lastPoint = body.Position + vertices.back();
+//                for (auto vertex : vertices) {
+//                    glm::vec2 currentPoint = body.Position + vertex;
+//                    DrawLine((int)lastPoint.x, (int)lastPoint.y, (int)currentPoint.x, (int)currentPoint.y, WHITE);
+//                    lastPoint = currentPoint;
+//                }
             }
         }
 

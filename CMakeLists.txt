@@ -16,5 +16,6 @@ include_directories(external/glm)
 add_executable(pikuma_physics src/main.cpp
         src/forces.cpp
         src/body.cpp
-        src/shape.cpp)
+        src/shape.cpp
+        src/raylib_extension.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib)
