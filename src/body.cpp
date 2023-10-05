@@ -62,3 +62,8 @@ void Body::ClearForces() {
 void Body::ClearTorques() {
     TotalTorque = 0.0f;
 }
+
+void Body::Update(float deltaTime) {
+    IntegrateLinear(deltaTime);
+    IntegrateAngular(deltaTime);
+}

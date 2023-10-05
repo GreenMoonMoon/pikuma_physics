@@ -41,6 +41,8 @@ struct Body {
     void AddTorque(float torque);
     void ClearForces();
     void ClearTorques();
+
+    void Update(float deltaTime);
 };
 
 #endif //PIKUMA_PHYSICS_BODY_H

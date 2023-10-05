@@ -15,6 +15,18 @@ static float springStiffness;
 const int screenWidth = 840;
 const int screenHeight = 680;
 
+// RENDERING
+static void DrawCircleShape(const Body &body) {
+    float radius = dynamic_cast<CircleShape *>(body.shape)->radius;
+    float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
+    DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y), radius, a, a + 360.0f, 0, WHITE);
+}
+
+static void DrawPolygonShape(Body &body) {
+    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape)->Vertices, body.Position, body.Rotation, WHITE);
+}
+
+// APPLICATION
 class Application {
 private:
     bool running;
@@ -93,8 +105,7 @@ public:
 
         // Force integration
         for (auto &body: bodies) {
-            body.IntegrateLinear(GetFrameTime());
-            body.IntegrateAngular(GetFrameTime());
+            body.Update(GetFrameTime());
         }
 
         // Boundary collisions
@@ -127,27 +138,12 @@ public:
         ClearBackground(DARKGREEN);
         BeginDrawing();
 
-        // Draw Circle shape
+        // Draw shapes
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
-                float radius = dynamic_cast<CircleShape *>(body.shape)->radius;
-                float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
-                DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y),
-                                      radius,
-                                      a, a + 360.0f,
-                                      0,
-                                      WHITE);
+                DrawCircleShape(body);
             } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
-                DrawPolygon(dynamic_cast<PolygonShape*>(body.shape)->Vertices, body.Position, body.Rotation, WHITE);
-
-//                std::vector<glm::vec2> vertices = dynamic_cast<PolygonShape*>(body.shape)->Vertices;
-//                // Custom draw polygon function
-//                glm::vec2 lastPoint = body.Position + vertices.back();
-//                for (auto vertex : vertices) {
-//                    glm::vec2 currentPoint = body.Position + vertex;
-//                    DrawLine((int)lastPoint.x, (int)lastPoint.y, (int)currentPoint.x, (int)currentPoint.y, WHITE);
-//                    lastPoint = currentPoint;
-//                }
+                DrawPolygonShape(body);
             }
         }
 
