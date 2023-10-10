@@ -5,6 +5,7 @@
 #ifndef PIKUMA_PHYSICS_BODY_H
 #define PIKUMA_PHYSICS_BODY_H
 
+#include <memory>
 #include "glm/vec2.hpp"
 #include "shape.h"
 
@@ -29,7 +30,7 @@ struct Body {
     float InverseI = 0.0f;
     float TotalTorque = 0.0f;
 
-    Shape* shape = nullptr;
+    std::shared_ptr<Shape> shape;
 
     Body(const Shape &shape, float x, float y, float mass, float angle);
     ~Body();

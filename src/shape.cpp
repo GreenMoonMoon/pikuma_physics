@@ -15,12 +15,12 @@ ShapeType CircleShape::GetType() const {
     return ShapeType::CIRCLE;
 }
 
-Shape *CircleShape::Copy() const {
-    return new CircleShape(this->radius);
+std::shared_ptr<Shape> CircleShape::Copy() const {
+    return std::make_shared<CircleShape>(this->radius);
 }
 
 float CircleShape::GetMomentOfInertia() const {
-    return 0.5 * (radius * radius);
+    return 0.5f * (radius * radius);
 };
 
 PolygonShape::PolygonShape(const std::vector<glm::vec2> vertices) : Vertices(vertices) {}
@@ -33,8 +33,8 @@ ShapeType PolygonShape::GetType() const {
     return ShapeType::POLYGON;
 }
 
-Shape *PolygonShape::Copy() const {
-    return new PolygonShape(this->Vertices);
+std::shared_ptr<Shape> PolygonShape::Copy() const {
+    return std::make_shared<PolygonShape>(this->Vertices);
 }
 
 float PolygonShape::GetMomentOfInertia() const {
@@ -56,8 +56,8 @@ ShapeType BoxShape::GetType() const {
     return ShapeType::BOX;
 }
 
-Shape *BoxShape::Copy() const {
-    return new BoxShape(this->width, this->height);
+std::shared_ptr<Shape> BoxShape::Copy() const {
+    return std::make_shared<BoxShape>(this->width, this->height);
 }
 
 float BoxShape::GetMomentOfInertia() const {

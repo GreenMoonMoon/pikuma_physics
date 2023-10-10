@@ -17,13 +17,13 @@ const int screenHeight = 680;
 
 // RENDERING
 static void DrawCircleShape(const Body &body) {
-    float radius = dynamic_cast<CircleShape *>(body.shape)->radius;
+    float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
     float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
     DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y), radius, a, a + 360.0f, 0, WHITE);
 }
 
 static void DrawPolygonShape(Body &body) {
-    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape)->Vertices, body.Position, body.Rotation, WHITE);
+    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape.get())->Vertices, body.Position, body.Rotation, WHITE);
 }
 
 // APPLICATION
@@ -56,8 +56,10 @@ public:
     }
 
     void Setup() {
-//        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 1.0f, 0.0f);
         bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
+        bodies.emplace_back(BoxShape(100.0f, 100.0f), 300, screenHeight / 2, 1.0f, 0.0f);
 
         push = glm::vec2(0.0f);
 
@@ -111,7 +113,7 @@ public:
         // Boundary collisions
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
-                float radius = dynamic_cast<CircleShape *>(body.shape)->radius;
+                float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
                 float widthBoundary = screenWidth - radius;
                 float heightBoundary = screenHeight - radius;
                 if (body.Position.x > widthBoundary) {

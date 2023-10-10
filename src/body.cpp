@@ -17,9 +17,7 @@ Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Posi
     }
 }
 
-Body::~Body() {
-    delete shape;
-}
+Body::~Body() {}
 
 void Body::IntegrateLinear(float deltaTime) {
     // Find the acceleration from the forces applied
