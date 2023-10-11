@@ -35,8 +35,8 @@ bool CollisionDetection::IsColliding(const Body &a, const Body &b) {
 bool CollisionDetection::IsCollidingCircleCircle(const Body &a, const Body &b) {
     Shape *shapeA = a.shape.get();
     Shape *shapeB = b.shape.get();
-    vec2 direction = b.Position - a.Position;
-    float radiusSum = dynamic_cast<CircleShape *>(shapeA)->radius + dynamic_cast<CircleShape *>(shapeB)->radius;
+    const vec2 direction = b.Position - a.Position;
+    const float radiusSum = dynamic_cast<CircleShape *>(shapeA)->radius + dynamic_cast<CircleShape *>(shapeB)->radius;
 
     if(glm::length(direction) < radiusSum){
         return true;

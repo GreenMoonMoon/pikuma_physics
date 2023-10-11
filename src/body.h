@@ -32,6 +32,8 @@ struct Body {
 
     std::shared_ptr<Shape> shape;
 
+    bool IsColliding = false;
+
     Body(const Shape &shape, float x, float y, float mass, float angle);
     ~Body();
 

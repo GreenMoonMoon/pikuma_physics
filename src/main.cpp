@@ -23,11 +23,14 @@ const int screenHeight = 680;
 static void DrawCircleShape(const Body &body) {
     float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
     float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
-    DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y), radius, a, a + 360.0f, 0, WHITE);
+
+    Color col = body.IsColliding ? RED : WHITE;
+    DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y), radius, a, a + 360.0f, 0, col);
 }
 
 static void DrawPolygonShape(Body &body) {
-    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape.get())->Vertices, body.Position, body.Rotation, WHITE);
+    Color col = body.IsColliding ? RED : WHITE;
+    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape.get())->Vertices, body.Position, body.Rotation, col);
 }
 
 // APPLICATION
@@ -147,17 +150,16 @@ public:
         }
 
         // Body collisions
+        for (auto &body: bodies) {
+            body.IsColliding = false;
+        }
+
         for (int i = 0; i < bodies.size() - 1; ++i) {
             for (int j = i + 1; j < bodies.size(); ++j) {
                 if(CollisionDetection::IsColliding(bodies[i], bodies[j])) {
-                    // collision response
-                    std::cout << "Collisison detected!" << std::endl;
-
-                    glm::vec2 direction = glm::normalize(bodies[j].Position - bodies[i].Position);
-                    bodies[j].Velocity = glm::length(bodies[j].Velocity) * direction;
-                    bodies[i].Velocity = glm::length(bodies[i].Velocity) * -direction;
+                    bodies[j].IsColliding = true;
+                    bodies[i].IsColliding = true;
                 }
-
             }
         }
     }
