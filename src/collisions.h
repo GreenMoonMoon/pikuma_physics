@@ -9,8 +9,8 @@
 #include "glm/vec2.hpp"
 
 struct Contact {
-    Body *a;
-    Body *b;
+    const Body *a;
+    const Body *b;
 
     glm::vec2 start;
     glm::vec2 end;

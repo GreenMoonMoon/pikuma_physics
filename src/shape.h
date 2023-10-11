@@ -23,7 +23,7 @@ struct Shape {
 };
 
 struct CircleShape: public Shape {
-    float radius;
+    float Radius;
 
     CircleShape(float radius);
     virtual ~CircleShape();

@@ -21,7 +21,7 @@ const int screenHeight = 680;
 
 // RENDERING
 static void DrawCircleShape(const Body &body) {
-    float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
+    float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
     float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
 
     Color col = body.IsColliding ? RED : WHITE;
@@ -126,7 +126,7 @@ public:
         // Boundary collisions
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
-                float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
+                float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
                 float widthBoundary = screenWidth - radius;
                 float heightBoundary = screenHeight - radius;
                 if (body.Position.x > widthBoundary) {
@@ -162,8 +162,6 @@ public:
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
-
-
                     contacts.push_back(contact);
                 }
             }
@@ -184,7 +182,9 @@ public:
         }
 
         for (auto contact: contacts) {
-            // TODO: draw contact info
+            DrawCircle(contact.start[0], contact.start[1], 2, ORANGE);
+            DrawCircle(contact.end[0], contact.end[1], 2, ORANGE);
+            DrawLine(contact.start[0], contact.start[1], contact.end[0], contact.end[1], ORANGE);
         }
 
         DrawFPS(10, 10);

@@ -5,7 +5,7 @@
 #include "shape.h"
 #include <iostream>
 
-CircleShape:: CircleShape(const float radius) : radius(radius) {}
+CircleShape:: CircleShape(const float radius) : Radius(radius) {}
 
 CircleShape::~CircleShape() {
     std::cout << "Circle destructor called." << std::endl;
@@ -16,11 +16,11 @@ ShapeType CircleShape::GetType() const {
 }
 
 std::shared_ptr<Shape> CircleShape::Copy() const {
-    return std::make_shared<CircleShape>(this->radius);
+    return std::make_shared<CircleShape>(this->Radius);
 }
 
 float CircleShape::GetMomentOfInertia() const {
-    return 0.5f * (radius * radius);
+    return 0.5f * (Radius * Radius);
 };
 
 PolygonShape::PolygonShape(const std::vector<glm::vec2> vertices) : Vertices(vertices) {}
