@@ -38,6 +38,7 @@ struct Body {
     void IntegrateLinear(float deltaTime);
     void IntegrateAngular(float deltaTime);
 
+    // Forces
     void AddForce(const glm::vec2 &force);
     void AddTorque(float torque);
     void ClearForces();

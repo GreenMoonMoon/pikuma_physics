@@ -1,10 +1,14 @@
+#include <vector>
+#include <iostream>
+
 #include "raylib.h"
 #include "body.h"
 #include "physic_constants.h"
 #include "forces.h"
+#include "collisions.h"
 #include "glm/vec2.hpp"
 #include "glm/ext/scalar_common.hpp"
-#include <vector>
+#include "glm/geometric.hpp"
 #include "raylib_extension.h"
 
 static glm::vec2 push;
@@ -56,10 +60,12 @@ public:
     }
 
     void Setup() {
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 100, 1.0f, 0.0f);
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 1.0f, 0.0f);
-        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
-        bodies.emplace_back(BoxShape(100.0f, 100.0f), 300, screenHeight / 2, 1.0f, 0.0f);
+        bodies.emplace_back(CircleShape(25.0f), screenWidth / 2 + 5, 100, 1.0f, 0.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 2.0f, 0.0f);
+        bodies.emplace_back(CircleShape(45.0f), screenWidth / 2 - 75, 200, 3.0f, 0.0f);
+        bodies.emplace_back(CircleShape(35.0f), screenWidth / 2 + 50, 200, 1.5f, 0.0f);
+//        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
+//        bodies.emplace_back(BoxShape(100.0f, 100.0f), 300, screenHeight / 2, 1.0f, 0.0f);
 
         push = glm::vec2(0.0f);
 
@@ -96,13 +102,17 @@ public:
 //            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
 //            body.AddForce(dragForce);
 
-//            // WEIGHT
-//            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
-//            body.AddForce(weightForce);
+            // WIND
+            static glm::vec2 windForce(10.0f, 0.0f);
+            body.AddForce(windForce);
 
-            // TORQUE
-            float torqueForce = 200.0f;
-            body.AddTorque(torqueForce);
+            // WEIGHT
+            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
+            body.AddForce(weightForce);
+
+//            // TORQUE
+//            float torqueForce = 200.0f;
+//            body.AddTorque(torqueForce);
         }
 
         // Force integration
@@ -110,6 +120,7 @@ public:
             body.Update(GetFrameTime());
         }
 
+        // COLLISIONS
         // Boundary collisions
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
@@ -132,6 +143,21 @@ public:
                     body.Position.y = radius;
                     body.Velocity.y *= -0.9f;
                 }
+            }
+        }
+
+        // Body collisions
+        for (int i = 0; i < bodies.size() - 1; ++i) {
+            for (int j = i + 1; j < bodies.size(); ++j) {
+                if(CollisionDetection::IsColliding(bodies[i], bodies[j])) {
+                    // collision response
+                    std::cout << "Collisison detected!" << std::endl;
+
+                    glm::vec2 direction = glm::normalize(bodies[j].Position - bodies[i].Position);
+                    bodies[j].Velocity = glm::length(bodies[j].Velocity) * direction;
+                    bodies[i].Velocity = glm::length(bodies[i].Velocity) * -direction;
+                }
+
             }
         }
     }

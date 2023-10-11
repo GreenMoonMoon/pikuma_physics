@@ -17,5 +17,6 @@ add_executable(pikuma_physics src/main.cpp
         src/forces.cpp
         src/body.cpp
         src/shape.cpp
-        src/raylib_extension.cpp)
+        src/raylib_extension.cpp
+        src/collisions.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib)

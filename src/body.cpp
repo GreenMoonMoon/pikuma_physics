@@ -3,13 +3,15 @@
 //
 
 #include "body.h"
+#include "glm/geometric.hpp"
 
 using glm::vec2;
 
-Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Position(vec2(x, y)), Rotation(angle), Mass(mass) {
+Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Position(vec2(x, y)), Rotation(angle),
+                                                                            Mass(mass) {
     this->shape = shape.Copy();
     this->I = shape.GetMomentOfInertia() * mass;
-    if(mass != 0.0f) {
+    if (mass != 0.0f) {
         InverseMass = 1.0f / mass;
     }
     if (this->I != 0) {
