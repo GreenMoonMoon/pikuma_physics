@@ -8,15 +8,15 @@
 
 using glm::vec2;
 
-bool CollisionDetection::IsColliding(const Body &a, const Body &b) {
+bool CollisionDetection::IsColliding(const Body &a, const Body &b, Contact &contact) {
     Shape *shapeA = a.shape.get();
     Shape *shapeB = b.shape.get();
 
-    switch(shapeA->GetType()){
+    switch (shapeA->GetType()) {
         case CIRCLE:
             switch (shapeB->GetType()) {
                 case CIRCLE:
-                    return IsCollidingCircleCircle(a, b);
+                    return IsCollidingCircleCircle(a, b, contact);
                 case POLYGON:
                     break;
                 case BOX:
@@ -32,13 +32,14 @@ bool CollisionDetection::IsColliding(const Body &a, const Body &b) {
     return false;
 }
 
-bool CollisionDetection::IsCollidingCircleCircle(const Body &a, const Body &b) {
+bool CollisionDetection::IsCollidingCircleCircle(const Body &a, const Body &b, Contact &contact) {
     Shape *shapeA = a.shape.get();
     Shape *shapeB = b.shape.get();
     const vec2 direction = b.Position - a.Position;
+
     const float radiusSum = dynamic_cast<CircleShape *>(shapeA)->radius + dynamic_cast<CircleShape *>(shapeB)->radius;
 
-    if(glm::length(direction) < radiusSum){
+    if (glm::length(direction) < radiusSum) {
         return true;
     }
 

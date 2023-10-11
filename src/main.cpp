@@ -38,11 +38,10 @@ class Application {
 private:
     bool running;
     std::vector<Body> bodies;
-
-    float elapsed_time;
+    std::vector<Contact> contacts;
 
 public:
-    Application() : running(true), bodies({}), elapsed_time(0.0f) {
+    Application() : running(true), bodies({}) {
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(screenWidth, screenHeight, "Pikuma Physics");
@@ -153,12 +152,19 @@ public:
         for (auto &body: bodies) {
             body.IsColliding = false;
         }
+        contacts.clear();
 
         for (int i = 0; i < bodies.size() - 1; ++i) {
             for (int j = i + 1; j < bodies.size(); ++j) {
-                if(CollisionDetection::IsColliding(bodies[i], bodies[j])) {
+
+                Contact contact;
+                if(CollisionDetection::IsColliding(bodies[i], bodies[j], contact)) {
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
+
+
+
+                    contacts.push_back(contact);
                 }
             }
         }
@@ -175,6 +181,10 @@ public:
             } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
                 DrawPolygonShape(body);
             }
+        }
+
+        for (auto contact: contacts) {
+            // TODO: draw contact info
         }
 
         DrawFPS(10, 10);
