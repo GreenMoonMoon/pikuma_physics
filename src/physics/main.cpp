@@ -205,15 +205,12 @@ public:
         }
 
         if (spawnShape.IsActive){
-//            DrawCircleV(spawnShape.Position, spawnShape.Radius, WHITE);
             DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
-//            DrawText(TextFormat("%f", spawnShape.Mass), spawnShape.Position.x - 8, spawnShape.Position.y - 8, 16, WHITE);
-            DrawTextEx(GetFontDefault(),
-                       TextFormat("%0g", spawnShape.Mass),
-                       spawnShape.Position,
-                       16,
-                       1.0f,
-                       LIGHTGRAY);
+            DrawText(TextFormat("MASS: %0g", spawnShape.Mass),
+                     spawnShape.Position.x - 16.0f,
+                     spawnShape.Position.y + spawnShape.Radius + 5.0f,
+                     16,
+                     LIGHTGRAY);
         }
 
         DrawFPS(10, 10);
