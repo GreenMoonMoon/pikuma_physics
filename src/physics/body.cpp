@@ -19,9 +19,9 @@ Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Posi
     }
 }
 
-Body::~Body() {}
-
 void Body::IntegrateLinear(float deltaTime) {
+    if (IsStatic()) return;
+
     // Find the acceleration from the forces applied
     Acceleration = TotalForce * InverseMass;
 
@@ -35,6 +35,8 @@ void Body::IntegrateLinear(float deltaTime) {
 }
 
 void Body::IntegrateAngular(float deltaTime) {
+    if (IsStatic()) return;
+
     // Find the angular acceleration form the total torque applied
     AngularAcceleration = TotalTorque * InverseI;
 
@@ -66,4 +68,9 @@ void Body::ClearTorques() {
 void Body::Update(float deltaTime) {
     IntegrateLinear(deltaTime);
     IntegrateAngular(deltaTime);
+}
+
+bool Body::IsStatic() const {
+    const float epsilon = 0.001f;
+    return fabs(InverseMass - 0.0) < epsilon;
 }

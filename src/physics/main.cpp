@@ -1,15 +1,12 @@
 #include <vector>
 #include <iostream>
 
+#include "physics/body.h"
+#include "physics/physic_constants.h"
+#include "physics/forces.h"
+#include "physics/collisions.h"
+#include "graphics/draw.h"
 #include "raylib.h"
-#include "body.h"
-#include "physic_constants.h"
-#include "forces.h"
-#include "collisions.h"
-#include "glm/vec2.hpp"
-#include "glm/ext/scalar_common.hpp"
-#include "glm/geometric.hpp"
-#include "raylib_extension.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -18,20 +15,6 @@ static float springStiffness;
 
 const int screenWidth = 840;
 const int screenHeight = 680;
-
-// RENDERING
-static void DrawCircleShape(const Body &body) {
-    float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
-    float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
-
-    Color col = body.IsColliding ? RED : WHITE;
-    DrawCircleSectorLines(Vector2(body.Position.x, body.Position.y), radius, a, a + 360.0f, 0, col);
-}
-
-static void DrawPolygonShape(Body &body) {
-    Color col = body.IsColliding ? RED : WHITE;
-    DrawPolygon(dynamic_cast<PolygonShape *>(body.shape.get())->Vertices, body.Position, body.Rotation, col);
-}
 
 // APPLICATION
 class Application {
@@ -63,7 +46,7 @@ public:
 
     void Setup() {
         bodies.emplace_back(CircleShape(25.0f), screenWidth / 2 + 5, 100, 1.0f, 0.0f);
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 2.0f, 0.0f);
+        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 0.0f, 0.0f);
         bodies.emplace_back(CircleShape(45.0f), screenWidth / 2 - 75, 200, 3.0f, 0.0f);
         bodies.emplace_back(CircleShape(35.0f), screenWidth / 2 + 50, 200, 1.5f, 0.0f);
 //        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
@@ -157,27 +140,37 @@ public:
         for (int i = 0; i < bodies.size() - 1; ++i) {
             for (int j = i + 1; j < bodies.size(); ++j) {
 
-                Contact contact;
+                Contact contact{};
                 if(CollisionDetection::IsColliding(bodies[i], bodies[j], contact)) {
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
-                    contacts.push_back(contact);
+//                    contacts.push_back(contact);
+                    contact.ResolvePenetration();
                 }
             }
         }
     }
 
     void Render() {
-        ClearBackground(DARKGREEN);
+        ClearBackground(BLACK);
         BeginDrawing();
+        DrawRectangleGradientV(0, 0, screenWidth, screenHeight, DARKGREEN, Color(0, 35, 5, 255));
 
         // Draw shapes
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
-                DrawCircleShape(body);
+                Draw::ShadedCircle(body);
             } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
-                DrawPolygonShape(body);
+                Draw::Polygon(body);
+            }
+        }
+
+        for (auto &body: bodies) {
+            if (body.shape->GetType() == CIRCLE) {
+                Draw::Circle(body);
+            } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
+                Draw::Polygon(body);
             }
         }
 

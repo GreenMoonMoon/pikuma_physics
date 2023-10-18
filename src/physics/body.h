@@ -35,7 +35,7 @@ struct Body {
     bool IsColliding = false;
 
     Body(const Shape &shape, float x, float y, float mass, float angle);
-    ~Body();
+    ~Body() = default;
 
     void IntegrateLinear(float deltaTime);
     void IntegrateAngular(float deltaTime);
@@ -47,6 +47,8 @@ struct Body {
     void ClearTorques();
 
     void Update(float deltaTime);
+
+    bool IsStatic() const;
 };
 
 #endif //PIKUMA_PHYSICS_BODY_H

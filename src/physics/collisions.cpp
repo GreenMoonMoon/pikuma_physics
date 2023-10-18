@@ -8,7 +8,7 @@
 
 using glm::vec2;
 
-bool CollisionDetection::IsColliding(const Body &a, const Body &b, Contact &contact) {
+bool CollisionDetection::IsColliding(Body &a, Body &b, Contact &contact) {
     Shape *shapeA = a.shape.get();
     Shape *shapeB = b.shape.get();
 
@@ -32,9 +32,9 @@ bool CollisionDetection::IsColliding(const Body &a, const Body &b, Contact &cont
     return false;
 }
 
-bool CollisionDetection::IsCollidingCircleCircle(const Body &a, const Body &b, Contact &contact) {
-    CircleShape *shapeA = dynamic_cast<CircleShape*>(a.shape.get());
-    CircleShape *shapeB = dynamic_cast<CircleShape*>(b.shape.get());
+bool CollisionDetection::IsCollidingCircleCircle(Body &a, Body &b, Contact &contact) {
+    auto *shapeA = dynamic_cast<CircleShape*>(a.shape.get());
+    auto *shapeB = dynamic_cast<CircleShape*>(b.shape.get());
     const vec2 direction = b.Position - a.Position;
     const float depth = glm::length(direction);
 
@@ -54,4 +54,14 @@ bool CollisionDetection::IsCollidingCircleCircle(const Body &a, const Body &b, C
     contact.depth = glm::length(contact.end - contact.start);
 
     return true;
+}
+
+void Contact::ResolvePenetration() const {
+    if(a->IsStatic() && b->IsStatic()) return;
+
+    float displaceA = (depth / (a->InverseMass + b->InverseMass)) * a->InverseMass;
+    float displaceB = (depth / (a->InverseMass + b->InverseMass)) * b->InverseMass;
+
+    a->Position -= normal * displaceA;
+    b->Position += normal * displaceB;
 }

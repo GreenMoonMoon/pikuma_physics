@@ -13,10 +13,12 @@ FetchContent_MakeAvailable(raylib)
 
 include_directories(external/glm)
 
-add_executable(pikuma_physics src/main.cpp
-        src/forces.cpp
-        src/body.cpp
-        src/shape.cpp
-        src/raylib_extension.cpp
-        src/collisions.cpp)
+add_executable(pikuma_physics src/physics/main.cpp
+        src/physics/forces.cpp
+        src/physics/body.cpp
+        src/physics/shape.cpp
+        src/physics/collisions.cpp
+        src/graphics/raylib_extension.cpp
+        src/graphics/draw.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib)
+target_include_directories(pikuma_physics PRIVATE src)
