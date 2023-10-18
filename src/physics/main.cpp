@@ -7,6 +7,7 @@
 #include "physics/collisions.h"
 #include "graphics/draw.h"
 #include "raylib.h"
+#include "raymath.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -15,6 +16,13 @@ static float springStiffness;
 
 const int screenWidth = 840;
 const int screenHeight = 680;
+
+static struct {
+    bool IsActive;
+    Vector2 Position;
+    float Radius;
+    float Mass;
+} spawnShape;
 
 // APPLICATION
 class Application {
@@ -69,6 +77,22 @@ public:
         if (IsKeyDown(KEY_DOWN)) springRestDistance -= 5.0f;
         if (IsKeyDown(KEY_RIGHT)) springStiffness += 2.0f;
         if (IsKeyDown(KEY_LEFT)) springStiffness -= 2.0f;
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            spawnShape.Position = GetMousePosition();
+            spawnShape.Mass = 0.0f;
+            spawnShape.Radius = 0.0f;
+            spawnShape.IsActive = true;
+        }
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) and spawnShape.IsActive){
+            auto offset = GetMousePosition();
+            spawnShape.Radius = Vector2Distance(offset, spawnShape.Position);
+            spawnShape.Mass = abs(spawnShape.Position.y - offset.y) * 2.0f;
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) and spawnShape.IsActive) {
+            bodies.emplace_back(CircleShape(spawnShape.Radius), spawnShape.Position.x, spawnShape.Position.y, spawnShape.Mass, 0.0f);
+            spawnShape.IsActive = false;
+        }
 
         PollInputEvents();
     }
@@ -178,6 +202,18 @@ public:
             DrawCircle(contact.start[0], contact.start[1], 2, ORANGE);
             DrawCircle(contact.end[0], contact.end[1], 2, ORANGE);
             DrawLine(contact.start[0], contact.start[1], contact.end[0], contact.end[1], ORANGE);
+        }
+
+        if (spawnShape.IsActive){
+//            DrawCircleV(spawnShape.Position, spawnShape.Radius, WHITE);
+            DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
+//            DrawText(TextFormat("%f", spawnShape.Mass), spawnShape.Position.x - 8, spawnShape.Position.y - 8, 16, WHITE);
+            DrawTextEx(GetFontDefault(),
+                       TextFormat("%0g", spawnShape.Mass),
+                       spawnShape.Position,
+                       16,
+                       1.0f,
+                       LIGHTGRAY);
         }
 
         DrawFPS(10, 10);
