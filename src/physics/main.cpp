@@ -170,8 +170,8 @@ public:
                     bodies[i].IsColliding = true;
 
 //                    contacts.push_back(contact);
-//                    contact.ResolvePenetration();
                     Collision::ResolveCollision(contact);
+                    Collision::ResolvePenetration(contact);
                 }
             }
         }
