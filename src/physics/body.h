@@ -30,6 +30,9 @@ struct Body {
     float InverseI = 0.0f;
     float TotalTorque = 0.0f;
 
+    // Collision
+    float restitution = 0.95f; // Default value
+
     std::shared_ptr<Shape> shape;
 
     bool IsColliding = false;
@@ -45,6 +48,9 @@ struct Body {
     void AddTorque(float torque);
     void ClearForces();
     void ClearTorques();
+
+    // Impulses
+    void ApplyImpulse(const glm::vec2 impulse);
 
     void Update(float deltaTime);
 

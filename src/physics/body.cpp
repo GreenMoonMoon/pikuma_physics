@@ -65,6 +65,12 @@ void Body::ClearTorques() {
     TotalTorque = 0.0f;
 }
 
+void Body::ApplyImpulse(const glm::vec2 impulse) {
+    if (IsStatic()) return;
+
+    Velocity += impulse * InverseMass;
+}
+
 void Body::Update(float deltaTime) {
     IntegrateLinear(deltaTime);
     IntegrateAngular(deltaTime);
@@ -74,3 +80,4 @@ bool Body::IsStatic() const {
     const float epsilon = 0.001f;
     return fabs(InverseMass - 0.0) < epsilon;
 }
+

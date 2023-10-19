@@ -8,6 +8,7 @@
 #include "graphics/draw.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "glm/geometric.hpp"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -34,7 +35,6 @@ private:
 public:
     Application() : running(true), bodies({}) {
         SetConfigFlags(FLAG_MSAA_4X_HINT);
-        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(screenWidth, screenHeight, "Pikuma Physics");
 
         SetTargetFPS(60.0f);
@@ -87,7 +87,7 @@ public:
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) and spawnShape.IsActive){
             auto offset = GetMousePosition();
             spawnShape.Radius = Vector2Distance(offset, spawnShape.Position);
-            spawnShape.Mass = abs(spawnShape.Position.y - offset.y) * 2.0f;
+            spawnShape.Mass = abs(spawnShape.Position.y - offset.y);
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) and spawnShape.IsActive) {
             bodies.emplace_back(CircleShape(spawnShape.Radius), spawnShape.Position.x, spawnShape.Position.y, spawnShape.Mass, 0.0f);
@@ -165,12 +165,13 @@ public:
             for (int j = i + 1; j < bodies.size(); ++j) {
 
                 Contact contact{};
-                if(CollisionDetection::IsColliding(bodies[i], bodies[j], contact)) {
+                if(Collision::IsColliding(bodies[i], bodies[j], contact)) {
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
 //                    contacts.push_back(contact);
-                    contact.ResolvePenetration();
+//                    contact.ResolvePenetration();
+                    Collision::ResolveCollision(contact);
                 }
             }
         }

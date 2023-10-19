@@ -20,14 +20,16 @@ struct Contact {
 
     Contact() = default;
     ~Contact() = default;
-
-    void ResolvePenetration() const;
 };
 
-namespace CollisionDetection {
+namespace Collision {
     bool IsColliding(Body &a, Body &b, Contact &contact);
 
     bool IsCollidingCircleCircle(Body &a, Body &b, Contact &contact);
+
+    void ResolvePenetration(Contact &contact);
+
+    void ResolveCollision(Contact &constact);
 }
 
 #endif //PIKUMA_PHYSICS_COLLISIONS_H

@@ -8,7 +8,7 @@
 
 using glm::vec2;
 
-bool CollisionDetection::IsColliding(Body &a, Body &b, Contact &contact) {
+bool Collision::IsColliding(Body &a, Body &b, Contact &contact) {
     Shape *shapeA = a.shape.get();
     Shape *shapeB = b.shape.get();
 
@@ -32,7 +32,7 @@ bool CollisionDetection::IsColliding(Body &a, Body &b, Contact &contact) {
     return false;
 }
 
-bool CollisionDetection::IsCollidingCircleCircle(Body &a, Body &b, Contact &contact) {
+bool Collision::IsCollidingCircleCircle(Body &a, Body &b, Contact &contact) {
     auto *shapeA = dynamic_cast<CircleShape*>(a.shape.get());
     auto *shapeB = dynamic_cast<CircleShape*>(b.shape.get());
     const vec2 direction = b.Position - a.Position;
@@ -56,12 +56,27 @@ bool CollisionDetection::IsCollidingCircleCircle(Body &a, Body &b, Contact &cont
     return true;
 }
 
-void Contact::ResolvePenetration() const {
+void Collision::ResolvePenetration(Contact &contact) {
+    Body *a = contact.a;
+    Body *b = contact.b;
+
     if(a->IsStatic() && b->IsStatic()) return;
 
-    float displaceA = (depth / (a->InverseMass + b->InverseMass)) * a->InverseMass;
-    float displaceB = (depth / (a->InverseMass + b->InverseMass)) * b->InverseMass;
+    float displaceA = (contact.depth / (a->InverseMass + b->InverseMass)) * a->InverseMass;
+    float displaceB = (contact.depth / (a->InverseMass + b->InverseMass)) * b->InverseMass;
 
-    a->Position -= normal * displaceA;
-    b->Position += normal * displaceB;
+    a->Position -= contact.normal * displaceA;
+    b->Position += contact.normal * displaceB;
+}
+
+void Collision::ResolveCollision(Contact &contact) {
+    Body *a = contact.a;
+    Body *b = contact.b;
+
+    float restitution = std::min(a->restitution, b->restitution);
+    vec2 relativeVelocity = a->Velocity - b->Velocity;
+
+    float impulse = -(1.0f + restitution) * glm::dot(relativeVelocity, contact.normal) / (a->InverseMass + b->InverseMass);
+    a->ApplyImpulse(contact.normal * impulse);
+    b->ApplyImpulse(contact.normal * -impulse);
 }
