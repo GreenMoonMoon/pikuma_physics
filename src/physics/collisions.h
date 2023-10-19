@@ -29,7 +29,7 @@ namespace Collision {
 
     void ResolvePenetration(Contact &contact);
 
-    void ResolveCollision(Contact &constact);
+    void ResolveCollision(Contact &contact);
 }
 
 #endif //PIKUMA_PHYSICS_COLLISIONS_H

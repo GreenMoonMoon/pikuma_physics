@@ -70,6 +70,8 @@ void Collision::ResolvePenetration(Contact &contact) {
 }
 
 void Collision::ResolveCollision(Contact &contact) {
+    Collision::ResolvePenetration(contact);
+
     Body *a = contact.a;
     Body *b = contact.b;
 

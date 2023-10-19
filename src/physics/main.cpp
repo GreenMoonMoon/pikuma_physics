@@ -169,9 +169,7 @@ public:
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
-//                    contacts.push_back(contact);
                     Collision::ResolveCollision(contact);
-                    Collision::ResolvePenetration(contact);
                 }
             }
         }
