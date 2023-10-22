@@ -107,9 +107,9 @@ public:
 //            // PUSH
 //            body.AddForce(push);
 
-//            // DRAG
-//            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
-//            body.AddForce(dragForce);
+            // DRAG
+            glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
+            body.AddForce(dragForce);
 
             // WIND
             static glm::vec2 windForce(10.0f, 0.0f);
@@ -138,19 +138,19 @@ public:
                 float heightBoundary = screenHeight - radius;
                 if (body.Position.x > widthBoundary) {
                     body.Position.x = widthBoundary;
-                    body.Velocity.x *= -0.9f;
+                    body.Velocity.x *= -body.restitution;
                 }
                 if (body.Position.x < radius) {
                     body.Position.x = radius;
-                    body.Velocity.x *= -0.9f;
+                    body.Velocity.x *= -body.restitution;
                 }
                 if (body.Position.y > heightBoundary) {
                     body.Position.y = heightBoundary;
-                    body.Velocity.y *= -0.9f;
+                    body.Velocity.y *= -body.restitution;
                 }
                 if (body.Position.y < radius) {
                     body.Position.y = radius;
-                    body.Velocity.y *= -0.9f;
+                    body.Velocity.y *= -body.restitution;
                 }
             }
         }

@@ -31,7 +31,7 @@ struct Body {
     float TotalTorque = 0.0f;
 
     // Collision
-    float restitution = 0.95f; // Default value
+    float restitution = 0.85f; // Default value
 
     std::shared_ptr<Shape> shape;
 
