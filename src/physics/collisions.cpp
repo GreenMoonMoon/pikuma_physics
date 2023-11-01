@@ -82,3 +82,9 @@ void Collision::ResolveCollision(Contact &contact) {
     a->ApplyImpulse(contact.normal * impulse);
     b->ApplyImpulse(contact.normal * -impulse);
 }
+
+void Collision::ResolveMerge(Contact &contact) {
+
+
+    //TODO: create a new ball of the appropriate type and remove the two balls that merged
+}

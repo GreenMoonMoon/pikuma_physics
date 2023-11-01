@@ -10,11 +10,29 @@
 
 void Draw::ShadedCircle(const Body &body) {
     float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
-    if (body.IsColliding){
-        DrawCircleGradient(body.Position.x, body.Position.y, radius, RED, DARKBROWN);
-    } else {
-        DrawCircleGradient(body.Position.x, body.Position.y, radius, BLUE, DARKBLUE);
+    switch (body.BallType) {
+        case 0:
+            DrawCircleGradient(body.Position.x, body.Position.y, radius, WHITE, BLUE);
+            break;
+        case 1:
+            DrawCircleGradient(body.Position.x, body.Position.y, radius, BLUE, DARKBLUE);
+            break;
+        case 2:
+            DrawCircleGradient(body.Position.x, body.Position.y, radius, DARKBLUE, PURPLE);
+            break;
+        case 3:
+            DrawCircleGradient(body.Position.x, body.Position.y, radius, PURPLE, DARKPURPLE);
+            break;
+        default:
+            DrawCircleGradient(body.Position.x, body.Position.y, radius, DARKPURPLE, BROWN);
+            break;
     }
+
+//    if (body.IsColliding){
+//        DrawCircleGradient(body.Position.x, body.Position.y, radius, RED, DARKBROWN);
+//    } else {
+//        DrawCircleGradient(body.Position.x, body.Position.y, radius, BLUE, DARKBLUE);
+//    }
 }
 
 void Draw::Circle(const Body &body) {

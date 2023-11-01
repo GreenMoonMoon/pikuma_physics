@@ -37,7 +37,9 @@ struct Body {
 
     bool IsColliding = false;
 
-    Body(const Shape &shape, float x, float y, float mass, float angle);
+    int BallType;
+
+    Body(const Shape &shape, float x, float y, float mass, float angle, int ball_type);
     ~Body() = default;
 
     void IntegrateLinear(float deltaTime);

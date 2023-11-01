@@ -7,8 +7,10 @@
 
 using glm::vec2;
 
-Body::Body(const Shape &shape, float x, float y, float mass, float angle) : Position(vec2(x, y)), Rotation(angle),
-                                                                            Mass(mass) {
+Body::Body(const Shape &shape, float x, float y, float mass, float angle, int ball_type) : Position(vec2(x, y)),
+                                                                                           Rotation(angle),
+                                                                                           Mass(mass),
+                                                                                           BallType(ball_type) {
     this->shape = shape.Copy();
     this->I = shape.GetMomentOfInertia() * mass;
     if (mass != 0.0f) {
