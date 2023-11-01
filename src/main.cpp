@@ -8,7 +8,6 @@
 #include "graphics/draw.h"
 #include "raylib.h"
 #include "raymath.h"
-#include "glm/geometric.hpp"
 
 static glm::vec2 push;
 static Rectangle liquid;
