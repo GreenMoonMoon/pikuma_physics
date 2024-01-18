@@ -23,3 +23,36 @@ void DrawPolygon(std::vector<glm::vec2> &vertices, glm::vec2 position, float ang
 
     rlEnd();
 }
+
+void draw_shaded_box(const Rectangle rec, const float angle, const Color a, const Color b) {
+    rlPushMatrix();
+
+    rlBegin(RL_QUADS);
+
+
+    rlTranslatef(rec.x, rec.y, 0.0f);
+    rlRotatef(-angle, 0.0f, 0.0f, 1.0f);
+    rlTranslatef(rec.width * -0.5f, rec.height * -0.5f, 0.0f);
+
+    rlNormal3f(0.0f, 0.0f, 1.0f);
+
+    // NOTE: Default raylib font character 95 is a white square
+    rlColor4ub(a.r, a.g, a.b, a.a);
+    // rlVertex2f(rec.x, rec.y);
+    rlVertex2f(0.0f, 0.0f);
+
+    rlColor4ub(b.r, b.g, b.b, b.a);
+    // rlVertex2f(rec.x, rec.y + rec.height);
+    rlVertex2f(0.0f, rec.height);
+
+    rlColor4ub(b.r, b.g, b.b, b.a);
+    // rlVertex2f(rec.x + rec.width, rec.y + rec.height);
+    rlVertex2f(rec.width, rec.height);
+
+    rlColor4ub(a.r, a.g, a.b, a.a);
+    // rlVertex2f(rec.x + rec.width, rec.y);
+    rlVertex2f(rec.width, 0.0f);
+
+    rlEnd();
+    rlPopMatrix();
+}

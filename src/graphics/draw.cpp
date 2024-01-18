@@ -8,12 +8,38 @@
 #include "raylib_extension.h"
 #include "glm/ext/scalar_common.hpp"
 
+static Shader gradient_shader;
+
+void Draw::Init() {
+    gradient_shader = LoadShader(nullptr, "../assets/shaders/gradient.frag");
+}
+
+void Draw::Cleanup() {
+    UnloadShader(gradient_shader);
+}
+
 void Draw::ShadedCircle(const Body &body) {
     float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
-    if (body.IsColliding){
+    if (body.IsColliding) {
         DrawCircleGradient(body.Position.x, body.Position.y, radius, RED, DARKBROWN);
-    } else {
+    }
+    else {
         DrawCircleGradient(body.Position.x, body.Position.y, radius, BLUE, DARKBLUE);
+    }
+}
+
+void Draw::ShadedBox(const Body& body) {
+    auto *shape = dynamic_cast<BoxShape *>(body.shape.get());
+    Rectangle rec = {body.Position.x, body.Position.y, shape->width, shape->height};
+    // float half_width = shape->width * 0.5f;
+    // float half_height = shape->height * 0.5f;
+    if(body.IsColliding) {
+        // DrawRectangleGradientV(body.Position.x - half_width, body.Position.y - half_height, shape->width, shape->height, RED, DARKBROWN);
+        draw_shaded_box(rec, body.Rotation * RAD2DEG,RED, DARKBROWN);
+    }
+    else {
+        // DrawRectangleGradientV(body.Position.x - half_width, body.Position.y - half_height, shape->width, shape->height, BLUE, DARKBLUE);
+        draw_shaded_box(rec, body.Rotation * RAD2DEG,BLUE, DARKBLUE);
     }
 }
 

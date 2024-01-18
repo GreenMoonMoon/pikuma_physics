@@ -10,7 +10,11 @@
 #include "physics/body.h"
 
 namespace Draw {
+    void Init();
+    void Cleanup();
+
     void ShadedCircle(const Body &body);
+    void ShadedBox(const Body &body);
 
     void Circle(const Body &body);
     void Polygon(Body &body);

@@ -39,6 +39,8 @@ public:
 
         SetTargetFPS(60.0f);
 
+        Draw::Init();
+
         Setup();
     }
 
@@ -54,7 +56,7 @@ public:
 
     void Setup() {
         bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
-        bodies.emplace_back(BoxShape(100.0f, 100.0f), 400, screenHeight / 2 + 120, 1.0f, 0.0f);
+        bodies.emplace_back(BoxShape(100.0f, 100.0f), 400,  screenHeight / 2, 1.0f, 0.0f);
         bodies[0].AngularVelocity = 0.4f;
         bodies[1].AngularVelocity = -0.25f;
 
@@ -96,6 +98,10 @@ public:
     }
 
     void Update() {
+        // Moving box a according to the mouse
+        glm::vec2 mouse_input = {GetMousePosition().x, GetMousePosition().y};
+        bodies[0].Position = mouse_input;
+
         // Adding forces
         for (auto &body: bodies) {
 //            // FRICTION
@@ -109,13 +115,13 @@ public:
             glm::vec2 dragForce = Force::GenerateDragForce(body, 0.001f);
             body.AddForce(dragForce);
 
-            // WIND
-            static glm::vec2 windForce(10.0f, 0.0f);
-            body.AddForce(windForce);
+            // // WIND
+            // static glm::vec2 windForce(10.0f, 0.0f);
+            // body.AddForce(windForce);
 
-            // WEIGHT
-            glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
-            body.AddForce(weightForce);
+            // // WEIGHT
+            // glm::vec2 weightForce(0.0f, body.Mass * 9.8f * PIXEL_PER_METER);
+            // body.AddForce(weightForce);
 
 //            // TORQUE
 //            float torqueForce = 200.0f;
@@ -129,6 +135,7 @@ public:
 
         // COLLISIONS
         // Boundary collisions
+        // TODO: move into collision.h
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
                 float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
@@ -160,6 +167,7 @@ public:
         }
 
         // Body collisions
+        // TODO: move to its own method
         for (auto &body: bodies) {
             body.IsColliding = false;
         }
@@ -167,13 +175,12 @@ public:
 
         for (int i = 0; i < bodies.size() - 1; ++i) {
             for (int j = i + 1; j < bodies.size(); ++j) {
-
-                Contact contact{};
-                if(Collision::IsColliding(bodies[i], bodies[j], contact)) {
+                if(Contact contact{}; Collision::IsColliding(bodies[i], bodies[j], contact)) {
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
-                    Collision::ResolveCollision(contact);
+                    // TODO: reenable
+                    // Collision::ResolveCollision(contact);
                 }
             }
         }
@@ -185,10 +192,14 @@ public:
         DrawRectangleGradientV(0, 0, screenWidth, screenHeight, DARKGREEN, Color(0, 35, 5, 255));
 
         // Draw shapes
-        for (auto &body: bodies) {
+        for (auto&body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
                 Draw::ShadedCircle(body);
-            } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
+            }
+            else if (body.shape->GetType() == BOX) {
+                Draw::ShadedBox(body);
+            }
+            else if (body.shape->GetType() == POLYGON) {
                 Draw::Polygon(body);
             }
         }
@@ -208,15 +219,15 @@ public:
         }
 
         // UI
-        // Draw spawn shape
-        if (spawnShape.IsActive){
-            DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
-            DrawText(TextFormat("MASS: %0g", spawnShape.Mass),
-                     spawnShape.Position.x - 16.0f,
-                     spawnShape.Position.y + spawnShape.Radius + 5.0f,
-                     16,
-                     LIGHTGRAY);
-        }
+        // // Draw spawn shape
+        // if (spawnShape.IsActive){
+        //     DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
+        //     DrawText(TextFormat("MASS: %0g", spawnShape.Mass),
+        //              spawnShape.Position.x - 16.0f,
+        //              spawnShape.Position.y + spawnShape.Radius + 5.0f,
+        //              16,
+        //              LIGHTGRAY);
+        // }
 
         DrawFPS(10, 10);
 
@@ -224,6 +235,7 @@ public:
     }
 
     void Cleanup() {
+        Draw::Cleanup();
         bodies.clear();
     }
 };
