@@ -56,6 +56,13 @@ bool Collision::IsCollidingCircleCircle(Body &a, Body &b, Contact &contact) {
     return true;
 }
 
+bool Collision::IsCollidingPolygonPolygon(Body& a, Body& b, Contact& contact) {
+    bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
+    && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
+
+    return result;
+}
+
 void Collision::ResolvePenetration(Contact &contact) {
     Body *a = contact.a;
     Body *b = contact.b;

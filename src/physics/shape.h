@@ -43,6 +43,8 @@ struct PolygonShape : public Shape {
     ShapeType GetType() const override;
     std::shared_ptr<Shape> Copy() const override;
     float GetMomentOfInertia() const override;
+
+    float FindMinimumSeparation(const PolygonShape *other);
 };
 
 struct BoxShape : public PolygonShape {

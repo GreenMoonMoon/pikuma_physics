@@ -4,6 +4,7 @@
 
 #include "shape.h"
 #include <iostream>
+#include <glm/geometric.hpp>
 
 CircleShape:: CircleShape(const float radius) : Radius(radius) {}
 
@@ -39,6 +40,25 @@ std::shared_ptr<Shape> PolygonShape::Copy() const {
 
 float PolygonShape::GetMomentOfInertia() const {
     return 0;
+}
+
+float PolygonShape::FindMinimumSeparation(const PolygonShape *other) {
+    float separation = std::numeric_limits<float>::lowest();
+
+    // Loop all vertices
+    for(glm::vec2 va: this->Vertices) {
+        float minimum_separation = std::numeric_limits<float>::max();
+        // glm::vec2 normal = glm::cross()
+        glm::vec2 normal;
+
+        for(glm::vec2 vb: other->Vertices) {
+            minimum_separation = glm::min(minimum_separation, glm::dot(vb-va, normal));
+        }
+
+        if (minimum_separation > separation) separation = minimum_separation;
+    }
+
+    return separation;
 }
 
 BoxShape::BoxShape(float width, float height) : width(width), height(height), PolygonShape(std::vector<glm::vec2>()){

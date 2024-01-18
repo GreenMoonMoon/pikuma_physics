@@ -5,6 +5,7 @@
 #include "physics/physic_constants.h"
 #include "physics/forces.h"
 #include "physics/collisions.h"
+
 #include "graphics/draw.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -14,8 +15,8 @@ static Rectangle liquid;
 static float springRestDistance;
 static float springStiffness;
 
-const int screenWidth = 840;
-const int screenHeight = 680;
+constexpr int screenWidth = 840;
+constexpr int screenHeight = 680;
 
 static struct {
     bool IsActive;
@@ -47,17 +48,15 @@ public:
         CloseWindow();
     }
 
-    inline bool IsRunning() const {
+    bool IsRunning() const {
         return running and not WindowShouldClose();
     }
 
     void Setup() {
-        bodies.emplace_back(CircleShape(25.0f), screenWidth / 2 + 5, 100, 1.0f, 0.0f);
-        bodies.emplace_back(CircleShape(50.0f), screenWidth / 2, 300, 0.0f, 0.0f);
-        bodies.emplace_back(CircleShape(45.0f), screenWidth / 2 - 75, 200, 3.0f, 0.0f);
-        bodies.emplace_back(CircleShape(35.0f), screenWidth / 2 + 50, 200, 1.5f, 0.0f);
-//        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
-//        bodies.emplace_back(BoxShape(100.0f, 100.0f), 300, screenHeight / 2, 1.0f, 0.0f);
+        bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
+        bodies.emplace_back(BoxShape(100.0f, 100.0f), 400, screenHeight / 2 + 120, 1.0f, 0.0f);
+        bodies[0].AngularVelocity = 0.4f;
+        bodies[1].AngularVelocity = -0.25f;
 
         push = glm::vec2(0.0f);
 
@@ -66,32 +65,32 @@ public:
     }
 
     void Input() {
-        push = glm::vec2(0.0f);
-        if (IsKeyDown(KEY_S)) push.y += 15.0f * PIXEL_PER_METER;
-        if (IsKeyDown(KEY_W)) push.y -= 15.0f * PIXEL_PER_METER;
-        if (IsKeyDown(KEY_D)) push.x += 15.0f * PIXEL_PER_METER;
-        if (IsKeyDown(KEY_A)) push.x -= 15.0f * PIXEL_PER_METER;
+//        push = glm::vec2(0.0f);
+//        if (IsKeyDown(KEY_S)) push.y += 15.0f * PIXEL_PER_METER;
+//        if (IsKeyDown(KEY_W)) push.y -= 15.0f * PIXEL_PER_METER;
+//        if (IsKeyDown(KEY_D)) push.x += 15.0f * PIXEL_PER_METER;
+//        if (IsKeyDown(KEY_A)) push.x -= 15.0f * PIXEL_PER_METER;
+//
+//        if (IsKeyDown(KEY_UP)) springRestDistance += 5.0f;
+//        if (IsKeyDown(KEY_DOWN)) springRestDistance -= 5.0f;
+//        if (IsKeyDown(KEY_RIGHT)) springStiffness += 2.0f;
+//        if (IsKeyDown(KEY_LEFT)) springStiffness -= 2.0f;
 
-        if (IsKeyDown(KEY_UP)) springRestDistance += 5.0f;
-        if (IsKeyDown(KEY_DOWN)) springRestDistance -= 5.0f;
-        if (IsKeyDown(KEY_RIGHT)) springStiffness += 2.0f;
-        if (IsKeyDown(KEY_LEFT)) springStiffness -= 2.0f;
-
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            spawnShape.Position = GetMousePosition();
-            spawnShape.Mass = 0.0f;
-            spawnShape.Radius = 0.0f;
-            spawnShape.IsActive = true;
-        }
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) and spawnShape.IsActive){
-            auto offset = GetMousePosition();
-            spawnShape.Radius = Vector2Distance(offset, spawnShape.Position);
-            spawnShape.Mass = abs(spawnShape.Position.y - offset.y);
-        }
-        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) and spawnShape.IsActive) {
-            bodies.emplace_back(CircleShape(spawnShape.Radius), spawnShape.Position.x, spawnShape.Position.y, spawnShape.Mass, 0.0f);
-            spawnShape.IsActive = false;
-        }
+//        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+//            spawnShape.Position = GetMousePosition();
+//            spawnShape.Mass = 0.0f;
+//            spawnShape.Radius = 0.0f;
+//            spawnShape.IsActive = true;
+//        }
+//        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) and spawnShape.IsActive){
+//            auto offset = GetMousePosition();
+//            spawnShape.Radius = Vector2Distance(offset, spawnShape.Position);
+//            spawnShape.Mass = abs(spawnShape.Position.y - offset.y);
+//        }
+//        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) and spawnShape.IsActive) {
+//            bodies.emplace_back(CircleShape(spawnShape.Radius), spawnShape.Position.x, spawnShape.Position.y, spawnShape.Mass, 0.0f);
+//            spawnShape.IsActive = false;
+//        }
 
         PollInputEvents();
     }
@@ -102,7 +101,7 @@ public:
 //            // FRICTION
 //            glm::vec2 frictionForce = Force::GenerateFrictionForce(body, 1.0f * PIXEL_PER_METER);
 //            body.AddForce(frictionForce);
-
+//
 //            // PUSH
 //            body.AddForce(push);
 
@@ -151,6 +150,12 @@ public:
                     body.Position.y = radius;
                     body.Velocity.y *= -body.restitution;
                 }
+            }
+            else if (body.shape->GetType() == BOX) {
+                BoxShape *shape = dynamic_cast<BoxShape *>(body.shape.get());
+                float widthBoundary = screenWidth - shape->width * 0.5f;
+                float heightBoundary = screenHeight - shape->height * 0.5f;
+//                if (body.Position.x < )
             }
         }
 
@@ -202,6 +207,8 @@ public:
             DrawLine(contact.start[0], contact.start[1], contact.end[0], contact.end[1], ORANGE);
         }
 
+        // UI
+        // Draw spawn shape
         if (spawnShape.IsActive){
             DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
             DrawText(TextFormat("MASS: %0g", spawnShape.Mass),

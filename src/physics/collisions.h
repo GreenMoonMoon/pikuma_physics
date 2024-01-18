@@ -27,9 +27,12 @@ namespace Collision {
 
     bool IsCollidingCircleCircle(Body &a, Body &b, Contact &contact);
 
+    bool IsCollidingPolygonPolygon(Body &a, Body &b, Contact &contact);
+
     void ResolvePenetration(Contact &contact);
 
     void ResolveCollision(Contact &contact);
+
 }
 
 #endif //PIKUMA_PHYSICS_COLLISIONS_H
