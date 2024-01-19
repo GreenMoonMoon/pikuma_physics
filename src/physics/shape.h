@@ -48,7 +48,7 @@ struct PolygonShape : public Shape {
     void UpdateWorldVertices(glm::vec2 position, float rotation);
 
     glm::vec2 EdgeAt(int index) const ;
-    float FindMinimumSeparation(const PolygonShape &other);
+    float FindMinimumSeparation(const PolygonShape &other) const;
 };
 
 struct BoxShape : public PolygonShape {

@@ -67,8 +67,8 @@ bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b
     // bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
     // && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
 
-    auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
-    auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
+    const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
+    const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
     if (shapeA->FindMinimumSeparation(*shapeB) >= 0) return false;
     if (shapeB->FindMinimumSeparation(*shapeA) >= 0) return false;
 

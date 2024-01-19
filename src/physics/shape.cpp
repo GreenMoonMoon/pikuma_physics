@@ -66,7 +66,7 @@ glm::vec2 PolygonShape::EdgeAt(const int index) const {
     return WorldVertices[next_vertex] - WorldVertices[index];
 }
 
-float PolygonShape::FindMinimumSeparation(const PolygonShape &other) {
+float PolygonShape::FindMinimumSeparation(const PolygonShape &other) const {
     float separation = std::numeric_limits<float>::lowest();
 
     // Loop all vertices from a
