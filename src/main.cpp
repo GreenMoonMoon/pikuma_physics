@@ -8,7 +8,6 @@
 
 #include "graphics/draw.h"
 #include "raylib.h"
-#include "raymath.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -170,6 +169,10 @@ public:
         // TODO: move to its own method
         for (auto &body: bodies) {
             body.IsColliding = false;
+
+            if(body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
+                dynamic_cast<PolygonShape*>(body.shape.get())->UpdateWorldVertices(body.Position, body.Rotation);
+            }
         }
         contacts.clear();
 

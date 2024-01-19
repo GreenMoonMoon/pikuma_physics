@@ -25,9 +25,9 @@ struct Contact {
 namespace Collision {
     bool IsColliding(Body &a, Body &b, Contact &contact);
 
-    bool IsCollidingCircleCircle(Body &a, Body &b, Contact &contact);
+    bool IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &contact);
 
-    bool IsCollidingPolygonPolygon(Body &a, Body &b, Contact &contact);
+    bool IsCollidingPolygonPolygon(const Body &body_a, const Body &body_b, Contact &contact);
 
     void ResolvePenetration(Contact &contact);
 

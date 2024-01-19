@@ -37,13 +37,17 @@ struct CircleShape: public Shape {
 
 struct PolygonShape : public Shape {
     std::vector<glm::vec2> Vertices;
+    std::vector<glm::vec2> WorldVertices;
 
-    PolygonShape(const std::vector<glm::vec2> vertices);
+    PolygonShape(const std::vector<glm::vec2>& vertices);
     virtual ~PolygonShape();
     ShapeType GetType() const override;
     std::shared_ptr<Shape> Copy() const override;
     float GetMomentOfInertia() const override;
 
+    void UpdateWorldVertices(glm::vec2 position, float rotation);
+
+    glm::vec2 EdgeAt(int index) const ;
     float FindMinimumSeparation(const PolygonShape *other);
 };
 

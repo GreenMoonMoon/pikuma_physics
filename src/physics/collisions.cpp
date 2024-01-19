@@ -23,42 +23,64 @@ bool Collision::IsColliding(Body &a, Body &b, Contact &contact) {
                     break;
             }
             break;
-        case POLYGON:
-            break;
         case BOX:
+        case POLYGON:
+            switch (shapeB->GetType()) {
+                case CIRCLE:
+                    break;
+                case BOX:
+                case POLYGON:
+                    return IsCollidingPolygonPolygon(a, b, contact);
+                    break;
+            }
             break;
     }
 
     return false;
 }
 
-bool Collision::IsCollidingCircleCircle(Body &a, Body &b, Contact &contact) {
-    auto *shapeA = dynamic_cast<CircleShape*>(a.shape.get());
-    auto *shapeB = dynamic_cast<CircleShape*>(b.shape.get());
-    const vec2 direction = b.Position - a.Position;
+bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &contact) {
+    const auto* shapeA = dynamic_cast<CircleShape *>(body_a.shape.get());
+    const auto* shapeB = dynamic_cast<CircleShape *>(body_b.shape.get());
+
+    const vec2 direction = body_b.Position - body_a.Position;
     const float depth = glm::length(direction);
 
-    const float radiusSum = dynamic_cast<CircleShape *>(shapeA)->Radius + dynamic_cast<CircleShape *>(shapeB)->Radius;
-
-    if (depth > radiusSum) {
+    if (const float radiusSum = shapeA->Radius + shapeB->Radius; depth > radiusSum) {
         return false;
     }
 
-    contact.a = &a;
-    contact.b = &b;
+    contact.a = &body_a;
+    contact.b = &body_b;
 
     contact.normal = glm::normalize(direction);
-    contact.start = b.Position - contact.normal * shapeB->Radius;
-    contact.end = a.Position + contact.normal * shapeA->Radius;
+    contact.start = body_b.Position - contact.normal * shapeB->Radius;
+    contact.end = body_a.Position + contact.normal * shapeA->Radius;
 
     contact.depth = glm::length(contact.end - contact.start);
 
     return true;
 }
 
-bool Collision::IsCollidingPolygonPolygon(Body& a, Body& b, Contact& contact) {
-    bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
-    && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
+float find_min_sep(const PolygonShape &a, const PolygonShape &b) {
+    float separation = std::numeric_limits<float>::lowest();
+
+    // Loop all vertices from a
+    for (auto vertex: a.WorldVertices) {
+        glm::vec2 normal;
+    }
+
+    return 0.0f;
+}
+
+bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b, Contact& contact) {
+    // bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
+    // && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
+
+    const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
+    const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
+    const bool result = find_min_sep(*shapeA, *shapeB) <= 0
+                        && find_min_sep(*shapeB, *shapeA) <= 0;
 
     return result;
 }

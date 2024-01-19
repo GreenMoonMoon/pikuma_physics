@@ -5,6 +5,10 @@
 #include "shape.h"
 #include <iostream>
 #include <glm/geometric.hpp>
+#include <glm/mat3x3.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
+#include <glm/vec2.hpp>
 
 CircleShape:: CircleShape(const float radius) : Radius(radius) {}
 
@@ -24,10 +28,12 @@ float CircleShape::GetMomentOfInertia() const {
     return 0.5f * (Radius * Radius);
 };
 
-PolygonShape::PolygonShape(const std::vector<glm::vec2> vertices) : Vertices(vertices) {}
+PolygonShape::PolygonShape(const std::vector<glm::vec2>& vertices) : Vertices(vertices), WorldVertices(vertices) {
+    std::cout << "PolygonShape constructor called." << std::endl;
+}
 
 PolygonShape::~PolygonShape() {
-    std::cout << "Polygon destructor called." << std::endl;
+    std::cout << "PolygonShape destructor called." << std::endl;
 }
 
 ShapeType PolygonShape::GetType() const {
@@ -40,6 +46,23 @@ std::shared_ptr<Shape> PolygonShape::Copy() const {
 
 float PolygonShape::GetMomentOfInertia() const {
     return 0;
+}
+
+void PolygonShape::UpdateWorldVertices(const glm::vec2 position, const float rotation) {
+    for(int i = 0; i < Vertices.size(); i++){
+        glm::mat3x3 transform;
+        glm::translate(transform, position);
+        glm::rotate(transform, rotation);
+        const glm::vec3 vert = glm::vec3(Vertices[i].x, Vertices[i].y, 1.0f) * transform;
+        WorldVertices[i].x = vert.x;
+        WorldVertices[i].x = vert.y;
+    }
+}
+
+glm::vec2 PolygonShape::EdgeAt(const int index) const {
+    int current_vertex = index;
+    int next_vertex = (index + 1) % WorldVertices.size();
+    return WorldVertices[next_vertex] - WorldVertices[index];
 }
 
 float PolygonShape::FindMinimumSeparation(const PolygonShape *other) {
@@ -61,11 +84,13 @@ float PolygonShape::FindMinimumSeparation(const PolygonShape *other) {
     return separation;
 }
 
-BoxShape::BoxShape(float width, float height) : width(width), height(height), PolygonShape(std::vector<glm::vec2>()){
+BoxShape::BoxShape(const float width, const float height) : PolygonShape(std::vector<glm::vec2>()), width(width), height(height){
     Vertices.emplace_back(-0.5f * width, -0.5f * height);
     Vertices.emplace_back(0.5f * width, -0.5f * height);
     Vertices.emplace_back(0.5f * width, 0.5f * height);
     Vertices.emplace_back(-0.5f * width, 0.5f * height);
+
+    WorldVertices = std::vector<glm::vec2>(Vertices);
 }
 
 BoxShape::~BoxShape() {
