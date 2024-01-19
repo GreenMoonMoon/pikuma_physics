@@ -5,6 +5,7 @@
 #include "collisions.h"
 #include "glm/vec2.hpp"
 #include "glm/geometric.hpp"
+#include "glm/gtx/perpendicular.hpp"
 
 using glm::vec2;
 
@@ -66,11 +67,20 @@ float find_min_sep(const PolygonShape &a, const PolygonShape &b) {
     float separation = std::numeric_limits<float>::lowest();
 
     // Loop all vertices from a
-    for (auto vertex: a.WorldVertices) {
-        glm::vec2 normal;
+    for (int i = 0; i < a.WorldVertices.size(); i++) {
+        glm::vec2 va = a.WorldVertices[i];
+        glm::vec2 edge = a.EdgeAt(i);
+        glm::vec2 normal(edge.y, -edge.x);
+
+        float min_sep = std::numeric_limits<float>::max();
+        for(auto vb : b.WorldVertices) {
+            min_sep = glm::min(min_sep, glm::dot((vb - va), normal));
+        }
+
+        separation = glm::max(separation, min_sep);
     }
 
-    return 0.0f;
+    return separation;
 }
 
 bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b, Contact& contact) {
@@ -79,10 +89,10 @@ bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b
 
     const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
     const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
-    const bool result = find_min_sep(*shapeA, *shapeB) <= 0
-                        && find_min_sep(*shapeB, *shapeA) <= 0;
+    if (find_min_sep(*shapeA, *shapeB) >= 0) return false;
+    if (find_min_sep(*shapeB, *shapeA) >= 0) return false;
 
-    return result;
+    return true;
 }
 
 void Collision::ResolvePenetration(Contact &contact) {

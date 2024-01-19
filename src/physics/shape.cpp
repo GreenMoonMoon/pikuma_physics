@@ -4,11 +4,9 @@
 
 #include "shape.h"
 #include <iostream>
-#include <glm/geometric.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/matrix_transform_2d.hpp>
-#include <glm/vec2.hpp>
+#include "glm/geometric.hpp"
+#include "glm/gtx/transform.hpp"
+#include "glm/vec2.hpp"
 
 CircleShape:: CircleShape(const float radius) : Radius(radius) {}
 
@@ -50,12 +48,15 @@ float PolygonShape::GetMomentOfInertia() const {
 
 void PolygonShape::UpdateWorldVertices(const glm::vec2 position, const float rotation) {
     for(int i = 0; i < Vertices.size(); i++){
-        glm::mat3x3 transform;
-        glm::translate(transform, position);
-        glm::rotate(transform, rotation);
-        const glm::vec3 vert = glm::vec3(Vertices[i].x, Vertices[i].y, 1.0f) * transform;
-        WorldVertices[i].x = vert.x;
-        WorldVertices[i].x = vert.y;
+        // auto transform = glm::identity<glm::mat3x3>();
+        // transform = glm::rotate(transform, rotation);
+        // transform = glm::translate(transform, position);
+        // const glm::vec3 vert = glm::vec3(Vertices[i].x, Vertices[i].y, 1.0f) * transform;
+        // WorldVertices[i].x = vert.x;
+        // WorldVertices[i].x = vert.y;
+
+        WorldVertices[i].x = Vertices[i].x * glm::cos(rotation) + Vertices[i].y * glm::sin(rotation) + position.x;
+        WorldVertices[i].y = Vertices[i].x * -glm::sin(rotation) + Vertices[i].y * glm::cos(rotation) + position.y;
     }
 }
 
