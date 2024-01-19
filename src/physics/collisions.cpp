@@ -63,34 +63,14 @@ bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &con
     return true;
 }
 
-float find_min_sep(const PolygonShape &a, const PolygonShape &b) {
-    float separation = std::numeric_limits<float>::lowest();
-
-    // Loop all vertices from a
-    for (int i = 0; i < a.WorldVertices.size(); i++) {
-        glm::vec2 va = a.WorldVertices[i];
-        glm::vec2 edge = a.EdgeAt(i);
-        glm::vec2 normal(edge.y, -edge.x);
-
-        float min_sep = std::numeric_limits<float>::max();
-        for(auto vb : b.WorldVertices) {
-            min_sep = glm::min(min_sep, glm::dot((vb - va), normal));
-        }
-
-        separation = glm::max(separation, min_sep);
-    }
-
-    return separation;
-}
-
 bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b, Contact& contact) {
     // bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
     // && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
 
-    const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
-    const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
-    if (find_min_sep(*shapeA, *shapeB) >= 0) return false;
-    if (find_min_sep(*shapeB, *shapeA) >= 0) return false;
+    auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
+    auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
+    if (shapeA->FindMinimumSeparation(*shapeB) >= 0) return false;
+    if (shapeB->FindMinimumSeparation(*shapeA) >= 0) return false;
 
     return true;
 }
