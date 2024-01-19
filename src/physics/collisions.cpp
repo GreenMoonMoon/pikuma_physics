@@ -63,14 +63,36 @@ bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &con
     return true;
 }
 
-bool Collision::IsCollidingPolygonPolygon(const Body& body_a, const Body& body_b, Contact& contact) {
+bool Collision::IsCollidingPolygonPolygon(Body& body_a, Body& body_b, Contact& contact) {
     // bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
     // && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
 
     const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
     const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
-    if (shapeA->FindMinimumSeparation(*shapeB) >= 0) return false;
-    if (shapeB->FindMinimumSeparation(*shapeA) >= 0) return false;
+
+    glm::vec2 axis_a;
+    glm::vec2 axis_b;
+    glm::vec2 point_a;
+    glm::vec2 point_b;
+    const float separation_ab = shapeA->FindMinimumSeparation(*shapeB, axis_a, point_a);
+    if (separation_ab >= 0) return false;
+
+    const float separation_ba = shapeB->FindMinimumSeparation(*shapeA, axis_b, point_b);
+    if (separation_ba >= 0) return false;
+
+    // Populate contact information
+    contact.a = &body_a;
+    contact.b = &body_b;
+    if(separation_ab > separation_ba) {
+        contact.start = point_a;
+        contact.normal = glm::normalize(glm::vec2(axis_a.y, -axis_a.x));
+        contact.depth = -separation_ab;
+    } else {
+        contact.start = point_b;
+        contact.normal = glm::normalize(glm::vec2(axis_b.y, -axis_b.x));
+        contact.depth = -separation_ba;
+    }
+    contact.end = contact.start + contact.normal * contact.depth;
 
     return true;
 }

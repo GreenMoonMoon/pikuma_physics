@@ -27,7 +27,7 @@ namespace Collision {
 
     bool IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &contact);
 
-    bool IsCollidingPolygonPolygon(const Body &body_a, const Body &body_b, Contact &contact);
+    bool IsCollidingPolygonPolygon(Body &body_a, Body &body_b, Contact &contact);
 
     void ResolvePenetration(Contact &contact);
 

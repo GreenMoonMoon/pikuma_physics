@@ -56,8 +56,8 @@ public:
     void Setup() {
         bodies.emplace_back(BoxShape(100.0f, 100.0f), screenWidth / 2, screenHeight / 2, 1.0f, 0.0f);
         bodies.emplace_back(BoxShape(100.0f, 100.0f), 400,  screenHeight / 2, 1.0f, 0.0f);
-        bodies[0].AngularVelocity = 0.4f;
-        bodies[1].AngularVelocity = -0.25f;
+        // bodies[0].AngularVelocity = 0.4f;
+        // bodies[1].AngularVelocity = -0.25f;
 
         push = glm::vec2(0.0f);
 
@@ -184,6 +184,8 @@ public:
 
                     // TODO: reenable
                     // Collision::ResolveCollision(contact);
+
+                    contacts.push_back(contact);
                 }
             }
         }
