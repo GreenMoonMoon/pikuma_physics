@@ -74,6 +74,7 @@ float PolygonShape::FindMinimumSeparation(const PolygonShape &other, glm::vec2 &
         glm::vec2 va = WorldVertices[i];
         const glm::vec2 edge = EdgeAt(i);
         glm::vec2 normal(edge.y, -edge.x);
+        normal = glm::normalize(normal);
 
         float min_sep = std::numeric_limits<float>::max();
         for (auto vb: other.WorldVertices) {
