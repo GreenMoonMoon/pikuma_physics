@@ -69,16 +69,16 @@ glm::vec2 PolygonShape::EdgeAt(const int index) const {
 float PolygonShape::FindMinimumSeparation(const PolygonShape &other, glm::vec2 &axis, glm::vec2 &point) const {
     float separation = std::numeric_limits<float>::lowest();
 
-    // Loop all vertices from a
     for (int i = 0; i < WorldVertices.size(); i++) {
         glm::vec2 va = WorldVertices[i];
+
         const glm::vec2 edge = EdgeAt(i);
         glm::vec2 normal(edge.y, -edge.x);
         normal = glm::normalize(normal);
 
         float min_sep = std::numeric_limits<float>::max();
         for (auto vb: other.WorldVertices) {
-            if (const float curr_sep = glm::dot((vb - va), normal); curr_sep < min_sep) {
+            if (const float curr_sep = glm::dot(normal, (vb - va)); curr_sep < min_sep) {
                 point = vb;
                 min_sep = curr_sep;
             }
@@ -88,7 +88,6 @@ float PolygonShape::FindMinimumSeparation(const PolygonShape &other, glm::vec2 &
             separation = min_sep;
             axis = edge;
         }
-        separation = glm::max(separation, min_sep);
     }
 
     return separation;

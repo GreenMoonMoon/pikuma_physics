@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <glm/detail/func_geometric.inl>
 
 #include "physics/body.h"
 #include "physics/physic_constants.h"
@@ -58,6 +59,8 @@ public:
         bodies.emplace_back(BoxShape(100.0f, 100.0f), 400,  screenHeight / 2, 1.0f, 0.0f);
         // bodies[0].AngularVelocity = 0.4f;
         // bodies[1].AngularVelocity = -0.25f;
+        bodies[0].Rotation = 1.0f;
+        bodies[1].Rotation = 0.5f;
 
         push = glm::vec2(0.0f);
 
@@ -217,10 +220,20 @@ public:
             }
         }
 
+        // Debug draw contacts
         for (auto contact: contacts) {
             DrawCircle(contact.start[0], contact.start[1], 2, ORANGE);
             DrawCircle(contact.end[0], contact.end[1], 2, ORANGE);
-            DrawLine(contact.start[0], contact.start[1], contact.end[0], contact.end[1], ORANGE);
+            const glm::vec2 line_end = contact.start + contact.normal * 10.0f;
+            // draw contact normal
+            DrawLine(contact.start[0],
+                     contact.start[1],
+                     line_end.x,
+                     line_end.y,
+                     ORANGE);
+
+            float len = glm::length(contact.normal);
+            DrawText(TextFormat("Normal length: %f", len), 12, 28, 20, WHITE);
         }
 
         // UI

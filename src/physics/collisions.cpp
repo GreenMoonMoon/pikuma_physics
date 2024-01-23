@@ -87,12 +87,13 @@ bool Collision::IsCollidingPolygonPolygon(Body& body_a, Body& body_b, Contact& c
         contact.start = point_a;
         contact.normal = glm::normalize(glm::vec2(axis_a.y, -axis_a.x));
         contact.depth = -separation_ab;
+        contact.end = contact.start + contact.normal * contact.depth;
     } else {
-        contact.start = point_b;
-        contact.normal = glm::normalize(glm::vec2(axis_b.y, -axis_b.x));
+        contact.end = point_b;
+        contact.normal = -glm::normalize(glm::vec2(axis_b.y, -axis_b.x));
         contact.depth = -separation_ba;
+        contact.start = contact.end - contact.normal * contact.depth;
     }
-    contact.end = contact.start + contact.normal * contact.depth;
 
     return true;
 }
