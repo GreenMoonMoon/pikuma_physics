@@ -47,7 +47,7 @@ bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &con
     const vec2 direction = body_b.Position - body_a.Position;
     const float depth = glm::length(direction);
 
-    if (const float radiusSum = shapeA->Radius + shapeB->Radius; depth > radiusSum) {
+    if (const float radiusSum = shapeA->radius + shapeB->radius; depth > radiusSum) {
         return false;
     }
 
@@ -55,8 +55,8 @@ bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &con
     contact.b = &body_b;
 
     contact.normal = glm::normalize(direction);
-    contact.start = body_b.Position - contact.normal * shapeB->Radius;
-    contact.end = body_a.Position + contact.normal * shapeA->Radius;
+    contact.start = body_b.Position - contact.normal * shapeB->radius;
+    contact.end = body_a.Position + contact.normal * shapeA->radius;
 
     contact.depth = glm::length(contact.end - contact.start);
 

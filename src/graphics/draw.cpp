@@ -19,7 +19,7 @@ void Draw::Cleanup() {
 }
 
 void Draw::ShadedCircle(const Body &body) {
-    float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
+    float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
     if (body.IsColliding) {
         DrawCircleGradient(body.Position.x, body.Position.y, radius, RED, DARKBROWN);
     }
@@ -44,7 +44,7 @@ void Draw::ShadedBox(const Body& body) {
 }
 
 void Draw::Circle(const Body &body) {
-    float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
+    float radius = dynamic_cast<CircleShape *>(body.shape.get())->radius;
     float a = glm::mod(body.Rotation * RAD2DEG, 360.0f);
 
     Color col = body.IsColliding ? RED : WHITE;
