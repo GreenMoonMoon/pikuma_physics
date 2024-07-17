@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(pikuma_physics)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_C_STANDARD 23)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -24,11 +24,8 @@ endif ()
 include_directories(src)
 
 add_executable(pikuma_physics src/main.c
-        src/physics/forces.cpp
-        src/physics/body.cpp
-        src/physics/shape.c
-        src/physics/collisions.cpp
-        src/graphics/raylib_extension.cpp
-        src/graphics/draw.cpp)
+        src/physics/particles.c
+        src/scenes/particles_scene.c
+        src/graphics/raylib_utils.c
+)
 target_link_libraries(pikuma_physics PRIVATE raylib)
-target_include_directories(pikuma_physics PRIVATE src)
