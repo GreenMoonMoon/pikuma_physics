@@ -13,6 +13,7 @@
 #include "external/stb_ds.h"
 
 #define PARTICLE_COUNT 100
+#define PIXEL_PER_UNIT 25
 
 static Particle *particles = NULL;
 
@@ -25,7 +26,37 @@ void particles_scene_init(void) {
 }
 
 void particles_scene_update(float delta_time) {
+    vec2 external_forces = {0.0f, 10.0f};
 
+
+    for (int j = 0; j < arrlen(particles); ++j) {
+        // integrate forces
+        vec2 acceleration = {0};
+        glm_vec2_add(acceleration, external_forces, acceleration);
+        glm_vec2_scale(acceleration, delta_time, acceleration);
+        glm_vec2_add(particles[j].velocity, acceleration, particles[j].velocity);
+
+        // integrate velocity
+        vec2 delta_velocity;
+        glm_vec2_scale(particles[j].velocity, delta_time * PIXEL_PER_UNIT, delta_velocity);
+        glm_vec2_add(particles[j].position, delta_velocity, particles[j].position);
+
+        // check screen bounds
+        if(particles[j].position[0] < particles[j].radius) {
+            particles[j].position[0] = particles[j].radius;
+            particles[j].velocity[0] = -particles[j].velocity[0];
+        } else if (particles[j].position[0] > 1024 - particles[j].radius){
+            particles[j].position[0] = 1024 - particles[j].radius;
+            particles[j].velocity[0] = -particles[j].velocity[0];
+        }
+        if(particles[j].position[1] < particles[j].radius) {
+            particles[j].position[1] = particles[j].radius;
+            particles[j].velocity[1] = -particles[j].velocity[1];
+        } else if (particles[j].position[1] > 720 - particles[j].radius){
+            particles[j].position[1] = 720 - particles[j].radius;
+            particles[j].velocity[1] = -particles[j].velocity[1];
+        }
+    }
 }
 
 void particles_scene_render() {
