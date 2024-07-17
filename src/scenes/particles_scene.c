@@ -17,22 +17,31 @@
 
 static Particle *particles = NULL;
 
+void add_push(vec2 wind, float inverse_mass, vec2 out_forces) {
+    glm_vec2_add(out_forces, (vec2){wind[0] * inverse_mass, wind[1] * inverse_mass}, out_forces);
+}
+
 void particles_scene_init(void) {
     random_seed(time(NULL) % 41328749032178);
 
     for (int j = 0; j < PARTICLE_COUNT; ++j) {
-        arrput(particles, particle((vec2){random_u32() % 974 + 50, random_u32() % 670 + 50}, 1.0f, 1.0f));
+        arrput(particles, particle(
+            (vec2) {random_u32() % 974 + 50, random_u32() % 670 + 50},
+            1.0f,
+            random_float_range(1.0f, 4.0f)
+        ));
     }
 }
 
 void particles_scene_update(float delta_time) {
-    vec2 external_forces = {0.0f, 10.0f};
-
-
     for (int j = 0; j < arrlen(particles); ++j) {
+        vec2 forces = {0.0f, 10.0f}; // initialize with gravity;
+
+        add_push((vec2){10.0f, 0.0f}, particles[j].inverse_mass, forces);
+
         // integrate forces
         vec2 acceleration = {0};
-        glm_vec2_add(acceleration, external_forces, acceleration);
+        glm_vec2_add(acceleration, forces, acceleration);
         glm_vec2_scale(acceleration, delta_time, acceleration);
         glm_vec2_add(particles[j].velocity, acceleration, particles[j].velocity);
 
