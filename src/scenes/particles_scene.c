@@ -12,23 +12,40 @@
 #define STB_DS_IMPLEMENTATION
 #include "external/stb_ds.h"
 
+#include "cglm/cglm.h"
+
 #define PARTICLE_COUNT 100
 #define PIXEL_PER_UNIT 25
 
 static Particle *particles = NULL;
 
 void add_push(vec2 wind, float inverse_mass, vec2 out_forces) {
+
     glm_vec2_add(out_forces, (vec2){wind[0] * inverse_mass, wind[1] * inverse_mass}, out_forces);
+}
+
+void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
+    vec2 drag = {0};
+    vec2 direction;
+    float velocity_magnitude_squared = glm_vec2_norm2(velocity);
+    if(velocity_magnitude_squared > 0.0f) {
+        glm_vec2_normalize_to(velocity, direction);
+        glm_vec2_negate(direction);
+        float magnitude = coefficient * velocity_magnitude_squared;
+        glm_vec2_scale(direction, magnitude, drag);
+    }
+    glm_vec2_add(forces, drag, forces);
 }
 
 void particles_scene_init(void) {
     random_seed(time(NULL) % 41328749032178);
 
     for (int j = 0; j < PARTICLE_COUNT; ++j) {
+        float mass = random_float_range(1.0f, 4.0f);
         arrput(particles, particle(
             (vec2) {random_u32() % 974 + 50, random_u32() % 670 + 50},
-            1.0f,
-            random_float_range(1.0f, 4.0f)
+            mass * 4.0f,
+            mass
         ));
     }
 }
@@ -38,6 +55,8 @@ void particles_scene_update(float delta_time) {
         vec2 forces = {0.0f, 10.0f}; // initialize with gravity;
 
         add_push((vec2){10.0f, 0.0f}, particles[j].inverse_mass, forces);
+
+        apply_drag(particles[j].velocity, 0.003f, forces);
 
         // integrate forces
         vec2 acceleration = {0};
@@ -70,7 +89,7 @@ void particles_scene_update(float delta_time) {
 
 void particles_scene_render() {
     for (int j = 0; j < arrlen(particles); ++j) {
-        drawParticle(particles[j].position, 10, (ivec4){255,255,255,255});
+        drawParticle(particles[j].position, particles[j].radius, (ivec4){255,255,255,255});
     }
 }
 

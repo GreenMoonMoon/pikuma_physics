@@ -8,7 +8,7 @@ static Scene scene;
 
 void setup(void) {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(1080, 720, "Pikuma Physics");
+    InitWindow(1024, 720, "Pikuma Physics");
     SetTargetFPS(60);
 
     scene.init();
