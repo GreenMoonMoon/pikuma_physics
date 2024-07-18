@@ -12,8 +12,9 @@ typedef struct Particle {
     vec2 velocity;
     float radius;
     float inverse_mass;
+    bool anchor;
 } Particle;
 
-Particle particle(const vec2 position, float radius, float mass);
+Particle particle(const vec2 position, float radius, float mass, bool anchor);
 
 #endif //PIKUMA_PHYSICS_PARTICLES_H
