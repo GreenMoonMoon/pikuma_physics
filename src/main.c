@@ -25,7 +25,7 @@ void render(void) {
 
     scene.render();
 
-    DrawFPS(10, 10);
+    DrawFPS(25, 25);
 
     EndDrawing();
 }
