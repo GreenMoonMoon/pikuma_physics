@@ -413,7 +413,15 @@ double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxV
     return value;
 }
 
+void GuiForceList(Rectangle bounds, GuiDMProperty* props, int count, int* focus, int* scrollIndex) {
+    // NOTE: Using ListView style for everything !!
+    GuiState state = GuiGetState();
+    int propFocused = (focus == NULL)? -1 : *focus;
+    int scroll = *scrollIndex > 0 ? 0 : *scrollIndex; // NOTE: scroll should always be negative or 0
 
+
+
+}
 
 void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* focus, int* scrollIndex) {
     #ifdef RAYGUI_SUPPORT_RICONS
