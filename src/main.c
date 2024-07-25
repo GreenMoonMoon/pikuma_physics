@@ -1,4 +1,4 @@
-#include "cglm/cglm.h"
+#define STB_DS_IMPLEMENTATION
 #include "external/stb_ds.h"
 
 #include "raylib.h"
@@ -26,7 +26,7 @@ void render(void) {
 
     scene.render();
 
-    DrawFPS(25, 25);
+    DrawFPS(GetScreenWidth() - 100, 25);
 
     EndDrawing();
 }

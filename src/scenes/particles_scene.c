@@ -9,7 +9,6 @@
 #define RANDOM_IMPLEMENTATION
 #include "utils/random.h"
 #include "graphics/raylib_utils.h"
-#define STB_DS_IMPLEMENTATION
 #include "external/stb_ds.h"
 
 #include "cglm/cglm.h"

@@ -9,13 +9,21 @@
 
 #include "graphics/raylib_utils.h"
 
+#include "external/raygui.h"
+
 const float TWO_PI = GLM_PIf * 2.0f;
 
 static Body *bodies = NULL;
 static vec2 *vertices;
 
-static void draw_ui(void){
+static bool show_ui = true;
+static bool enable_gravity = true;
 
+static void draw_ui(void){
+    if(GuiWindowBox((Rectangle){10, 10, 200, 100}, "Controls")) {
+        show_ui = false;
+    }
+    GuiCheckBox((Rectangle){15,38,25,25}, "Gravity", &enable_gravity);
 }
 
 void rigidbodies_scene_init(void) {
@@ -33,6 +41,10 @@ void rigidbodies_scene_init(void) {
 }
 
 void rigidbodies_scene_update(float delta_time) {
+    if(IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) {
+        show_ui = true;
+    }
+
     for (int i = 0; i < arrlen(bodies); ++i) {
         bodies[i].rotation = fmodf(bodies[i].rotation + delta_time, TWO_PI);
     }
@@ -55,7 +67,7 @@ void rigidbodies_scene_render(void) {
         }
     }
 
-    draw_ui();
+    if (show_ui) { draw_ui(); }
 }
 
 void rigidbodies_scene_cleanup(void) {
