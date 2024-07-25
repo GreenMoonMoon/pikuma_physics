@@ -114,3 +114,82 @@ void draw_shaded_box(const Rectangle rec, const float angle, ivec4 color_a, ivec
     rlEnd();
     rlPopMatrix();
 }
+
+
+void draw_box(vec2 position, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color) {
+    rlPushMatrix();
+
+    rlTranslatef(position[0], position[1], 0.0f);
+
+    rlBegin(RL_QUADS);
+    rlColor4ub(fill_color[0], fill_color[1], fill_color[2], fill_color[3]);
+
+    rlVertex2i(center[0] - extents[0], center[1] - extents[1]);
+    rlVertex2i(center[0] - extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] - extents[1]);
+
+    rlEnd();
+    rlBegin(RL_LINES);
+
+    rlColor4ub(line_color[0], line_color[1], line_color[2], line_color[3]);
+
+    rlVertex2i(center[0] - extents[0], center[1] - extents[1]);
+    rlVertex2i(center[0] - extents[0], center[1] + extents[1]);
+
+    rlVertex2i(center[0] - extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] + extents[1]);
+
+    rlVertex2i(center[0] + extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] - extents[1]);
+
+    rlVertex2i(center[0] + extents[0], center[1] - extents[1]);
+    rlVertex2i(center[0] - extents[0], center[1] - extents[1]);
+
+    rlEnd();
+    rlPopMatrix();
+}
+
+void draw_polygon(vec2 position, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color) {
+    rlPushMatrix();
+    rlTranslatef(position[0], position[1], 0.0f);
+
+    DrawTriangleFan((Vector2 *)vertices, vertex_count, (Color){fill_color[0], fill_color[1], fill_color[2], fill_color[3]});
+
+    rlBegin(RL_LINES);
+    rlColor4ub(line_color[0], line_color[1], line_color[2], line_color[3]);
+
+    for (int i = 0; i < vertex_count; ++i) {
+        uint32_t n = (i + 1) % vertex_count;
+        rlVertex2i(vertices[i][0], vertices[i][1]);
+        rlVertex2i(vertices[n][0], vertices[n][1]);
+    }
+
+    rlEnd();
+    rlPopMatrix();
+}
+
+void draw_circle(vec2 position, float radius, ivec4 line_color, ivec4 fill_color) {
+    DrawCircle(position[0], position[1], radius, (Color){fill_color[0], fill_color[1], fill_color[2], fill_color[3]});
+    DrawCircleLines(position[0], position[1], radius, (Color) {line_color[0], line_color[1], line_color[2], line_color[3]});
+}
+
+void draw_grid(int spacing) {
+    rlPushMatrix();
+
+    rlBegin(RL_LINES);
+    rlColor4f(0.9f, 0.9f, 0.9f, 1.0f);
+
+    for (int i = 0; (i * spacing) < GetScreenHeight(); ++i) {
+        rlVertex2i(0, i * spacing);
+        rlVertex2i(GetScreenWidth(), i * spacing);
+    }
+
+    for (int i = 0; (i * spacing) < GetScreenWidth(); ++i) {
+        rlVertex2i(i * spacing, 0);
+        rlVertex2i(i * spacing, GetScreenHeight());
+    }
+
+    rlEnd();
+    rlPopMatrix();
+}

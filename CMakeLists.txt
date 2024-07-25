@@ -25,7 +25,11 @@ include_directories(src)
 
 add_executable(pikuma_physics src/main.c
         src/physics/particles.c
+        src/physics/rigidbodies.c
+
         src/scenes/particles_scene.c
+        src/scenes/rigidbodies_scene.c
+
         src/graphics/raylib_utils.c
 )
 target_link_libraries(pikuma_physics PRIVATE raylib)

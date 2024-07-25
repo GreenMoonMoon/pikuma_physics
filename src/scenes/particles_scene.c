@@ -21,7 +21,6 @@
 #include "external/dm_property_list.h"
 
 #define PARTICLE_COUNT 100
-#define PIXEL_PER_UNIT 25
 
 static Particle *particles = NULL;
 
@@ -39,6 +38,7 @@ int focus = 0, scroll = 0; // Needed by GuiDMPropertyList()
 static float mouse_travel;
 static bool is_gravity_enabled = true;
 static bool is_drag_enabled = true;
+static float chain_spacing = 100.0f;
 
 // Forces
 typedef struct Force {
@@ -53,11 +53,11 @@ typedef struct Force {
 } Force;
 static Force *force_list = NULL;
 
-void add_push(vec2 wind, float inverse_mass, vec2 out_forces) {
+static void add_push(vec2 wind, float inverse_mass, vec2 out_forces) {
     glm_vec2_add(out_forces, (vec2){wind[0] * inverse_mass, wind[1] * inverse_mass}, out_forces);
 }
 
-void add_friction(vec2 velocity, float coefficient, vec2 normal, vec2 out_forces){
+static void add_friction(vec2 velocity, float coefficient, vec2 normal, vec2 out_forces){
     vec2 friction_force;
     vec2 direction;
     glm_vec2_normalize_to(velocity, direction);
@@ -66,7 +66,11 @@ void add_friction(vec2 velocity, float coefficient, vec2 normal, vec2 out_forces
     glm_vec2_add(out_forces, friction_force, out_forces);
 }
 
-void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
+static void add_spring() {
+
+}
+
+static void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
     vec2 drag = {0};
     vec2 direction;
     float velocity_magnitude_squared = glm_vec2_norm2(velocity);
@@ -79,26 +83,51 @@ void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
     glm_vec2_add(forces, drag, forces);
 }
 
+static void draw_ui(void){
+    if (GuiButton((Rectangle){25, 100, 125, 30 }, "#63#Clear") & !mode_is_edited) {
+                arrsetlen(particles, 0);
+    }
+    GuiCheckBox((Rectangle){30, 140, 25, 25}, "Gravity", &is_gravity_enabled);
+    GuiCheckBox((Rectangle){30, 170, 25, 25}, "Drag", &is_drag_enabled);
+
+    // List of properties
+    GuiForceList((Rectangle){25, (GetScreenHeight() - 280)/2, 180, 280}, force_list, arrlen(force_list), &focus, &scroll);
+
+    if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#145#Particle;#22#Draw Chain", &active_mode, mode_is_edited)) {
+        mode_is_edited = !mode_is_edited;
+    }
+
+    if(GuiSlider((Rectangle){25, 200, 125, 30}, "", "Spacing", &chain_spacing, 5.0f, 200.0f)){
+        printf("chain_spacing: %f\n", chain_spacing);
+    }
+
+    DrawText(TextFormat("%10d PARTICLES", arrlen(particles)), GetScreenWidth() - 250, 25, 20, DARKGREEN);
+}
+
 void particles_scene_init(void) {
     random_seed(time(NULL) % 41328749032178);
 
-    for (int j = 0; j < PARTICLE_COUNT; ++j) {
-        float mass = random_float_range(1.0f, 4.0f);
-        arrput(particles, particle(
-            (vec2) {random_u32() % 974 + 50, random_u32() % 670 + 50},
-            mass * 4.0f,
-            mass,
-            false
-        ));
-    }
+//    for (int j = 0; j < PARTICLE_COUNT; ++j) {
+//        float mass = random_float_range(1.0f, 4.0f);
+//        arrput(particles, particle(
+//            (vec2) {random_u32() % 974 + 50, random_u32() % 670 + 50},
+//            mass * 4.0f,
+//            mass,
+//            false
+//        ));
+//    }
 
-    Force force = {
-        .type = FORCE_TYPE_WIND,
-        .values = {10.0f, 0.0f},
-    };
-    arrput(force_list, force);
-    force.type = FORCE_TYPE_FRICTION;
-    arrput(force_list, force);
+//    // Add forces
+//    Force force = {
+//        .type = FORCE_TYPE_WIND,
+//        .values = {10.0f, 0.0f},
+//    };
+//    arrput(force_list, force);
+//    force.type = FORCE_TYPE_FRICTION;
+//    force.value = 0.0f;
+//    arrput(force_list, force);
+
+    active_mode = MODE_DRAW_CHAIN;
 }
 
 void process_inputs(void) {
@@ -125,8 +154,8 @@ void process_inputs(void) {
         }
     } else if(IsMouseButtonDown(0) && active_mode == MODE_DRAW_CHAIN){
         mouse_travel += glm_vec2_norm((vec2){GetMouseDelta().x, GetMouseDelta().y});
-        if (mouse_travel > 100.0f) {
-            mouse_travel -= 100.0f;
+        if (mouse_travel > chain_spacing) {
+            mouse_travel -= chain_spacing;
             arrput(particles, particle(
                 (vec2){GetMouseX(), GetMouseY()},
                 4.0f,
@@ -195,20 +224,7 @@ void particles_scene_render() {
     }
 
     // draw ui
-    if (GuiButton((Rectangle){25, 100, 125, 30 }, "#63#Clear") & !mode_is_edited) {
-        arrsetlen(particles, 0);
-    }
-    GuiCheckBox((Rectangle){30, 140, 25, 25}, "Gravity", &is_gravity_enabled);
-    GuiCheckBox((Rectangle){30, 170, 25, 25}, "Drag", &is_drag_enabled);
-
-    // List of properties
-    GuiForceList((Rectangle){25, (GetScreenHeight() - 280)/2, 180, 280}, force_list, arrlen(force_list), &focus, &scroll);
-
-    if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#145#Particle;#22#Draw Chain", &active_mode, mode_is_edited)) {
-        mode_is_edited = !mode_is_edited;
-    }
-
-    DrawText(TextFormat("%10d PARTICLES", arrlen(particles)), GetScreenWidth() - 250, 25, 20, DARKGREEN);
+    draw_ui();
 }
 
 void particles_scene_cleanup(void) {

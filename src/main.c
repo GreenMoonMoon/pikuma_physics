@@ -2,7 +2,8 @@
 #include "external/stb_ds.h"
 
 #include "raylib.h"
-#include "scenes/particles_scene.h"
+//#include "scenes/particles_scene.h"
+#include "scenes/rigidbodies_scene.h"
 
 static Scene scene;
 
@@ -38,7 +39,8 @@ void cleanup(void) {
 
 
 int main() {
-    particles_scene_load(&scene);
+//    particles_scene_load(&scene);
+    rigidbodies_scene_load(&scene);
 
     setup();
     while(!WindowShouldClose()){
