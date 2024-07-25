@@ -38,10 +38,6 @@ void rigidbodies_scene_init(void) {
     glm_vec2_copy((vec2){0, -10}, vertices[4]);
 
     arrput(bodies, create_polygon_body(vertices, 5, 4.0f, (vec2){200, 600}));
-
-    bodies[0].torque = 0.1f;
-    bodies[1].torque = 0.2f;
-    bodies[2].torque = -0.1f;
 }
 
 void rigidbodies_scene_update(float delta_time) {
@@ -50,8 +46,11 @@ void rigidbodies_scene_update(float delta_time) {
     }
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        body_integrate_linear(&bodies[i], delta_time);
-        body_integrate_angular(&bodies[i], delta_time);
+        vec2 force = {0.0f, 10.0f * PIXEL_PER_UNIT};
+        body_integrate_linear(&bodies[i], force, delta_time);
+
+        float torque = 0.01f;
+        body_integrate_angular(&bodies[i], torque, delta_time);
     }
 }
 
