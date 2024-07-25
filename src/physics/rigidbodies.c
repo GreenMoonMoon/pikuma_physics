@@ -7,6 +7,7 @@
 Body create_circle_body(float radius, float mass, vec2 position) {
     Body result = {
             .position = {position[0], position[1]},
+            .rotation = 0.0f,
             .velocity = {0},
             .inverse_mass = 1.0f / mass,
             .mass = mass,
@@ -19,6 +20,7 @@ Body create_circle_body(float radius, float mass, vec2 position) {
 Body create_box_body(vec2 center, vec2 extents, float mass, float *position) {
     Body result ={
             .position = {position[0], position[1]},
+            .rotation = 0.0f,
             .velocity = {0},
             .inverse_mass = 1.0f / mass,
             .mass = mass,
@@ -33,6 +35,7 @@ Body create_box_body(vec2 center, vec2 extents, float mass, float *position) {
 Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, float *position) {
     Body result = {
         .position = {position[0], position[1]},
+        .rotation = 0.0f,
         .velocity = {0},
         .inverse_mass = 1.0f / mass,
         .mass = mass,

@@ -19,9 +19,9 @@
 void drawParticle(vec2 position, float radius, ivec4 color);
 void drawPolygon(vec2 *vertices, vec2 position, float angle, ivec4 color);
 void drawShadedBox(vec2 min, vec2 max, float angle, ivec4 color_a, ivec4 color_b);
-void draw_box(vec2 position, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color);
-void draw_polygon(vec2 position, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color);
-void draw_circle(vec2 position, float radius, ivec4 line_color, ivec4 fill_color);
+void draw_box(vec2 position, float rotation, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color);
+void draw_polygon(vec2 position, float rotation, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color);
+void draw_circle(vec2 position, float rotation, float radius, ivec4 line_color, ivec4 fill_color);
 
 void draw_grid(int spacing);
 

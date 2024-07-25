@@ -29,6 +29,7 @@ typedef struct CircleShape {
 
 typedef struct Body {
     vec2 position;
+    float rotation;
     vec2 velocity;
     float mass;
     float inverse_mass;

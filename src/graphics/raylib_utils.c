@@ -116,10 +116,10 @@ void draw_shaded_box(const Rectangle rec, const float angle, ivec4 color_a, ivec
 }
 
 
-void draw_box(vec2 position, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color) {
+void draw_box(vec2 position, float rotation, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color) {
     rlPushMatrix();
-
     rlTranslatef(position[0], position[1], 0.0f);
+    rlRotatef(RAD2DEG * rotation, 0.0f, 0.0f, 1.0f);
 
     rlBegin(RL_QUADS);
     rlColor4ub(fill_color[0], fill_color[1], fill_color[2], fill_color[3]);
@@ -150,9 +150,10 @@ void draw_box(vec2 position, vec2 center, vec2 extents, ivec4 line_color, ivec4 
     rlPopMatrix();
 }
 
-void draw_polygon(vec2 position, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color) {
+void draw_polygon(vec2 position, float rotation, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color) {
     rlPushMatrix();
     rlTranslatef(position[0], position[1], 0.0f);
+    rlRotatef(RAD2DEG * rotation, 0.0f, 0.0f, 1.0f);
 
     DrawTriangleFan((Vector2 *)vertices, vertex_count, (Color){fill_color[0], fill_color[1], fill_color[2], fill_color[3]});
 
@@ -169,9 +170,12 @@ void draw_polygon(vec2 position, vec2 *vertices, uint32_t vertex_count, ivec4 li
     rlPopMatrix();
 }
 
-void draw_circle(vec2 position, float radius, ivec4 line_color, ivec4 fill_color) {
+void draw_circle(vec2 position, float rotation, float radius, ivec4 line_color, ivec4 fill_color) {
     DrawCircle(position[0], position[1], radius, (Color){fill_color[0], fill_color[1], fill_color[2], fill_color[3]});
     DrawCircleLines(position[0], position[1], radius, (Color) {line_color[0], line_color[1], line_color[2], line_color[3]});
+    vec2 rotated_line;
+    glm_vec2_rotate((vec2){radius, 0.0f}, rotation, rotated_line);
+    DrawLine(position[0], position[1], position[0] + rotated_line[0], position[1] + rotated_line[1], (Color) {line_color[0], line_color[1], line_color[2], line_color[3]});
 }
 
 void draw_grid(int spacing) {

@@ -9,6 +9,8 @@
 
 #include "graphics/raylib_utils.h"
 
+const float TWO_PI = GLM_PIf * 2.0f;
+
 static Body *bodies = NULL;
 static vec2 *vertices;
 
@@ -32,7 +34,7 @@ void rigidbodies_scene_init(void) {
 
 void rigidbodies_scene_update(float delta_time) {
     for (int i = 0; i < arrlen(bodies); ++i) {
-
+        bodies[i].rotation = fmodf(bodies[i].rotation + delta_time, TWO_PI);
     }
 }
 
@@ -42,13 +44,13 @@ void rigidbodies_scene_render(void) {
     for (int i = 0; i < arrlen(bodies); ++i) {
         switch (bodies[i].type) {
             case BOX_SHAPE_TYPE:
-                draw_box(bodies[i].position, bodies[i].box_shape.center, bodies[i].box_shape.extents, (ivec4){0,0,0,255}, (ivec4){255,200,200,255});
+                draw_box(bodies[i].position, bodies[i].rotation, bodies[i].box_shape.center, bodies[i].box_shape.extents, (ivec4){0,0,0,255}, (ivec4){255,200,200,255});
                 break;
             case POLYGON_SHAPE_TYPE:
-                draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, (ivec4){0,0,0,255}, (ivec4){200,200,255,255});
+                draw_polygon(bodies[i].position, bodies[i].rotation, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, (ivec4){0,0,0,255}, (ivec4){200,200,255,255});
                 break;
             case CIRCLE_SHAPE_TYPE:
-                draw_circle(bodies[i].position, bodies[i].circle_shape.radius, (ivec4){0,0,0,255}, (ivec4){200,255,200,255});
+                draw_circle(bodies[i].position, bodies[i].rotation, bodies[i].circle_shape.radius, (ivec4){0,0,0,255}, (ivec4){200,255,200,255});
                 break;
         }
     }
