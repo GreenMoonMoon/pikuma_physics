@@ -38,6 +38,10 @@ void rigidbodies_scene_init(void) {
     glm_vec2_copy((vec2){0, -10}, vertices[4]);
 
     arrput(bodies, create_polygon_body(vertices, 5, 4.0f, (vec2){200, 600}));
+
+    bodies[0].torque = 0.1f;
+    bodies[1].torque = 0.2f;
+    bodies[2].torque = -0.1f;
 }
 
 void rigidbodies_scene_update(float delta_time) {
@@ -46,7 +50,8 @@ void rigidbodies_scene_update(float delta_time) {
     }
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        bodies[i].rotation = fmodf(bodies[i].rotation + delta_time, TWO_PI);
+        body_integrate_linear(&bodies[i], delta_time);
+        body_integrate_angular(&bodies[i], delta_time);
     }
 }
 
