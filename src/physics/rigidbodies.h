@@ -47,6 +47,8 @@ Body create_circle_body(float radius, float mass, vec2 position);
 Body create_box_body(vec2 center, vec2 extents, float mass, vec2 position);
 Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, vec2 position);
 
+void circle_check_resolve_boundary(Body *body, const vec2 min, const vec2 max);
+
 void body_integrate_linear(Body *body, vec2 force, float delta_time);
 void body_integrate_angular(Body *body, float torque, float delta_time);
 

@@ -26,6 +26,7 @@ include_directories(src)
 add_executable(pikuma_physics src/main.c
         src/physics/particles.c
         src/physics/rigidbodies.c
+        src/physics/forces.c
 
         src/scenes/particles_scene.c
         src/scenes/rigidbodies_scene.c

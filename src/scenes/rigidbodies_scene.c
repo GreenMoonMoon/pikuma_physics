@@ -4,6 +4,7 @@
 
 #include "rigidbodies_scene.h"
 #include "physics/rigidbodies.h"
+#include "physics/forces.h"
 
 #include "external/stb_ds.h"
 
@@ -17,7 +18,7 @@ static Body *bodies = NULL;
 static vec2 *vertices;
 
 static bool show_ui = true;
-static bool enable_gravity = true;
+static bool enable_gravity = false;
 
 static void draw_ui(void){
     if(GuiWindowBox((Rectangle){10, 10, 200, 100}, "Controls")) {
@@ -28,16 +29,18 @@ static void draw_ui(void){
 
 void rigidbodies_scene_init(void) {
     arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, (vec2){300, 300}));
-    arrput(bodies, create_box_body((vec2){0}, (vec2){100,100}, 2.0f, (vec2){700, 400}));
+    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, (vec2){300, 100}));
 
-    vertices = malloc(sizeof(vec2) * 5);
-    glm_vec2_copy((vec2){-40, 0}, vertices[0]);
-    glm_vec2_copy((vec2){0, 50}, vertices[1]);
-    glm_vec2_copy((vec2){40, 2}, vertices[2]);
-    glm_vec2_copy((vec2){40, -2}, vertices[3]);
-    glm_vec2_copy((vec2){0, -10}, vertices[4]);
-
-    arrput(bodies, create_polygon_body(vertices, 5, 4.0f, (vec2){200, 600}));
+//    arrput(bodies, create_box_body((vec2){0}, (vec2){100,100}, 2.0f, (vec2){700, 400}));
+//
+//    vertices = malloc(sizeof(vec2) * 5);
+//    glm_vec2_copy((vec2){-40, 0}, vertices[0]);
+//    glm_vec2_copy((vec2){0, 50}, vertices[1]);
+//    glm_vec2_copy((vec2){40, 2}, vertices[2]);
+//    glm_vec2_copy((vec2){40, -2}, vertices[3]);
+//    glm_vec2_copy((vec2){0, -10}, vertices[4]);
+//
+//    arrput(bodies, create_polygon_body(vertices, 5, 4.0f, (vec2){200, 600}));
 }
 
 void rigidbodies_scene_update(float delta_time) {
@@ -46,11 +49,18 @@ void rigidbodies_scene_update(float delta_time) {
     }
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        vec2 force = {0.0f, 10.0f * PIXEL_PER_UNIT};
-        body_integrate_linear(&bodies[i], force, delta_time);
+        // add forces
+        vec2 forces = {0.0f, 0.0f};
+        apply_drag_force(bodies[i].linear_velocity, 0.001f, forces);
+        if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
+        body_integrate_linear(&bodies[i], forces, delta_time);
 
-        float torque = 0.01f;
-        body_integrate_angular(&bodies[i], torque, delta_time);
+        // add torques
+        float torques = 0.01f;
+        body_integrate_angular(&bodies[i], torques, delta_time);
+
+        // check boundary collisions
+        circle_check_resolve_boundary(&bodies[i], (vec2){0}, (vec2){GetScreenWidth(), GetScreenHeight()});
     }
 }
 
