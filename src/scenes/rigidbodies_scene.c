@@ -18,23 +18,24 @@ const float TWO_PI = GLM_PIf * 2.0f;
 static Body *bodies = NULL;
 static vec2 *vertices;
 
-static bool show_ui = true;
+static bool ui_enabled = true;
+static vec2 ui_window_bar[2] = {{10,10},{210, 34}};
+static bool ui_dragged = false;
+static vec2 ui_drag_offset = {0};
 static bool paused = false;
 static bool enable_gravity = true;
 
-static Collision *collisions = NULL;
+static Contact *collisions = NULL;
 
-static void draw_ui(void){
-    if(GuiWindowBox((Rectangle){10, 10, 200, 100}, "Controls")) {
-        show_ui = false;
-    }
-    GuiCheckBox((Rectangle){15,38,25,25}, "Pause", &paused);
-    GuiCheckBox((Rectangle){15,68,25,25}, "Gravity", &enable_gravity);
+static void draw_ui(void) {
+    if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 100}, "Controls")) { ui_enabled = false; }
+    GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 38, 25, 25}, "Pause", &paused);
+    GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 68, 25, 25}, "Gravity", &enable_gravity);
 }
 
 void rigidbodies_scene_init(void) {
-    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, (vec2){300, 300}));
-    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, (vec2){325, 100}));
+    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, (vec2) {300, 300}));
+    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, (vec2) {325, 100}));
 
 //    arrput(bodies, create_box_body((vec2){0}, (vec2){100,100}, 2.0f, (vec2){700, 400}));
 //
@@ -49,14 +50,27 @@ void rigidbodies_scene_init(void) {
 }
 
 void rigidbodies_scene_update(float delta_time) {
-    if(IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) {
-        show_ui = true;
-    }
-    if(IsKeyPressed(KEY_PAUSE)) {
-        paused = !paused;
+    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = true; }
+    if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
+
+    // update ui window
+    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && ui_enabled) {
+        if (glm_aabb2d_point(ui_window_bar, (vec2) {GetMouseX(), GetMouseY()})) {
+            ui_dragged = true;
+            ui_drag_offset[0] = GetMouseX() - ui_window_bar[0][0];
+            ui_drag_offset[1] = GetMouseY() - ui_window_bar[0][1];
+        }
+    }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && ui_dragged){
+        ui_window_bar[0][0] = GetMouseX() - ui_drag_offset[0];
+        ui_window_bar[0][1] = GetMouseY() - ui_drag_offset[1];
+        ui_window_bar[1][0] = ui_window_bar[0][0] + 200;
+        ui_window_bar[1][1] = ui_window_bar[0][1] + 24;
+    }else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
+        ui_dragged = false;
     }
 
     if (paused) { return; }
+
     // clear collisions array
     arrsetlen(collisions, 0);
 
@@ -72,22 +86,14 @@ void rigidbodies_scene_update(float delta_time) {
         body_integrate_angular(&bodies[i], torques, delta_time);
 
         // check boundary collisions
-        circle_check_resolve_boundary(&bodies[i], (vec2){0}, (vec2){GetScreenWidth(), GetScreenHeight()});
+        circle_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {GetScreenWidth(), GetScreenHeight()});
 
+        Contact contact;
         for (int j = i + 1; j < arrlen(bodies); ++j) {
-            if(circle_circle_collision_check(&bodies[i], &bodies[j])) {
-//                printf("collides!\n");
-                // retrieve collision information
-                Collision collision = circle_circle_get_collision_info(&bodies[i], &bodies[j]);
-                arrput(collisions, collision);
+            if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
+                        arrput(collisions, contact);
                 // resolve collisions
-                collision.a->position[0] += collision.normal[0] * collision.depth * -0.5f;
-                collision.a->position[1] += collision.normal[1] * collision.depth * -0.5f;
-                collision.b->position[0] += collision.normal[0] * collision.depth * 0.5f;
-                collision.b->position[1] += collision.normal[1] * collision.depth * 0.5f;
-
-                glm_vec2_reflect(collision.a->linear_velocity, collision.normal, collision.a->linear_velocity);
-                glm_vec2_reflect(collision.b->linear_velocity, (vec2){-collision.normal[0], -collision.normal[1]}, collision.b->linear_velocity);
+//                resolve_collision(contact);
             }
         }
     }
@@ -97,22 +103,22 @@ void rigidbodies_scene_render(void) {
     draw_grid(79);
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        draw_body_line(&bodies[i], (ivec4){255, 255, 255, 255});
+        draw_body_line(&bodies[i], (ivec4) {255, 255, 255, 255});
     }
 
     for (int i = 0; i < arrlen(collisions); ++i) {
-        draw_body_line(collisions[i].a, (ivec4){200, 0, 0, 255});
-        draw_body_line(collisions[i].b, (ivec4){200, 0, 0, 255});
+        draw_body_line(collisions[i].a, (ivec4) {200, 0, 0, 255});
+        draw_body_line(collisions[i].b, (ivec4) {200, 0, 0, 255});
 
-        draw_collision(collisions[i].start, collisions[i].end, 2.0f, (ivec4){25, 25, 0, 255});
+        draw_collision(collisions[i].start, collisions[i].end, 2.0f, (ivec4) {25, 25, 0, 255});
     }
 
-    if (show_ui) { draw_ui(); }
+    if (ui_enabled) { draw_ui(); }
 }
 
 void rigidbodies_scene_cleanup(void) {
     free(vertices);
-    arrfree(bodies);
+            arrfree(bodies);
 }
 
 void rigidbodies_scene_load(Scene *scene) {

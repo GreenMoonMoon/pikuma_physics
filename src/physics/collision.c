@@ -22,21 +22,31 @@ void circle_check_resolve_boundary(Body *body, const vec2 min, const vec2 max) {
     }
 }
 
-bool circle_circle_collision_check(Body *a, Body *b) {
-    return (glm_vec2_distance2(a->position, b->position) < glm_pow2(a->circle_shape.radius + b->circle_shape.radius));
+bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
+    float distance_squared = glm_vec2_distance2(a->position, b->position);
+    float radius_sum  = a->circle_shape.radius + b->circle_shape.radius;
+    if (distance_squared < glm_pow2(radius_sum)) {
+        contact->a = a;
+        contact->b = b;
+        glm_vec2_sub(a->position, b->position, contact->normal); // direction
+        glm_vec2_normalize(contact->normal);
+        contact->depth = (a->circle_shape.radius + a->circle_shape.radius) - glm_vec2_distance(a->position, b->position);
+        contact->start[0] = b->position[0] + contact->normal[0] * b->circle_shape.radius;
+        contact->start[1] = b->position[1] + contact->normal[1] * b->circle_shape.radius;
+        contact->end[0] = a->position[0] - contact->normal[0] * a->circle_shape.radius;
+        contact->end[1] = a->position[1] - contact->normal[1] * a->circle_shape.radius;
+
+        return true;
+    }
+    return false;
 }
 
-Collision circle_circle_get_collision_info(struct Body *a, struct Body *b) {
-    Collision collision = {0};
-    collision.a = a;
-    collision.b = b;
-    glm_vec2_sub(a->position, b->position, collision.normal); // direction
-    glm_vec2_normalize(collision.normal);
-    collision.depth = (a->circle_shape.radius + a->circle_shape.radius) - glm_vec2_distance(a->position, b->position);
-    collision.start[0] = b->position[0] + collision.normal[0] * b->circle_shape.radius;
-    collision.start[1] = b->position[1] + collision.normal[1] * b->circle_shape.radius;
-    collision.end[0] = a->position[0] - collision.normal[0] * a->circle_shape.radius;
-    collision.end[1] = a->position[1] - collision.normal[1] * a->circle_shape.radius;
+void resolve_collision(Contact contact) {
+    contact.a->position[0] += contact.normal[0] * contact.depth * -0.5f;
+    contact.a->position[1] += contact.normal[1] * contact.depth * -0.5f;
+    contact.b->position[0] += contact.normal[0] * contact.depth * 0.5f;
+    contact.b->position[1] += contact.normal[1] * contact.depth * 0.5f;
 
-    return collision;
+    glm_vec2_reflect(contact.a->linear_velocity, contact.normal, contact.a->linear_velocity);
+    glm_vec2_reflect(contact.b->linear_velocity, (vec2){-contact.normal[0], -contact.normal[1]}, contact.b->linear_velocity);
 }
