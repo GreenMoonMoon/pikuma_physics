@@ -104,7 +104,7 @@ void rigidbodies_scene_update(float delta_time) {
         Contact contact;
         for (int j = i + 1; j < arrlen(bodies); ++j) {
             if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
-                arrput(collisions, contact);
+//                arrput(collisions, contact);
                 resolve_collision(contact);
             }
         }
@@ -120,19 +120,22 @@ void rigidbodies_scene_render(void) {
         draw_body_textured(&bodies[i], &sphere_texture);
     }
 
-    for (int i = 0; i < arrlen(collisions); ++i) {
-        draw_body_line(collisions[i].a, (ivec4) {200, 0, 0, 255});
-        draw_body_line(collisions[i].b, (ivec4) {200, 0, 0, 255});
-
-        draw_collision(collisions[i].start, collisions[i].end, 2.0f, (ivec4) {25, 25, 0, 255});
-    }
+//    for (int i = 0; i < arrlen(collisions); ++i) {
+//        draw_body_line(collisions[i].a, (ivec4) {200, 0, 0, 255});
+//        draw_body_line(collisions[i].b, (ivec4) {200, 0, 0, 255});
+//
+//        draw_collision(collisions[i].start, collisions[i].end, 2.0f, (ivec4) {25, 25, 0, 255});
+//    }
 
     if (ui_enabled) { draw_ui(); }
 }
 
 void rigidbodies_scene_cleanup(void) {
     free(vertices);
-            arrfree(bodies);
+    arrfree(bodies);
+    arrfree(collisions);
+    UnloadTexture(background);
+    UnloadTexture(sphere_texture);
 }
 
 void rigidbodies_scene_load(Scene *scene) {

@@ -45,10 +45,14 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
 }
 
 void resolve_collision(Contact contact) {
-    contact.a->position[0] += contact.normal[0] * contact.depth * -0.5f + GLM_FLT_EPSILON;
-    contact.a->position[1] += contact.normal[1] * contact.depth * -0.5f + GLM_FLT_EPSILON;
-    contact.b->position[0] += contact.normal[0] * contact.depth * 0.5f + GLM_FLT_EPSILON;
-    contact.b->position[1] += contact.normal[1] * contact.depth * 0.5f + GLM_FLT_EPSILON;
+    float depth_mass = contact.depth * (contact.a->mass + contact.b->mass);
+    float depth_a = depth_mass * contact.a->inverse_mass;
+    float depth_b = depth_mass * contact.b->inverse_mass;
+
+    contact.a->position[0] -= contact.normal[0] * depth_a + GLM_FLT_EPSILON;
+    contact.a->position[1] -= contact.normal[1] * depth_a + GLM_FLT_EPSILON;
+    contact.b->position[0] += contact.normal[0] * depth_b + GLM_FLT_EPSILON;
+    contact.b->position[1] += contact.normal[1] * depth_b + GLM_FLT_EPSILON;
 
     glm_vec2_reflect(contact.a->linear_velocity, contact.normal, contact.a->linear_velocity);
     glm_vec2_reflect(contact.b->linear_velocity, (vec2){-contact.normal[0], -contact.normal[1]}, contact.b->linear_velocity);
