@@ -24,6 +24,22 @@ static bool ui_dragged = false;
 static vec2 ui_drag_offset = {0};
 static bool paused = false;
 static bool enable_gravity = true;
+static enum {
+    NONE_MODE,
+    ADD_CIRCLE_MODE,
+    DRAG_DEBUG_WINDOW_MODE,
+} mode = 0;
+static struct SpawnInfo {
+    vec2 position;
+    float radius;
+    float mass;
+    bool set;
+} spawn_info = {
+        .position = {0},
+        .radius = PIXEL_PER_UNIT,
+        .mass = 1.0f,
+        .set = false,
+};
 
 static Contact *collisions = NULL;
 
@@ -31,9 +47,70 @@ static Texture2D background;
 static Texture2D sphere_texture;
 
 static void draw_ui(void) {
-    if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 100}, "Controls")) { ui_enabled = false; }
+    if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 150}, "Controls")) { ui_enabled = false; }
     GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 38, 25, 25}, "Pause", &paused);
     GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 68, 25, 25}, "Gravity", &enable_gravity);
+    if(GuiButton((Rectangle){ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 98, 100, 25}, "Add Circle")){
+        mode = ADD_CIRCLE_MODE;
+    }
+}
+
+static void handle_inputs(void) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
+
+    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = true; }
+    if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
+
+    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        switch(mode){
+            case NONE_MODE:
+                if (ui_enabled && glm_aabb2d_point(ui_window_bar, (vec2) {GetMouseX(), GetMouseY()})) {
+                    mode = DRAG_DEBUG_WINDOW_MODE;
+                    ui_drag_offset[0] = GetMouseX() - ui_window_bar[0][0];
+                    ui_drag_offset[1] = GetMouseY() - ui_window_bar[0][1];
+                }
+                break;
+            case ADD_CIRCLE_MODE:
+                spawn_info.position[0] = GetMouseX();
+                spawn_info.position[1] = GetMouseY();
+                spawn_info.set = true;
+                break;
+            default:
+                break;
+        }
+    }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+        switch(mode){
+            case ADD_CIRCLE_MODE:
+                spawn_info.radius = glm_clamp(abs(GetMouseX() - (int) spawn_info.position[0]), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
+                spawn_info.mass = glm_clamp(abs(GetMouseY() - (int) spawn_info.position[1]) * 0.1f, 1.0f, 100.0f);
+                break;
+            case DRAG_DEBUG_WINDOW_MODE:
+                ui_window_bar[0][0] = GetMouseX() - ui_drag_offset[0];
+                ui_window_bar[0][1] = GetMouseY() - ui_drag_offset[1];
+                ui_window_bar[1][0] = ui_window_bar[0][0] + 200;
+                ui_window_bar[1][1] = ui_window_bar[0][1] + 24;
+                break;
+            default:
+                break;
+        }
+    }else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
+        switch (mode) {
+            case ADD_CIRCLE_MODE:
+                arrput(bodies, create_circle_body(spawn_info.radius, spawn_info.mass, spawn_info.position));
+                spawn_info.position[0] = 0;
+                spawn_info.position[1] = 0;
+                spawn_info.mass = 1.0f;
+                spawn_info.radius = PIXEL_PER_UNIT;
+                spawn_info.set = false;
+                mode = NONE_MODE;
+                break;
+            case DRAG_DEBUG_WINDOW_MODE:
+                mode = NONE_MODE;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void rigidbodies_scene_init(void) {
@@ -56,23 +133,11 @@ void rigidbodies_scene_init(void) {
 }
 
 void rigidbodies_scene_update(float delta_time) {
-    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = true; }
-    if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
+    handle_inputs();
 
-    // update ui window
-    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && ui_enabled) {
-        if (glm_aabb2d_point(ui_window_bar, (vec2) {GetMouseX(), GetMouseY()})) {
-            ui_dragged = true;
-            ui_drag_offset[0] = GetMouseX() - ui_window_bar[0][0];
-            ui_drag_offset[1] = GetMouseY() - ui_window_bar[0][1];
-        }
-    }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && ui_dragged){
-        ui_window_bar[0][0] = GetMouseX() - ui_drag_offset[0];
-        ui_window_bar[0][1] = GetMouseY() - ui_drag_offset[1];
-        ui_window_bar[1][0] = ui_window_bar[0][0] + 200;
-        ui_window_bar[1][1] = ui_window_bar[0][1] + 24;
-    }else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
-        ui_dragged = false;
+    if(mode == ADD_CIRCLE_MODE && !spawn_info.set){
+        spawn_info.position[0] = GetMouseX();
+        spawn_info.position[1] = GetMouseY();
     }
 
     if (paused) { return; }
@@ -118,6 +183,11 @@ void rigidbodies_scene_render(void) {
 
     for (int i = 0; i < arrlen(bodies); ++i) {
         draw_body_textured(&bodies[i], &sphere_texture);
+    }
+
+    if(mode == ADD_CIRCLE_MODE){
+        draw_circle_line(spawn_info.position, 0.0f, spawn_info.radius, 2.0f, (ivec4){0,0,0,255});
+        DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position[0], spawn_info.position[1], 18, GREEN);
     }
 
 //    for (int i = 0; i < arrlen(collisions); ++i) {
