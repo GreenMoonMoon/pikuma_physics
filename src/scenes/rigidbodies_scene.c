@@ -27,6 +27,9 @@ static bool enable_gravity = true;
 
 static Contact *collisions = NULL;
 
+static Texture2D background;
+static Texture2D sphere_texture;
+
 static void draw_ui(void) {
     if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 100}, "Controls")) { ui_enabled = false; }
     GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 38, 25, 25}, "Pause", &paused);
@@ -34,6 +37,9 @@ static void draw_ui(void) {
 }
 
 void rigidbodies_scene_init(void) {
+    background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
+    sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
+
     arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, (vec2) {300, 300}));
     arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, (vec2) {325, 100}));
 
@@ -106,10 +112,12 @@ void rigidbodies_scene_update(float delta_time) {
 }
 
 void rigidbodies_scene_render(void) {
-    draw_grid(79);
+    DrawTexture(background, 0, -50, WHITE);
+
+    draw_grid(79, (ivec4){0,0,0,255});
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        draw_body_line(&bodies[i], (ivec4) {255, 255, 255, 255});
+        draw_body_textured(&bodies[i], &sphere_texture);
     }
 
     for (int i = 0; i < arrlen(collisions); ++i) {

@@ -179,11 +179,11 @@ void draw_circle(vec2 position, float rotation, float radius, ivec4 line_color, 
     DrawLine(position[0], position[1], position[0] + rotated_line[0], position[1] + rotated_line[1], (Color) {line_color[0], line_color[1], line_color[2], line_color[3]});
 }
 
-void draw_grid(int spacing) {
+void draw_grid(int spacing, ivec4 color) {
     rlPushMatrix();
 
     rlBegin(RL_LINES);
-    rlColor4f(0.9f, 0.9f, 0.9f, 1.0f);
+    rlColor4ub(color[0], color[1], color[2], color[3]);
 
     for (int i = 0; (i * spacing) < GetScreenHeight(); ++i) {
         rlVertex2i(0, i * spacing);
@@ -259,6 +259,15 @@ void draw_circle_line(float *position, float rotation, float radius, float width
     rlSetLineWidth(last_width);
 }
 
+void draw_circle_textured(vec2 position, float rotation, float radius, const Texture *texture) {
+    DrawTexturePro(*texture,
+                   (Rectangle) {0.0f, 0.0f, (float) texture->width, (float) texture->height},
+                   (Rectangle) {position[0], position[1], radius * 2.0f, radius * 2.0f},
+                   (Vector2) {radius, radius},
+                   RAD2DEG * rotation,
+                   WHITE);
+}
+
 void draw_collision(vec2 start, vec2 end, float width, ivec4 color) {
     rlPushMatrix();
     float last_width = rlGetLineWidth();
@@ -302,3 +311,14 @@ void draw_body_line(const Body *body, ivec4 color) {
     }
 }
 
+void draw_body_textured(const Body *body, const Texture *texture) {
+    switch (body->type) {
+        case BOX_SHAPE_TYPE:
+            break;
+        case POLYGON_SHAPE_TYPE:
+            break;
+        case CIRCLE_SHAPE_TYPE:
+            draw_circle_textured(body->position, body->rotation, body->circle_shape.radius, texture);
+            break;
+    }
+}

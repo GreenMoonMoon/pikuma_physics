@@ -17,7 +17,7 @@
 //void drawPolygonBody(Body &body);
 
 struct Body;
-
+struct Texture;
 
 void drawParticle(vec2 position, float radius, ivec4 color);
 void drawPolygon(vec2 *vertices, vec2 position, float angle, ivec4 color);
@@ -28,12 +28,14 @@ void draw_polygon(vec2 position, float rotation, vec2 *vertices, uint32_t vertex
 void draw_polygon_line(vec2 position, float rotation, vec2 *vertices, uint32_t vertex_count, float width, ivec4 color);
 void draw_circle(vec2 position, float rotation, float radius, ivec4 line_color, ivec4 fill_color);
 void draw_circle_line(vec2 position, float rotation, float radius, float width, ivec4 color);
+void draw_circle_textured(vec2 position, float rotation, float radius, const struct Texture *texture);
 
 void draw_body(const struct Body *body, ivec4 fill_color, ivec4 line_color);
 void draw_body_line(const struct Body *body, ivec4 color);
+void draw_body_textured(const struct Body *body, const struct Texture *texture);
 
 void draw_collision(vec2 start, vec2 end, float width, ivec4 color);
 
-void draw_grid(int spacing);
+void draw_grid(int spacing, ivec4 color);
 
 #endif //PIKUMA_PHYSICS_RAYLIB_UTILS_H
