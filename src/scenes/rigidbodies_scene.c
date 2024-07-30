@@ -77,9 +77,16 @@ void rigidbodies_scene_update(float delta_time) {
     for (int i = 0; i < arrlen(bodies); ++i) {
         // add forces
         vec2 forces = {0.0f, 0.0f};
-        apply_drag_force(bodies[i].linear_velocity, 0.001f, forces);
+
         if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
+
+        // add wind force
+        add_force((vec2){10.0f * PIXEL_PER_UNIT, 0.0f}, bodies[i].inverse_mass, forces);
+
+        apply_drag_force(bodies[i].linear_velocity, 0.001f, forces);
+
         body_integrate_linear(&bodies[i], forces, delta_time);
+
 
         // add torques
         float torques = 0.01f;
@@ -91,9 +98,8 @@ void rigidbodies_scene_update(float delta_time) {
         Contact contact;
         for (int j = i + 1; j < arrlen(bodies); ++j) {
             if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
-                        arrput(collisions, contact);
-                // resolve collisions
-//                resolve_collision(contact);
+                arrput(collisions, contact);
+                resolve_collision(contact);
             }
         }
     }

@@ -4,7 +4,11 @@
 
 #include "forces.h"
 
-void apply_drag_force(const vec2 velocity, float coefficient, vec2 forces) {
+void add_force(const vec2 force, float inverse_mass, vec2 out_forces) {
+    glm_vec2_add(out_forces, (vec2){force[0] * inverse_mass, force[1] * inverse_mass}, out_forces);
+}
+
+void apply_drag_force(const vec2 velocity, float coefficient, vec2 out_forces) {
     vec2 drag = {0};
     vec2 direction;
     float velocity_magnitude_squared = glm_vec2_norm2(velocity);
@@ -14,5 +18,5 @@ void apply_drag_force(const vec2 velocity, float coefficient, vec2 forces) {
         float magnitude = coefficient * velocity_magnitude_squared;
         glm_vec2_scale(direction, magnitude, drag);
     }
-    glm_vec2_add(forces, drag, forces);
+    glm_vec2_add(out_forces, drag, out_forces);
 }
