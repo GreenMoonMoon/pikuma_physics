@@ -97,42 +97,12 @@ void rigidbodies_scene_render(void) {
     draw_grid(79);
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        switch (bodies[i].type) {
-            case BOX_SHAPE_TYPE:
-                draw_box(bodies[i].position, bodies[i].rotation, bodies[i].box_shape.center, bodies[i].box_shape.extents, (ivec4){0,0,0,255}, (ivec4){255,200,200,255});
-                break;
-            case POLYGON_SHAPE_TYPE:
-                draw_polygon(bodies[i].position, bodies[i].rotation, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, (ivec4){0,0,0,255}, (ivec4){200,200,255,255});
-                break;
-            case CIRCLE_SHAPE_TYPE:
-                draw_circle(bodies[i].position, bodies[i].rotation, bodies[i].circle_shape.radius, (ivec4){0,0,0,255}, (ivec4){200,255,200,255});
-                break;
-        }
+        draw_body_line(&bodies[i], (ivec4){255, 255, 255, 255});
     }
 
     for (int i = 0; i < arrlen(collisions); ++i) {
-        switch (collisions[i].a->type) {
-            case BOX_SHAPE_TYPE:
-                draw_box_line(collisions[i].a->position, collisions[i].a->rotation, collisions[i].a->box_shape.center, collisions[i].a->box_shape.extents, 24.0f, (ivec4){255,0,0,255});
-                break;
-            case POLYGON_SHAPE_TYPE:
-                draw_polygon_line(collisions[i].a->position, collisions[i].a->rotation, collisions[i].a->polygon_shape.vertices, collisions[i].a->polygon_shape.vertex_count, 24.0f, (ivec4){255,0,0,255});
-                break;
-            case CIRCLE_SHAPE_TYPE:
-                draw_circle_line(collisions[i].a->position, collisions[i].a->rotation, collisions[i].a->circle_shape.radius, 24.0f, (ivec4){255,0,0,255});
-                break;
-        }
-        switch (collisions[i].b->type) {
-            case BOX_SHAPE_TYPE:
-                draw_box_line(collisions[i].b->position, collisions[i].b->rotation, collisions[i].b->box_shape.center, collisions[i].b->box_shape.extents, 24.0f, (ivec4){255,0,0,255});
-                break;
-            case POLYGON_SHAPE_TYPE:
-                draw_polygon_line(collisions[i].b->position, collisions[i].b->rotation, collisions[i].b->polygon_shape.vertices, collisions[i].b->polygon_shape.vertex_count, 24.0f, (ivec4){255,0,0,255});
-                break;
-            case CIRCLE_SHAPE_TYPE:
-                draw_circle_line(collisions[i].b->position, collisions[i].b->rotation, collisions[i].b->circle_shape.radius, 24.0f, (ivec4){255,0,0,255});
-                break;
-        }
+        draw_body_line(collisions[i].a, (ivec4){200, 0, 0, 255});
+        draw_body_line(collisions[i].b, (ivec4){200, 0, 0, 255});
 
         draw_collision(collisions[i].start, collisions[i].end, 2.0f, (ivec4){25, 25, 0, 255});
     }

@@ -6,6 +6,7 @@
 #include "raylib.h"
 #include "rlgl.h"
 #include "external/stb_ds.h"
+#include "physics/rigidbodies.h"
 
 //static Shader gradient_shader;
 //
@@ -272,3 +273,32 @@ void draw_collision(vec2 start, vec2 end, float width, ivec4 color) {
     rlEnd();
     rlPopMatrix();
 }
+
+void draw_body(const Body *body, ivec4 line_color, ivec4 fill_color) {
+    switch (body->type) {
+        case BOX_SHAPE_TYPE:
+            draw_box(body->position, body->rotation, body->box_shape.center, body->box_shape.extents, line_color, fill_color);
+            break;
+        case POLYGON_SHAPE_TYPE:
+            draw_polygon(body->position, body->rotation, body->polygon_shape.vertices, body->polygon_shape.vertex_count, line_color, fill_color);
+            break;
+        case CIRCLE_SHAPE_TYPE:
+            draw_circle(body->position, body->rotation, body->circle_shape.radius, line_color, fill_color);
+            break;
+    }
+}
+
+void draw_body_line(const Body *body, ivec4 color) {
+    switch (body->type) {
+        case BOX_SHAPE_TYPE:
+            draw_box_line(body->position, body->rotation, body->box_shape.center, body->box_shape.extents, 24.0f, color);
+            break;
+        case POLYGON_SHAPE_TYPE:
+            draw_polygon_line(body->position, body->rotation, body->polygon_shape.vertices, body->polygon_shape.vertex_count, 24.0f, color);
+            break;
+        case CIRCLE_SHAPE_TYPE:
+            draw_circle_line(body->position, body->rotation, body->circle_shape.radius, 24.0f, color);
+            break;
+    }
+}
+
