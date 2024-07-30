@@ -34,10 +34,10 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
         contact->depth = (a->circle_shape.radius + b->circle_shape.radius) - glm_vec2_norm(ab);
 
         // start and end of the collision. Both points at the edge of each circle along the collision normal
-        contact->start[0] = b->position[0] + contact->normal[0] * b->circle_shape.radius;
-        contact->start[1] = b->position[1] + contact->normal[1] * b->circle_shape.radius;
-        contact->end[0] = a->position[0] - contact->normal[0] * a->circle_shape.radius;
-        contact->end[1] = a->position[1] - contact->normal[1] * a->circle_shape.radius;
+        contact->start[0] = b->position[0] - contact->normal[0] * b->circle_shape.radius;
+        contact->start[1] = b->position[1] - contact->normal[1] * b->circle_shape.radius;
+        contact->end[0] = a->position[0] + contact->normal[0] * a->circle_shape.radius;
+        contact->end[1] = a->position[1] + contact->normal[1] * a->circle_shape.radius;
 
         return true;
     }
