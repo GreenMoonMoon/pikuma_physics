@@ -45,15 +45,31 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
 }
 
 void resolve_collision(Contact contact) {
-    float depth_mass = contact.depth * (contact.a->mass + contact.b->mass);
-    float depth_a = depth_mass * contact.a->inverse_mass;
-    float depth_b = depth_mass * contact.b->inverse_mass;
+    float depth_mass = contact.depth / (contact.a->inverse_mass + contact.b->inverse_mass);
+    float depth_a = depth_mass * contact.b->inverse_mass;
+    float depth_b = depth_mass * contact.a->inverse_mass;
 
-    contact.a->position[0] -= contact.normal[0] * depth_a + GLM_FLT_EPSILON;
-    contact.a->position[1] -= contact.normal[1] * depth_a + GLM_FLT_EPSILON;
-    contact.b->position[0] += contact.normal[0] * depth_b + GLM_FLT_EPSILON;
-    contact.b->position[1] += contact.normal[1] * depth_b + GLM_FLT_EPSILON;
+    // Get relative velocity along normal
+    vec2 relative_velocity;
+    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, relative_velocity);
+    glm_vec2_scale(relative_velocity, glm_vec2_dot(relative_velocity, contact.normal), relative_velocity);
 
-    glm_vec2_reflect(contact.a->linear_velocity, contact.normal, contact.a->linear_velocity);
-    glm_vec2_reflect(contact.b->linear_velocity, (vec2){-contact.normal[0], -contact.normal[1]}, contact.b->linear_velocity);
+    // apply coefficient of restitution
+    vec2 new_relative_velocity_a;
+    glm_vec2_scale(relative_velocity, -contact.a->restitution, new_relative_velocity_a);
+    vec2 new_relative_velocity_b;
+    glm_vec2_scale(relative_velocity, contact.b->restitution, new_relative_velocity_b);
+
+    // resolve penetration
+    contact.a->position[0] -= contact.normal[0] * depth_a;
+    contact.a->position[1] -= contact.normal[1] * depth_a;
+    contact.b->position[0] += contact.normal[0] * depth_b;
+    contact.b->position[1] += contact.normal[1] * depth_b;
+
+//    vec2 scaled_normal_a;
+//    glm_vec2_scale(contact.normal, 1.0f, scaled_normal_a);
+//    glm_vec2_reflect(contact.a->linear_velocity, scaled_normal_a, contact.a->linear_velocity);
+//    vec2 scaled_normal_b;
+//    glm_vec2_scale(contact.normal, -1.0f, scaled_normal_b);
+//    glm_vec2_reflect(contact.b->linear_velocity, scaled_normal_b, contact.b->linear_velocity);
 }

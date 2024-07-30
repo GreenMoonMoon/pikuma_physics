@@ -13,14 +13,11 @@
 
 #include "external/raygui.h"
 
-const float TWO_PI = GLM_PIf * 2.0f;
-
 static Body *bodies = NULL;
 static vec2 *vertices;
 
-static bool ui_enabled = true;
+static bool ui_enabled = false;
 static vec2 ui_window_bar[2] = {{10,10},{210, 34}};
-static bool ui_dragged = false;
 static vec2 ui_drag_offset = {0};
 static bool paused = false;
 static bool enable_gravity = true;
@@ -57,8 +54,7 @@ static void draw_ui(void) {
 
 static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
-
-    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = true; }
+    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = !ui_enabled; }
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
 
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -96,7 +92,7 @@ static void handle_inputs(void) {
     }else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
         switch (mode) {
             case ADD_CIRCLE_MODE:
-                arrput(bodies, create_circle_body(spawn_info.radius, spawn_info.mass, spawn_info.position));
+                arrput(bodies, create_circle_body(spawn_info.radius, spawn_info.mass, 0.9f, spawn_info.position));
                 spawn_info.position[0] = 0;
                 spawn_info.position[1] = 0;
                 spawn_info.mass = 1.0f;
@@ -117,8 +113,8 @@ void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
     sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
 
-    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, (vec2) {300, 300}));
-    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, (vec2) {325, 100}));
+    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (vec2) {300, 300}));
+    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (vec2) {325, 100}));
 
 //    arrput(bodies, create_box_body((vec2){0}, (vec2){100,100}, 2.0f, (vec2){700, 400}));
 //
@@ -151,16 +147,16 @@ void rigidbodies_scene_update(float delta_time) {
 
         if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
 
-        // add wind force
-        add_force((vec2){10.0f * PIXEL_PER_UNIT, 0.0f}, bodies[i].inverse_mass, forces);
+//        // add wind force
+//        add_force((vec2){10.0f * PIXEL_PER_UNIT, 0.0f}, bodies[i].inverse_mass, forces);
 
-        apply_drag_force(bodies[i].linear_velocity, 0.001f, forces);
+        force_apply_drag(bodies[i].linear_velocity, 0.001f, forces);
 
         body_integrate_linear(&bodies[i], forces, delta_time);
 
 
         // add torques
-        float torques = 0.01f;
+        float torques = 0.0f;
         body_integrate_angular(&bodies[i], torques, delta_time);
 
         // check boundary collisions
@@ -177,7 +173,7 @@ void rigidbodies_scene_update(float delta_time) {
 }
 
 void rigidbodies_scene_render(void) {
-    DrawTexture(background, 0, -50, WHITE);
+    DrawTexture(background, 0, -100, WHITE);
 
     draw_grid(79, (ivec4){0,0,0,255});
 

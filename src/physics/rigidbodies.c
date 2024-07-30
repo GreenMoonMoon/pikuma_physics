@@ -16,7 +16,7 @@ float calculate_polygon_angular_mass(float mass){
     return 1.0f;
 }
 
-Body create_circle_body(float radius, float mass, vec2 position) {
+Body create_circle_body(float radius, float mass, float restitution, vec2 position) {
     Body result = {
             .position = {position[0], position[1]},
             .rotation = 0.0f,
@@ -25,13 +25,14 @@ Body create_circle_body(float radius, float mass, vec2 position) {
             .inverse_mass = 1.0f / mass,
             .mass = mass,
             .inverse_angular_mass = calculate_circle_angular_mass(radius, mass),
+            .restitution = restitution,
             .type = CIRCLE_SHAPE_TYPE,
             .circle_shape = (CircleShape){.radius = radius},
     };
     return result;
 }
 
-Body create_box_body(vec2 center, vec2 extents, float mass, float *position) {
+Body create_box_body(vec2 center, vec2 extents, float mass, float restitution, float *position) {
     Body result ={
             .position = {position[0], position[1]},
             .rotation = 0.0f,
@@ -40,6 +41,7 @@ Body create_box_body(vec2 center, vec2 extents, float mass, float *position) {
             .inverse_mass = 1.0f / mass,
             .mass = mass,
             .inverse_angular_mass = calculate_square_angular_mass(extents, mass),
+            .restitution = restitution,
             .type = BOX_SHAPE_TYPE,
             .box_shape = {0},
     };
@@ -48,7 +50,7 @@ Body create_box_body(vec2 center, vec2 extents, float mass, float *position) {
     return result;
 }
 
-Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, float *position) {
+Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, float restitution, float *position) {
     Body result = {
         .position = {position[0], position[1]},
         .rotation = 0.0f,
@@ -56,6 +58,7 @@ Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, floa
         .angular_velocity = 0.0f,
         .inverse_mass = 1.0f / mass,
         .mass = mass,
+        .restitution = restitution,
         .inverse_angular_mass = calculate_polygon_angular_mass(mass),
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = (PolygonShape){
@@ -79,4 +82,15 @@ void body_integrate_linear(Body *body, vec2 force, float delta_time) {
 void body_integrate_angular(Body *body, float torque, float delta_time) {
     body->angular_velocity += torque * delta_time;
     body->rotation += body->angular_velocity * delta_time;
+}
+
+void body_apply_impulse(Body *body, const vec2 impulse) {
+    /* An impulse is an instant change in velocity inversely proportional to the mass of the object.
+     the momentum is the mass times the velocity: P=m*v
+     An impulse is the change in that momentum: J = deltaP = m*deltaV (mass doesn't change)
+    so j/m = deltaV.
+    */
+    vec2 j;
+    glm_vec2_scale(impulse, body->inverse_mass, j);
+    glm_vec2_add(body->linear_velocity, j, body->linear_velocity);
 }
