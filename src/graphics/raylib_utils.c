@@ -197,3 +197,78 @@ void draw_grid(int spacing) {
     rlEnd();
     rlPopMatrix();
 }
+
+void draw_box_line(float *position, float rotation, float *center, float *extents, float width, int *color) {
+    rlPushMatrix();
+    rlTranslatef(position[0], position[1], 0.0f);
+    rlRotatef(RAD2DEG * rotation, 0.0f, 0.0f, 1.0f);
+
+    const float last_width = rlGetLineWidth();
+    rlSetLineWidth(width);
+    rlBegin(RL_LINES);
+
+    rlColor4ub(color[0], color[1], color[2], color[3]);
+
+    rlVertex2i(center[0] - extents[0], center[1] - extents[1]);
+    rlVertex2i(center[0] - extents[0], center[1] + extents[1]);
+
+    rlVertex2i(center[0] - extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] + extents[1]);
+
+    rlVertex2i(center[0] + extents[0], center[1] + extents[1]);
+    rlVertex2i(center[0] + extents[0], center[1] - extents[1]);
+
+    rlVertex2i(center[0] + extents[0], center[1] - extents[1]);
+    rlVertex2i(center[0] - extents[0], center[1] - extents[1]);
+
+    rlEnd();
+    rlSetLineWidth(last_width);
+    rlPopMatrix();
+}
+
+void
+draw_polygon_line(float *position, float rotation, vec2 *vertices, uint32_t vertex_count, float width, int *color) {
+    rlPushMatrix();
+    rlTranslatef(position[0], position[1], 0.0f);
+    rlRotatef(RAD2DEG * rotation, 0.0f, 0.0f, 1.0f);
+
+    const float last_width = rlGetLineWidth();
+    rlSetLineWidth(width);
+    rlBegin(RL_LINES);
+    rlColor4ub(color[0], color[1], color[2], color[3]);
+
+    for (int i = 0; i < vertex_count; ++i) {
+        uint32_t n = (i + 1) % vertex_count;
+        rlVertex2i(vertices[i][0], vertices[i][1]);
+        rlVertex2i(vertices[n][0], vertices[n][1]);
+    }
+
+    rlEnd();
+    rlSetLineWidth(last_width);
+    rlPopMatrix();
+}
+
+void draw_circle_line(float *position, float rotation, float radius, float width, int *color) {
+    vec2 rotated_line;
+    glm_vec2_rotate((vec2){radius, 0.0f}, rotation, rotated_line);
+    const float last_width = rlGetLineWidth();
+    rlSetLineWidth(width);
+    DrawCircleLines(position[0], position[1], radius, (Color) {color[0], color[1], color[2], color[3]});
+    DrawLine(position[0], position[1], position[0] + rotated_line[0], position[1] + rotated_line[1], (Color) {color[0], color[1], color[2], color[3]});
+    rlSetLineWidth(last_width);
+}
+
+void draw_collision(vec2 start, vec2 end, float width, ivec4 color) {
+    rlPushMatrix();
+    float last_width = rlGetLineWidth();
+    rlBegin(RL_LINES);
+    rlSetLineWidth(width);
+    rlColor4ub(color[0], color[1], color[2], color[3]);
+
+    rlVertex2i(start[0], start[1]);
+    rlVertex2i(end[0], end[1]);
+
+    rlSetLineWidth(last_width);
+    rlEnd();
+    rlPopMatrix();
+}

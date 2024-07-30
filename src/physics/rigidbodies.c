@@ -66,23 +66,6 @@ Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, floa
     return result;
 }
 
-void circle_check_resolve_boundary(Body *body, const vec2 min, const vec2 max) {
-    if (body->position[0]-body->circle_shape.radius < min[0]) {
-        body->position[0] = body->circle_shape.radius + min[0];
-        body->linear_velocity[0] = -body->linear_velocity[0];
-    } else if (body->position[0]+body->circle_shape.radius > max[0]){
-        body->position[0] = max[0] - body->circle_shape.radius;
-        body->linear_velocity[0] = -body->linear_velocity[0];
-    }
-    if (body->position[1]-body->circle_shape.radius < min[1]) {
-        body->position[1] = body->circle_shape.radius + min[1];
-        body->linear_velocity[1] = -body->linear_velocity[1];
-    } else if (body->position[1]+body->circle_shape.radius > max[1]){
-        body->position[1] = max[1] - body->circle_shape.radius;
-        body->linear_velocity[1] = -body->linear_velocity[1];
-    }
-}
-
 void body_integrate_linear(Body *body, vec2 force, float delta_time) {
     vec2 acceleration;
     glm_vec2_scale(force, delta_time, acceleration);
