@@ -21,6 +21,8 @@ typedef struct Contact {
 void circle_check_resolve_boundary(struct Body *body, const vec2 min, const vec2 max);
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
+void box_check_resolve_boundary(struct Body *body, const vec2 min, const vec2 max);
+
 void resolve_collision(Contact contact);
 
 #endif //PIKUMA_PHYSICS_COLLISION_H

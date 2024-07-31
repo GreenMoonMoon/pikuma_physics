@@ -116,7 +116,6 @@ void draw_shaded_box(const Rectangle rec, const float angle, ivec4 color_a, ivec
     rlPopMatrix();
 }
 
-
 void draw_box(vec2 position, float rotation, vec2 center, vec2 extents, ivec4 line_color, ivec4 fill_color) {
     rlPushMatrix();
     rlTranslatef(position[0], position[1], 0.0f);
@@ -149,6 +148,15 @@ void draw_box(vec2 position, float rotation, vec2 center, vec2 extents, ivec4 li
 
     rlEnd();
     rlPopMatrix();
+}
+
+void draw_box_textured(vec2 position, float rotation, vec2 center, vec2 extents, const Texture *texture) {
+    DrawTexturePro(*texture,
+                   (Rectangle) {0.0f, 0.0f, (float) texture->width, (float) texture->height},
+                   (Rectangle) {position[0], position[1], extents[0] * 2.0f, extents[1] * 2.0f},
+                   (Vector2) {extents[0], extents[1]},
+                   RAD2DEG * rotation,
+                   WHITE);
 }
 
 void draw_polygon(vec2 position, float rotation, vec2 *vertices, uint32_t vertex_count, ivec4 line_color, ivec4 fill_color) {
@@ -314,6 +322,7 @@ void draw_body_line(const Body *body, ivec4 color) {
 void draw_body_textured(const Body *body, const Texture *texture) {
     switch (body->type) {
         case BOX_SHAPE_TYPE:
+            draw_box_textured(body->position, body->rotation, body->box_shape.center, body->box_shape.extents, texture);
             break;
         case POLYGON_SHAPE_TYPE:
             break;

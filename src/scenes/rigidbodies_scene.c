@@ -42,14 +42,15 @@ static Contact *collisions = NULL;
 
 static Texture2D background;
 static Texture2D sphere_texture;
+static Texture2D square_texture;
 
 static void draw_ui(void) {
     if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 150}, "Controls")) { ui_enabled = false; }
     GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 38, 25, 25}, "Pause", &paused);
     GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 68, 25, 25}, "Gravity", &enable_gravity);
-    if(GuiButton((Rectangle){ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 98, 100, 25}, "Add Circle")){
-        mode = ADD_CIRCLE_MODE;
-    }
+//    if(GuiButton((Rectangle){ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 98, 100, 25}, "Add Circle")){
+//        mode = ADD_CIRCLE_MODE;
+//    }
 }
 
 static void handle_inputs(void) {
@@ -107,31 +108,20 @@ static void handle_inputs(void) {
                 break;
         }
     }
-    if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && mode == NONE_MODE) {
-        for (int i = 0; i < arrlen(bodies); ++i) {
-            switch (bodies[i].type) {
-                case CIRCLE_SHAPE_TYPE:
-                    if(glm_vec2_distance2((vec2){GetMouseX(), GetMouseY()}, bodies->position) < glm_pow2(bodies->circle_shape.radius)) {
-                        arrdelswap(bodies, i);
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
 }
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
-    sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
+//    sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
 
-    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (vec2) {300, 300}));
-    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (vec2) {325, 100}));
+//    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (vec2) {300, 300}));
+//    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (vec2) {325, 100}));
 
-//    arrput(bodies, create_box_body((vec2){0}, (vec2){100,100}, 2.0f, (vec2){700, 400}));
-//
+    square_texture = LoadTexture("../assets/PNG/Wood elements/elementWood010.png");
+
+    arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.9f, (vec2){700, 400}));
+    arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.5f, (vec2){650, 200}));
+
 //    vertices = malloc(sizeof(vec2) * 5);
 //    glm_vec2_copy((vec2){-40, 0}, vertices[0]);
 //    glm_vec2_copy((vec2){0, 50}, vertices[1]);
@@ -161,9 +151,6 @@ void rigidbodies_scene_update(float delta_time) {
 
         if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
 
-//        // add wind force
-//        add_force((vec2){10.0f * PIXEL_PER_UNIT, 0.0f}, bodies[i].inverse_mass, forces);
-
         force_apply_drag(bodies[i].linear_velocity, 0.001f, forces);
 
         body_integrate_linear(&bodies[i], forces, delta_time);
@@ -174,13 +161,21 @@ void rigidbodies_scene_update(float delta_time) {
         body_integrate_angular(&bodies[i], torques, delta_time);
 
         // check boundary collisions
-        circle_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {GetScreenWidth(), GetScreenHeight()});
-
         Contact contact;
-        for (int j = i + 1; j < arrlen(bodies); ++j) {
-            if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
-                resolve_collision(contact);
-            }
+        switch (bodies[i].type) {
+            case BOX_SHAPE_TYPE:
+                box_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {GetScreenWidth(), GetScreenHeight()});
+                break;
+            case POLYGON_SHAPE_TYPE:
+                break;
+            case CIRCLE_SHAPE_TYPE:
+                circle_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {GetScreenWidth(), GetScreenHeight()});
+                for (int j = i + 1; j < arrlen(bodies); ++j) {
+                    if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
+                        resolve_collision(contact);
+                    }
+                }
+                break;
         }
     }
 }
@@ -191,7 +186,8 @@ void rigidbodies_scene_render(void) {
     draw_grid(79, (ivec4){0,0,0,255});
 
     for (int i = 0; i < arrlen(bodies); ++i) {
-        draw_body_textured(&bodies[i], &sphere_texture);
+        draw_body_textured(&bodies[i], &square_texture);
+        draw_body_line(&bodies[i], (ivec4){0,0,0,255});
     }
 
     if(mode == ADD_CIRCLE_MODE){
@@ -207,7 +203,8 @@ void rigidbodies_scene_cleanup(void) {
     arrfree(bodies);
     arrfree(collisions);
     UnloadTexture(background);
-    UnloadTexture(sphere_texture);
+//    UnloadTexture(sphere_texture);
+    UnloadTexture(square_texture);
 }
 
 void rigidbodies_scene_load(Scene *scene) {
