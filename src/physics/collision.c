@@ -45,38 +45,20 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
 }
 
 void resolve_collision(Contact contact) {
-    float depth_mass = contact.depth / (contact.a->inverse_mass + contact.b->inverse_mass);
+    float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
+    float depth_mass = contact.depth / inverse_mass_sum;
     float depth_a = depth_mass * contact.b->inverse_mass;
     float depth_b = depth_mass * contact.a->inverse_mass;
-
-    // Get relative velocity along normal
-    vec2 relative_velocity;
-    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, relative_velocity);
-    glm_vec2_scale(relative_velocity, glm_vec2_dot(relative_velocity, contact.normal), relative_velocity);
-
-    // apply coefficient of restitution
-    vec2 new_relative_velocity_a;
-    glm_vec2_scale(relative_velocity, -contact.a->restitution, new_relative_velocity_a);
-    vec2 new_relative_velocity_b;
-    glm_vec2_scale(relative_velocity, contact.b->restitution, new_relative_velocity_b);
 
     // resolve penetration
     glm_vec2_mulsubs(contact.normal, depth_a, contact.a->position);
     glm_vec2_muladds(contact.normal, depth_b, contact.b->position);
 
-//    vec2 scaled_normal_a;
-//    glm_vec2_scale(contact.normal, 1.0f, scaled_normal_a);
-//    glm_vec2_reflect(contact.a->linear_velocity, scaled_normal_a, contact.a->linear_velocity);
-//    vec2 scaled_normal_b;
-//    glm_vec2_scale(contact.normal, -1.0f, scaled_normal_b);
-//    glm_vec2_reflect(contact.b->linear_velocity, scaled_normal_b, contact.b->linear_velocity);
+    vec2 relative_velocity;
+    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, relative_velocity);
 
-    vec2 rel_vel;
-    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, rel_vel);
-
-    float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
-    float restitution = 0.75f;
-    float impulse_magnitude = -(1+restitution)*glm_vec2_dot(rel_vel, contact.normal) * inverse_mass_sum;
+    float e = fminf(contact.a->restitution, contact.b->restitution);
+    float impulse_magnitude = -(1 + e) * glm_vec2_dot(relative_velocity, contact.normal) / inverse_mass_sum;
 
     vec2 impulse_a;
     glm_vec2_scale(contact.normal, impulse_magnitude, impulse_a);
