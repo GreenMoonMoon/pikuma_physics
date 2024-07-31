@@ -34,10 +34,10 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
         contact->depth = (a->circle_shape.radius + b->circle_shape.radius) - glm_vec2_norm(ab);
 
         // start and end of the collision. Both points at the edge of each circle along the collision normal
-        contact->start[0] = b->position[0] - contact->normal[0] * b->circle_shape.radius;
-        contact->start[1] = b->position[1] - contact->normal[1] * b->circle_shape.radius;
-        contact->end[0] = a->position[0] + contact->normal[0] * a->circle_shape.radius;
-        contact->end[1] = a->position[1] + contact->normal[1] * a->circle_shape.radius;
+        glm_vec2_mulsubs(contact->normal, b->circle_shape.radius, contact->start);
+        glm_vec2_add(contact->start, b->position, contact->start);
+        glm_vec2_muladds(contact->normal, a->circle_shape.radius, contact->end);
+        glm_vec2_add(contact->end, a->position, contact->end);
 
         return true;
     }
@@ -61,10 +61,8 @@ void resolve_collision(Contact contact) {
     glm_vec2_scale(relative_velocity, contact.b->restitution, new_relative_velocity_b);
 
     // resolve penetration
-    contact.a->position[0] -= contact.normal[0] * depth_a;
-    contact.a->position[1] -= contact.normal[1] * depth_a;
-    contact.b->position[0] += contact.normal[0] * depth_b;
-    contact.b->position[1] += contact.normal[1] * depth_b;
+    glm_vec2_mulsubs(contact.normal, depth_a, contact.a->position);
+    glm_vec2_muladds(contact.normal, depth_b, contact.b->position);
 
 //    vec2 scaled_normal_a;
 //    glm_vec2_scale(contact.normal, 1.0f, scaled_normal_a);
@@ -72,4 +70,18 @@ void resolve_collision(Contact contact) {
 //    vec2 scaled_normal_b;
 //    glm_vec2_scale(contact.normal, -1.0f, scaled_normal_b);
 //    glm_vec2_reflect(contact.b->linear_velocity, scaled_normal_b, contact.b->linear_velocity);
+
+    vec2 rel_vel;
+    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, rel_vel);
+
+    float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
+    float restitution = 0.75f;
+    float impulse_magnitude = -(1+restitution)*glm_vec2_dot(rel_vel, contact.normal) * inverse_mass_sum;
+
+    vec2 impulse_a;
+    glm_vec2_scale(contact.normal, impulse_magnitude, impulse_a);
+    body_apply_impulse(contact.a, impulse_a);
+    vec2 impulse_b;
+    glm_vec2_scale(contact.normal, -impulse_magnitude, impulse_b);
+    body_apply_impulse(contact.b, impulse_b);
 }

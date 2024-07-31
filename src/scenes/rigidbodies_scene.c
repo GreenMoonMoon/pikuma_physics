@@ -107,6 +107,20 @@ static void handle_inputs(void) {
                 break;
         }
     }
+    if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && mode == NONE_MODE) {
+        for (int i = 0; i < arrlen(bodies); ++i) {
+            switch (bodies[i].type) {
+                case CIRCLE_SHAPE_TYPE:
+                    if(glm_vec2_distance2((vec2){GetMouseX(), GetMouseY()}, bodies->position) < glm_pow2(bodies->circle_shape.radius)) {
+                        arrdelswap(bodies, i);
+                        return;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
 
 void rigidbodies_scene_init(void) {
