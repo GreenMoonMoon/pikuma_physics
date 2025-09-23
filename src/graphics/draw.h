@@ -17,5 +17,5 @@ namespace Draw {
     void ShadedBox(const Body &body);
 
     void Circle(const Body &body);
-    void Polygon(Body &body);
+    void Polygon(const Body &body);
 }

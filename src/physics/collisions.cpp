@@ -5,13 +5,14 @@
 #include "collisions.h"
 #include "glm/vec2.hpp"
 #include "glm/geometric.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/perpendicular.hpp"
 
 using glm::vec2;
 
 bool Collision::IsColliding(Body &a, Body &b, Contact &contact) {
-    Shape *shapeA = a.shape.get();
-    Shape *shapeB = b.shape.get();
+    const Shape *shapeA = a.shape.get();
+    const Shape *shapeB = b.shape.get();
 
     switch (shapeA->GetType()) {
         case CIRCLE:
@@ -64,21 +65,18 @@ bool Collision::IsCollidingCircleCircle(Body &body_a, Body &body_b, Contact &con
 }
 
 bool Collision::IsCollidingPolygonPolygon(Body& body_a, Body& body_b, Contact& contact) {
-    // bool result = dynamic_cast<PolygonShape*>(a.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(b.shape.get())) <= 0
-    // && dynamic_cast<PolygonShape*>(b.shape.get())->FindMinimumSeparation(dynamic_cast<PolygonShape*>(a.shape.get())) <= 0;
-
     const auto* shapeA = dynamic_cast<PolygonShape *>(body_a.shape.get());
     const auto* shapeB = dynamic_cast<PolygonShape *>(body_b.shape.get());
 
-    glm::vec2 axis_a;
-    glm::vec2 axis_b;
-    glm::vec2 point_a;
-    glm::vec2 point_b;
+    vec2 axis_a;
+    vec2 axis_b;
+    vec2 point_a;
+    vec2 point_b;
     const float separation_ab = shapeA->FindMinimumSeparation(*shapeB, axis_a, point_a);
-    if (separation_ab >= 0) return false;
+    if (separation_ab >= 0) { return false; }
 
     const float separation_ba = shapeB->FindMinimumSeparation(*shapeA, axis_b, point_b);
-    if (separation_ba >= 0) return false;
+    if (separation_ba >= 0) { return false; }
 
     // Populate contact information
     contact.a = &body_a;
@@ -89,10 +87,10 @@ bool Collision::IsCollidingPolygonPolygon(Body& body_a, Body& body_b, Contact& c
         contact.depth = -separation_ab;
         contact.end = contact.start + contact.normal * contact.depth;
     } else {
-        contact.end = point_b;
+        contact.start = point_b;
         contact.normal = -glm::normalize(glm::vec2(axis_b.y, -axis_b.x));
         contact.depth = -separation_ba;
-        contact.start = contact.end - contact.normal * contact.depth;
+        contact.end = contact.start + contact.normal * contact.depth;
     }
 
     return true;

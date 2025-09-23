@@ -100,9 +100,7 @@ public:
     }
 
     void Update() {
-        // Moving box a according to the mouse
-        glm::vec2 mouse_input = {GetMousePosition().x, GetMousePosition().y};
-        bodies[0].Position = mouse_input;
+        bodies[0].Position = {GetMousePosition().x, GetMousePosition().y};
 
         // Adding forces
         for (auto &body: bodies) {
@@ -140,9 +138,9 @@ public:
         // TODO: move into collision.h
         for (auto &body: bodies) {
             if (body.shape->GetType() == CIRCLE) {
-                float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
-                float widthBoundary = screenWidth - radius;
-                float heightBoundary = screenHeight - radius;
+                const float radius = dynamic_cast<CircleShape *>(body.shape.get())->Radius;
+                const float widthBoundary = screenWidth - radius;
+                const float heightBoundary = screenHeight - radius;
                 if (body.Position.x > widthBoundary) {
                     body.Position.x = widthBoundary;
                     body.Velocity.x *= -body.restitution;
@@ -161,7 +159,7 @@ public:
                 }
             }
             else if (body.shape->GetType() == BOX) {
-                BoxShape *shape = dynamic_cast<BoxShape *>(body.shape.get());
+                const BoxShape *shape = dynamic_cast<BoxShape *>(body.shape.get());
                 float widthBoundary = screenWidth - shape->width * 0.5f;
                 float heightBoundary = screenHeight - shape->height * 0.5f;
 //                if (body.Position.x < )
@@ -185,7 +183,6 @@ public:
                     bodies[j].IsColliding = true;
                     bodies[i].IsColliding = true;
 
-                    // TODO: reenable
                     // Collision::ResolveCollision(contact);
 
                     contacts.push_back(contact);
@@ -194,46 +191,46 @@ public:
         }
     }
 
-    void Render() {
+    void Render() const {
         ClearBackground(BLACK);
         BeginDrawing();
+
+        // Background
         DrawRectangleGradientV(0, 0, screenWidth, screenHeight, DARKGREEN, Color(0, 35, 5, 255));
 
-        // Draw shapes
+        // Shapes
         for (auto&body: bodies) {
-            if (body.shape->GetType() == CIRCLE) {
-                Draw::ShadedCircle(body);
-            }
-            else if (body.shape->GetType() == BOX) {
-                Draw::ShadedBox(body);
-            }
-            else if (body.shape->GetType() == POLYGON) {
-                Draw::Polygon(body);
+            switch (body.shape->GetType()) {
+                case CIRCLE:
+                    Draw::ShadedCircle(body); break;
+                case BOX:
+                    Draw::ShadedBox(body); break;
+                case POLYGON:
+                    Draw::Polygon(body); break;
+                default: break;
             }
         }
 
+        // Outlines
         for (auto &body: bodies) {
-            if (body.shape->GetType() == CIRCLE) {
-                Draw::Circle(body);
-            } else if (body.shape->GetType() == POLYGON || body.shape->GetType() == BOX) {
-                Draw::Polygon(body);
+            switch (body.shape->GetType()) {
+            case CIRCLE:
+                Draw::Circle(body); break;
+            case BOX:
+            case POLYGON:
+                Draw::Polygon(body); break;
             }
         }
 
         // Debug draw contacts
         for (auto contact: contacts) {
-            DrawCircle(contact.start[0], contact.start[1], 2, ORANGE);
-            DrawCircle(contact.end[0], contact.end[1], 2, ORANGE);
+            DrawRectangle(contact.start.x - 2, contact.start.y - 2, 4, 4, ORANGE);
+            DrawText("A", contact.a->Position.x, contact.a->Position.y, 28, WHITE);
+            DrawRectangle(contact.end.x - 2, contact.end.y - 2, 4, 4, ORANGE);
+            DrawText("B", contact.b->Position.x, contact.b->Position.y, 28, WHITE);
             const glm::vec2 line_end = contact.start + contact.normal * 10.0f;
             // draw contact normal
-            DrawLine(contact.start[0],
-                     contact.start[1],
-                     line_end.x,
-                     line_end.y,
-                     ORANGE);
-
-            float len = glm::length(contact.normal);
-            DrawText(TextFormat("Normal length: %f", len), 12, 28, 20, WHITE);
+            DrawLine(contact.start[0], contact.start[1], line_end.x, line_end.y, ORANGE);
         }
 
         // UI

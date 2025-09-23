@@ -4,9 +4,7 @@
 
 #include "shape.h"
 #include <iostream>
-#include "glm/geometric.hpp"
-#include "glm/gtx/transform.hpp"
-#include "glm/vec2.hpp"
+#include "glm/glm.hpp"
 
 CircleShape:: CircleShape(const float radius) : Radius(radius) {}
 
@@ -48,21 +46,16 @@ float PolygonShape::GetMomentOfInertia() const {
 
 void PolygonShape::UpdateWorldVertices(const glm::vec2 position, const float rotation) {
     for(int i = 0; i < Vertices.size(); i++){
-        // auto transform = glm::identity<glm::mat3x3>();
-        // transform = glm::rotate(transform, rotation);
-        // transform = glm::translate(transform, position);
-        // const glm::vec3 vert = glm::vec3(Vertices[i].x, Vertices[i].y, 1.0f) * transform;
-        // WorldVertices[i].x = vert.x;
-        // WorldVertices[i].x = vert.y;
-
         WorldVertices[i].x = Vertices[i].x * glm::cos(rotation) + Vertices[i].y * glm::sin(rotation) + position.x;
         WorldVertices[i].y = Vertices[i].x * -glm::sin(rotation) + Vertices[i].y * glm::cos(rotation) + position.y;
     }
 }
 
+/// Return a polygon edge where the vertex at index is the first vertex of this edge
+/// @param index edge's first vertex index
+/// @return Edge direction
 glm::vec2 PolygonShape::EdgeAt(const int index) const {
-    int current_vertex = index;
-    int next_vertex = (index + 1) % WorldVertices.size();
+    const int next_vertex = (index + 1) % WorldVertices.size(); // Modulo to ensure wrap around
     return WorldVertices[next_vertex] - WorldVertices[index];
 }
 

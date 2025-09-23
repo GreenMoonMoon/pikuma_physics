@@ -4,9 +4,11 @@
 
 #include "raylib_extension.h"
 #include "rlgl.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/rotate_vector.hpp"
 
-void DrawPolygon(std::vector<glm::vec2> &vertices, glm::vec2 position, float angle, Color color) {
+
+void DrawPolygon(const std::vector<glm::vec2> &vertices, const glm::vec2 position, const float angle, const Color color) {
     rlBegin(RL_LINES);
     rlColor4ub(color.r, color.g, color.b, color.a);
 
