@@ -25,4 +25,4 @@ add_executable(pikuma_physics src/main.cpp
         src/graphics/raylib_extension.cpp
         src/graphics/draw.cpp)
 target_link_libraries(pikuma_physics PRIVATE raylib glm::glm)
-target_include_directories(pikuma_physics PRIVATE src)
+target_include_directories(pikuma_physics PRIVATE extern)

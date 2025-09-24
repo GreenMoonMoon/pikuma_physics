@@ -7,7 +7,7 @@
 
 #endif //PIKUMA_PHYSICS_DRAW_H
 
-#include "physics/body.h"
+#include "../physics/body.h"
 
 namespace Draw {
     void Init();

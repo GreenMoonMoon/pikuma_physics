@@ -3,7 +3,7 @@
 //
 
 #include "draw.h"
-#include "physics/shape.h"
+#include "../physics/shape.h"
 #include "raylib.h"
 #include "raylib_extension.h"
 #include "glm/ext/scalar_common.hpp"

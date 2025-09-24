@@ -9,6 +9,8 @@
 
 #include "graphics/draw.h"
 #include "raylib.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -24,6 +26,22 @@ static struct {
     float Radius;
     float Mass;
 } spawnShape;
+
+class DebugWindow {
+private:
+    Rectangle window;
+public:
+    DebugWindow() : window((Rectangle){10.0f, 10.0f, 200.0f, 500.0f}) {}
+    ~DebugWindow() = default;
+
+    void Draw() {
+        if (GuiWindowBox(window, "Debug")) {
+
+        }
+    }
+};
+
+DebugWindow debug_window;
 
 // APPLICATION
 class Application {
@@ -191,7 +209,7 @@ public:
         }
     }
 
-    void Render() const {
+    void Render() {
         ClearBackground(BLACK);
         BeginDrawing();
 
@@ -233,16 +251,7 @@ public:
             DrawLine(contact.start[0], contact.start[1], line_end.x, line_end.y, ORANGE);
         }
 
-        // UI
-        // // Draw spawn shape
-        // if (spawnShape.IsActive){
-        //     DrawCircleLines(spawnShape.Position.x, spawnShape.Position.y, spawnShape.Radius, LIGHTGRAY);
-        //     DrawText(TextFormat("MASS: %0g", spawnShape.Mass),
-        //              spawnShape.Position.x - 16.0f,
-        //              spawnShape.Position.y + spawnShape.Radius + 5.0f,
-        //              16,
-        //              LIGHTGRAY);
-        // }
+        debug_window.Draw();
 
         DrawFPS(10, 10);
 
