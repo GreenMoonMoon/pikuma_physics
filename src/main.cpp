@@ -11,6 +11,7 @@
 #include "raylib.h"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#include "raymath.h"
 
 static glm::vec2 push;
 static Rectangle liquid;
@@ -29,14 +30,49 @@ static struct {
 
 class DebugWindow {
 private:
+    bool show;
     Rectangle window;
+    bool grabbing;
+    Vector2 grab_offset;
 public:
-    DebugWindow() : window((Rectangle){10.0f, 10.0f, 200.0f, 500.0f}) {}
+    DebugWindow() {
+        show = true;
+        window = (Rectangle){10.0f, 10.0f, 200.0f, 500.0f};
+        grabbing = false;
+        grab_offset = (Vector2){0};
+    }
     ~DebugWindow() = default;
 
-    void Draw() {
-        if (GuiWindowBox(window, "Debug")) {
+    void Inputs() {
+        if (IsKeyPressed(KEY_GRAVE)) { show = true; }
+        if (!show) { return; }
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){window.x, window.y, window.width, 20})) {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !grabbing) {
+                grabbing = true;
+                grab_offset = Vector2Subtract(GetMousePosition(), (Vector2){window.x, window.y});
+            }
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && grabbing) {
+            grabbing = false;
+        }
+    }
 
+    void Update() {
+        if (!show) { return; }
+        if (grabbing) {
+            window.x = GetMousePosition().x - grab_offset.x;
+            window.y = GetMousePosition().y - grab_offset.y;
+        }
+    }
+
+    void Draw() {
+        if (!show) { return; }
+        if (!GuiWindowBox(window, "Debug")) {
+            if (GuiButton((Rectangle){window.x + 10, window.y + 35, 100.0f, 25.0f}, "Box")) {
+
+            }
+        } else {
+            show = false;
         }
     }
 };
@@ -113,11 +149,14 @@ public:
 //            bodies.emplace_back(CircleShape(spawnShape.Radius), spawnShape.Position.x, spawnShape.Position.y, spawnShape.Mass, 0.0f);
 //            spawnShape.IsActive = false;
 //        }
+        debug_window.Inputs();
 
-        PollInputEvents();
+        //PollInputEvents();
     }
 
     void Update() {
+        debug_window.Update();
+
         bodies[0].Position = {GetMousePosition().x, GetMousePosition().y};
 
         // Adding forces
