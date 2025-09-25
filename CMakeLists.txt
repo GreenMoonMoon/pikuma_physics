@@ -23,6 +23,8 @@ add_executable(pikuma_physics src/main.cpp
         src/physics/shape.cpp
         src/physics/collisions.cpp
         src/graphics/raylib_extension.cpp
-        src/graphics/draw.cpp)
+        src/graphics/draw.cpp
+        src/graphics/debug_ui.cpp
+)
 target_link_libraries(pikuma_physics PRIVATE raylib glm::glm)
 target_include_directories(pikuma_physics PRIVATE extern)
