@@ -12,6 +12,6 @@ void particles_scene_update(float delta_time);
 void particles_scene_render();
 void particles_scene_cleanup(void);
 
-void particles_scene_load(Scene *scene);
+void particles_scene_load(PhysicScene *scene);
 
 #endif //PIKUMA_PHYSICS_PARTICLES_SCENE_H

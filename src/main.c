@@ -5,26 +5,26 @@
 //#include "scenes/particles_scene.h"
 #include "scenes/rigidbodies_scene.h"
 
-static Scene scene;
+static PhysicScene active_scene;
 
 void setup(void) {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(1024, 720, "Pikuma Physics");
     SetTargetFPS(60);
 
-    scene.init();
+    active_scene.init();
 }
 
 void update(void) {
-    float delta_time = GetFrameTime();
-    scene.update(delta_time);
+    const float delta_time = GetFrameTime();
+    active_scene.update(delta_time);
 }
 
 void render(void) {
     BeginDrawing();
     ClearBackground(DARKGRAY);
 
-    scene.render();
+    active_scene.render();
 
     DrawFPS(GetScreenWidth() - 100, 25);
 
@@ -32,15 +32,15 @@ void render(void) {
 }
 
 void cleanup(void) {
-    scene.cleanup();
+    active_scene.cleanup();
 
     CloseWindow();
 }
 
 
 int main() {
-//    particles_scene_load(&scene);
-    rigidbodies_scene_load(&scene);
+    // particles_scene_load(&scene);
+    rigidbodies_scene_load(&active_scene);
 
     setup();
     while(!WindowShouldClose()){

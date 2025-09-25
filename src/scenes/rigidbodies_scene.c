@@ -2,16 +2,12 @@
 // Created by josue on 2024-07-22.
 //
 
+#include "raylib.h"
 #include "rigidbodies_scene.h"
 #include "physics/rigidbodies.h"
 #include "physics/collision.h"
 #include "physics/forces.h"
-
 #include "external/stb_ds.h"
-
-#include "graphics/raylib_utils.h"
-
-#include "external/raygui.h"
 
 static Body *bodies = NULL;
 static vec2 *vertices;
@@ -43,15 +39,6 @@ static Contact *collisions = NULL;
 static Texture2D background;
 static Texture2D sphere_texture;
 static Texture2D square_texture;
-
-static void draw_ui(void) {
-    if (GuiWindowBox((Rectangle) {ui_window_bar[0][0], ui_window_bar[0][1], 200, 150}, "Controls")) { ui_enabled = false; }
-    GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 38, 25, 25}, "Pause", &paused);
-    GuiCheckBox((Rectangle) {ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 68, 25, 25}, "Gravity", &enable_gravity);
-//    if(GuiButton((Rectangle){ui_window_bar[0][0] + 15, ui_window_bar[0][1] + 98, 100, 25}, "Add Circle")){
-//        mode = ADD_CIRCLE_MODE;
-//    }
-}
 
 static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
@@ -183,19 +170,14 @@ void rigidbodies_scene_update(float delta_time) {
 void rigidbodies_scene_render(void) {
     DrawTexture(background, 0, -100, WHITE);
 
-    draw_grid(79, (ivec4){0,0,0,255});
-
     for (int i = 0; i < arrlen(bodies); ++i) {
-        draw_body_textured(&bodies[i], &square_texture);
-        draw_body_line(&bodies[i], (ivec4){0,0,0,255});
+        DrawRectangleLines(bodies[i].position[0] - bodies[i].box_shape.extents[0], bodies[i].position[1] - bodies[i].box_shape.extents[1], 2 * bodies[i].box_shape.extents[0], 2 * bodies[i].box_shape.extents[1], BLACK);
     }
 
     if(mode == ADD_CIRCLE_MODE){
-        draw_circle_line(spawn_info.position, 0.0f, spawn_info.radius, 2.0f, (ivec4){0,0,0,255});
+        DrawCircleLines(spawn_info.position[0], spawn_info.position[1], spawn_info.radius, BLACK);
         DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position[0], spawn_info.position[1], 18, GREEN);
     }
-
-    if (ui_enabled) { draw_ui(); }
 }
 
 void rigidbodies_scene_cleanup(void) {
@@ -207,7 +189,7 @@ void rigidbodies_scene_cleanup(void) {
     UnloadTexture(square_texture);
 }
 
-void rigidbodies_scene_load(Scene *scene) {
+void rigidbodies_scene_load(PhysicScene *scene) {
     scene->init = rigidbodies_scene_init;
     scene->update = rigidbodies_scene_update;
     scene->render = rigidbodies_scene_render;

@@ -8,16 +8,11 @@
 #include "physics/particles.h"
 #define RANDOM_IMPLEMENTATION
 #include "utils/random.h"
-#include "graphics/raylib_utils.h"
 #include "external/stb_ds.h"
 
 #include "cglm/cglm.h"
 
 #include "raylib.h"
-#define RAYGUI_IMPLEMENTATION
-#include "external/raygui.h"
-#define GUI_PROPERTY_LIST_IMPLEMENTATION
-#include "external/dm_property_list.h"
 
 #define PARTICLE_COUNT 100
 
@@ -80,27 +75,6 @@ static void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
         glm_vec2_scale(direction, magnitude, drag);
     }
     glm_vec2_add(forces, drag, forces);
-}
-
-static void draw_ui(void){
-    if (GuiButton((Rectangle){25, 100, 125, 30 }, "#63#Clear") & !mode_is_edited) {
-                arrsetlen(particles, 0);
-    }
-    GuiCheckBox((Rectangle){30, 140, 25, 25}, "Gravity", &is_gravity_enabled);
-    GuiCheckBox((Rectangle){30, 170, 25, 25}, "Drag", &is_drag_enabled);
-
-    // List of properties
-    GuiForceList((Rectangle){25, (GetScreenHeight() - 280)/2, 180, 280}, force_list, arrlen(force_list), &focus, &scroll);
-
-    if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#145#Particle;#22#Draw Chain", &active_mode, mode_is_edited)) {
-        mode_is_edited = !mode_is_edited;
-    }
-
-    if(GuiSlider((Rectangle){25, 200, 125, 30}, "", "Spacing", &chain_spacing, 5.0f, 200.0f)){
-        printf("chain_spacing: %f\n", chain_spacing);
-    }
-
-    DrawText(TextFormat("%10d PARTICLES", arrlen(particles)), GetScreenWidth() - 250, 25, 20, DARKGREEN);
 }
 
 void particles_scene_init(void) {
@@ -219,11 +193,8 @@ void particles_scene_update(float delta_time) {
 
 void particles_scene_render() {
     for (int j = 0; j < arrlen(particles); ++j) {
-        drawParticle(particles[j].position, particles[j].radius, (ivec4){255,255,255,255});
+        DrawRectangle(particles[j].position[0], particles[j].position[1], particles[j].radius * 2, particles[j].radius * 2, WHITE);
     }
-
-    // draw ui
-    draw_ui();
 }
 
 void particles_scene_cleanup(void) {
@@ -231,7 +202,7 @@ void particles_scene_cleanup(void) {
     arrfree(force_list);
 }
 
-void particles_scene_load(Scene *scene) {
+void particles_scene_load(PhysicScene *scene) {
     scene->init = particles_scene_init;
     scene->update = particles_scene_update;
     scene->render = particles_scene_render;

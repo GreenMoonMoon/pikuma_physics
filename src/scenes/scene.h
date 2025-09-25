@@ -12,6 +12,6 @@ typedef struct Scene {
     void (*update)(float delta_time);
     void (*render)(void);
     void (*cleanup)(void);
-} Scene;
+} PhysicScene;
 
 #endif //PIKUMA_PHYSICS_SCENE_H
