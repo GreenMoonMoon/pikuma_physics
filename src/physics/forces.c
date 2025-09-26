@@ -3,20 +3,19 @@
 //
 
 #include "forces.h"
+#include "raymath.h"
 
-void force_add_force(const vec2 force, float inverse_mass, vec2 out_forces) {
-    glm_vec2_add(out_forces, (vec2){force[0] * inverse_mass, force[1] * inverse_mass}, out_forces);
+void force_add_force(const Vector2 force, const float inverse_mass, Vector2 *out_forces) {
+    *out_forces = Vector2Add(*out_forces, Vector2Scale(force, inverse_mass));
 }
 
-void force_apply_drag(const vec2 velocity, float coefficient, vec2 out_forces) {
-    vec2 drag = {0};
-    vec2 direction;
-    float velocity_magnitude_squared = glm_vec2_norm2(velocity);
+void force_apply_drag(const Vector2 velocity, const float coefficient, Vector2 *out_forces) {
+    Vector2 drag = {0};
+    const float velocity_magnitude_squared = Vector2LengthSqr(velocity);
     if(velocity_magnitude_squared > 0.0f) {
-        glm_vec2_normalize_to(velocity, direction);
-        glm_vec2_negate(direction);
-        float magnitude = coefficient * velocity_magnitude_squared;
-        glm_vec2_scale(direction, magnitude, drag);
+        const Vector2 direction = Vector2Negate(Vector2Normalize(velocity));
+        const float magnitude = coefficient * velocity_magnitude_squared;
+        drag = Vector2Scale(direction, magnitude);
     }
-    glm_vec2_add(out_forces, drag, out_forces);
+    *out_forces = Vector2Add(drag, *out_forces);
 }

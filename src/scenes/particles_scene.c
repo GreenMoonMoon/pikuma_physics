@@ -3,16 +3,13 @@
 //
 
 #include <time.h>
-
+#include "raylib.h"
+#include "raymath.h"
 #include "particles_scene.h"
 #include "../physics/particles.h"
 #define RANDOM_IMPLEMENTATION
 #include "../utils/random.h"
 #include "../extern/stb_ds.h"
-
-#include "cglm/cglm.h"
-
-#include "raylib.h"
 
 #define PARTICLE_COUNT 100
 
@@ -41,40 +38,35 @@ typedef struct Force {
         FORCE_TYPE_FRICTION,
     } type;
     union{
-        vec2 values;
+        Vector2 values;
         float value;
     };
 } Force;
 static Force *force_list = NULL;
 
-static void add_push(vec2 wind, float inverse_mass, vec2 out_forces) {
-    glm_vec2_add(out_forces, (vec2){wind[0] * inverse_mass, wind[1] * inverse_mass}, out_forces);
+static void add_push(const Vector2 wind, const float inverse_mass, Vector2 *out_forces) {
+    *out_forces = Vector2Add(*out_forces, (Vector2){wind.x * inverse_mass, wind.y * inverse_mass});
 }
 
-static void add_friction(vec2 velocity, float coefficient, vec2 normal, vec2 out_forces){
-    vec2 friction_force;
-    vec2 direction;
-    glm_vec2_normalize_to(velocity, direction);
-    glm_vec2_negate(direction);
-    glm_vec2_scale(direction, coefficient, friction_force);
-    glm_vec2_add(out_forces, friction_force, out_forces);
+static void add_friction(const Vector2 velocity, const float coefficient, Vector2 *out_forces){
+    const Vector2 direction = Vector2Negate(Vector2Normalize(velocity));
+    const Vector2 friction_force = Vector2Scale(direction, coefficient);
+    *out_forces = Vector2Add(*out_forces, friction_force);
 }
 
 static void add_spring() {
 
 }
 
-static void apply_drag(const vec2 velocity, float coefficient, vec2 forces) {
-    vec2 drag = {0};
-    vec2 direction;
-    float velocity_magnitude_squared = glm_vec2_norm2(velocity);
+static void apply_drag(const Vector2 velocity, const float coefficient, Vector2 *forces) {
+    Vector2 drag = {0};
+    const float velocity_magnitude_squared = Vector2LengthSqr(velocity);
     if(velocity_magnitude_squared > 0.0f) {
-        glm_vec2_normalize_to(velocity, direction);
-        glm_vec2_negate(direction);
-        float magnitude = coefficient * velocity_magnitude_squared;
-        glm_vec2_scale(direction, magnitude, drag);
+        const Vector2 direction = Vector2Negate(Vector2Normalize(velocity));
+        const float magnitude = coefficient * velocity_magnitude_squared;
+        drag = Vector2Scale(direction, magnitude);
     }
-    glm_vec2_add(forces, drag, forces);
+    *forces = Vector2Add(*forces, drag);
 }
 
 void particles_scene_init(void) {
@@ -107,34 +99,19 @@ void process_inputs(void) {
     if (IsMouseButtonPressed(0) && !mode_is_edited) {
         switch (active_mode) {
             case MODE_ADD_PARTICLE:
-                float mass = random_float_range(1.0f, 4.0f);
-                arrput(particles, particle(
-                        (vec2){GetMouseX(), GetMouseY()},
-                    mass * 4.0f,
-                    mass,
-                    false
-                ));
+                const float mass = random_float_range(1.0f, 4.0f);
+                arrput(particles, particle( GetMousePosition(), mass * 4.0f, mass, false));
                 break;
             case MODE_DRAW_CHAIN:
                 mouse_travel = 0.0f;
-                arrput(particles, particle(
-                    (vec2){GetMouseX(), GetMouseY()},
-                    4.0f,
-                    1.0f,
-                    true
-                ));
+                arrput(particles, particle( GetMousePosition(), 4.0f, 1.0f, true));
                 break;
         }
     } else if(IsMouseButtonDown(0) && active_mode == MODE_DRAW_CHAIN){
-        mouse_travel += glm_vec2_norm((vec2){GetMouseDelta().x, GetMouseDelta().y});
+        mouse_travel += Vector2Length(GetMouseDelta());
         if (mouse_travel > chain_spacing) {
             mouse_travel -= chain_spacing;
-            arrput(particles, particle(
-                (vec2){GetMouseX(), GetMouseY()},
-                4.0f,
-                1.0f,
-                false
-            ));
+            arrput(particles, particle( GetMousePosition(), 4.0f, 1.0f, false));
         }
     }
 }
@@ -145,55 +122,53 @@ void particles_scene_update(float delta_time) {
     for (int j = 0; j < arrlen(particles); ++j) {
         if (particles[j].anchor) { continue; }
 
-        vec2 force_sum = {0};
+        Vector2 force_sum = {0};
 
-        if (is_gravity_enabled) { force_sum[1] = 10.0f; }
+        if (is_gravity_enabled) { force_sum.y = 10.0f; }
 
         for (int i = 0; i < arrlen(force_list); ++i) {
             switch (force_list[i].type) {
                 case FORCE_TYPE_WIND:
-                    add_push(force_list[i].values, particles[j].inverse_mass, force_sum);
+                    add_push(force_list[i].values, particles[j].inverse_mass, &force_sum);
                     break;
                 case FORCE_TYPE_FRICTION:
-                    add_friction(particles[j].velocity, force_list[i].value, (vec2){0.0f, -1.0f},force_sum);
+                    add_friction(particles[j].velocity, force_list[i].value, &force_sum);
                     break;
             }
         }
 
-        if (is_drag_enabled){apply_drag(particles[j].velocity, 0.003f, force_sum);}
+        if (is_drag_enabled){apply_drag(particles[j].velocity, 0.003f, &force_sum);}
 
         // integrate forces
-        vec2 acceleration = {0};
-        glm_vec2_add(acceleration, force_sum, acceleration);
-        glm_vec2_scale(acceleration, delta_time, acceleration);
-        glm_vec2_add(particles[j].velocity, acceleration, particles[j].velocity);
+        Vector2 acceleration = force_sum;
+        acceleration = Vector2Scale(acceleration, delta_time);
+        particles[j].velocity = Vector2Add(particles[j].velocity, acceleration);
 
         // integrate velocity
-        vec2 delta_velocity;
-        glm_vec2_scale(particles[j].velocity, delta_time * PIXEL_PER_UNIT, delta_velocity);
-        glm_vec2_add(particles[j].position, delta_velocity, particles[j].position);
+        const Vector2 delta_velocity = Vector2Scale(particles[j].velocity, delta_time * PIXEL_PER_UNIT);
+        particles[j].position = Vector2Add(particles[j].position, delta_velocity);
 
         // check screen bounds
-        if(particles[j].position[0] < particles[j].radius) {
-            particles[j].position[0] = particles[j].radius;
-            particles[j].velocity[0] = -particles[j].velocity[0];
-        } else if (particles[j].position[0] > 1024 - particles[j].radius){
-            particles[j].position[0] = 1024 - particles[j].radius;
-            particles[j].velocity[0] = -particles[j].velocity[0];
+        if(particles[j].position.x < particles[j].radius) {
+            particles[j].position.x = particles[j].radius;
+            particles[j].velocity.x = -particles[j].velocity.x;
+        } else if (particles[j].position.x > 1024 - particles[j].radius){
+            particles[j].position.x = 1024 - particles[j].radius;
+            particles[j].velocity.x = -particles[j].velocity.x;
         }
-        if(particles[j].position[1] < particles[j].radius) {
-            particles[j].position[1] = particles[j].radius;
-            particles[j].velocity[1] = -particles[j].velocity[1];
-        } else if (particles[j].position[1] > 720 - particles[j].radius){
-            particles[j].position[1] = 720 - particles[j].radius;
-            particles[j].velocity[1] = -particles[j].velocity[1];
+        if(particles[j].position.y < particles[j].radius) {
+            particles[j].position.y = particles[j].radius;
+            particles[j].velocity.y = -particles[j].velocity.y;
+        } else if (particles[j].position.y > 720 - particles[j].radius){
+            particles[j].position.y = 720 - particles[j].radius;
+            particles[j].velocity.y = -particles[j].velocity.y;
         }
     }
 }
 
 void particles_scene_render() {
     for (int j = 0; j < arrlen(particles); ++j) {
-        DrawRectangle(particles[j].position[0], particles[j].position[1], particles[j].radius * 2, particles[j].radius * 2, WHITE);
+        DrawRectangle(particles[j].position.x, particles[j].position.y, particles[j].radius * 2, particles[j].radius * 2, WHITE);
     }
 }
 

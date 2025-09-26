@@ -3,6 +3,7 @@
 //
 
 #include "raylib.h"
+#include "raymath.h"
 #include "rigidbodies_scene.h"
 #include "../physics/rigidbodies.h"
 #include "../physics/collision.h"
@@ -11,9 +12,6 @@
 
 static Body *bodies = NULL;
 
-static bool ui_enabled = false;
-static vec2 ui_window_bar[2] = {{10,10},{210, 34}};
-static vec2 ui_drag_offset = {0};
 static bool paused = false;
 static bool enable_gravity = true;
 static enum {
@@ -22,7 +20,7 @@ static enum {
     DRAG_DEBUG_WINDOW_MODE,
 } mode = 0;
 static struct SpawnInfo {
-    vec2 position;
+    Vector2 position;
     float radius;
     float mass;
     bool set;
@@ -41,21 +39,15 @@ static Texture2D background;
 
 static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
-    if (IsKeyPressed(KEY_D) && IsKeyDown(KEY_LEFT_CONTROL)) { ui_enabled = !ui_enabled; }
+    if (IsKeyPressed(KEY_N)) { mode = ADD_CIRCLE_MODE; }
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
 
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         switch(mode){
             case NONE_MODE:
-                if (ui_enabled && glm_aabb2d_point(ui_window_bar, (vec2) {GetMouseX(), GetMouseY()})) {
-                    mode = DRAG_DEBUG_WINDOW_MODE;
-                    ui_drag_offset[0] = GetMouseX() - ui_window_bar[0][0];
-                    ui_drag_offset[1] = GetMouseY() - ui_window_bar[0][1];
-                }
                 break;
             case ADD_CIRCLE_MODE:
-                spawn_info.position[0] = GetMouseX();
-                spawn_info.position[1] = GetMouseY();
+                spawn_info.position = GetMousePosition();
                 spawn_info.set = true;
                 break;
             default:
@@ -64,14 +56,8 @@ static void handle_inputs(void) {
     }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
         switch(mode){
             case ADD_CIRCLE_MODE:
-                spawn_info.radius = glm_clamp(abs(GetMouseX() - (int) spawn_info.position[0]), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
-                spawn_info.mass = glm_clamp(abs(GetMouseY() - (int) spawn_info.position[1]) * 0.1f, 1.0f, 100.0f);
-                break;
-            case DRAG_DEBUG_WINDOW_MODE:
-                ui_window_bar[0][0] = GetMouseX() - ui_drag_offset[0];
-                ui_window_bar[0][1] = GetMouseY() - ui_drag_offset[1];
-                ui_window_bar[1][0] = ui_window_bar[0][0] + 200;
-                ui_window_bar[1][1] = ui_window_bar[0][1] + 24;
+                spawn_info.radius = Clamp(fabsf(GetMouseX() - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
+                spawn_info.mass = Clamp(fabsf(GetMouseY() - spawn_info.position.y) * 0.1f, 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
                 break;
             default:
                 break;
@@ -80,8 +66,7 @@ static void handle_inputs(void) {
         switch (mode) {
             case ADD_CIRCLE_MODE:
                 arrput(bodies, create_circle_body(spawn_info.radius, spawn_info.mass, 0.9f, spawn_info.position));
-                spawn_info.position[0] = 0;
-                spawn_info.position[1] = 0;
+                spawn_info.position = (Vector2){0};
                 spawn_info.mass = 1.0f;
                 spawn_info.radius = PIXEL_PER_UNIT;
                 spawn_info.set = false;
@@ -100,8 +85,8 @@ void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
     // sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
 
-    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (vec2) {300, 300}));
-    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (vec2) {325, 100}));
+    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
+    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
     // square_texture = LoadTexture("../assets/PNG/Wood elements/elementWood010.png");
 
@@ -113,8 +98,7 @@ void rigidbodies_scene_update(const float delta_time) {
     handle_inputs();
 
     if(mode == ADD_CIRCLE_MODE && !spawn_info.set){
-        spawn_info.position[0] = (float)GetMouseX();
-        spawn_info.position[1] = (float)GetMouseY();
+        spawn_info.position = GetMousePosition();
     }
 
     if (paused) { return; }
@@ -125,12 +109,13 @@ void rigidbodies_scene_update(const float delta_time) {
         resolve_collision(contact);
     }
 
+    // Apply forces and check boundary collisions
     for (int i = 0; i < arrlen(bodies); ++i) {
         // add forces
-        vec2 forces = {0.0f, 0.0f};
+        Vector2 forces = {0.0f, 0.0f};
 
-        if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
-        force_apply_drag(bodies[i].linear_velocity, 0.001f, forces);
+        if (enable_gravity) { forces.y = 10.0f * PIXEL_PER_UNIT; } // add gravity;
+        force_apply_drag(bodies[i].linear_velocity, 0.001f, &forces);
 
         // Integrate  forces
         body_integrate_linear(&bodies[i], forces, delta_time);
@@ -146,12 +131,12 @@ void rigidbodies_scene_update(const float delta_time) {
         Contact contact;
         switch (bodies[i].type) {
             case BOX_SHAPE_TYPE:
-                box_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {(float)GetScreenWidth(), (float)GetScreenHeight()});
+                box_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
             case POLYGON_SHAPE_TYPE:
                 break;
             case CIRCLE_SHAPE_TYPE:
-                circle_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {(float)GetScreenWidth(), (float)GetScreenHeight()});
+                circle_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
         }
     }
@@ -202,27 +187,27 @@ void rigidbodies_scene_render(void) {
     for (int i = 0; i < arrlen(bodies); ++i) {
         switch (bodies[i].type) {
             case BOX_SHAPE_TYPE:
-                DrawRectangleLines(bodies[i].position[0] - bodies[i].box_shape.extents[0], bodies[i].position[1] - bodies[i].box_shape.extents[1], 2 * bodies[i].box_shape.extents[0], 2 * bodies[i].box_shape.extents[1], BLACK);
+                DrawRectangleLines(bodies[i].position.x - bodies[i].box_shape.extents.x, bodies[i].position.y - bodies[i].box_shape.extents.y, 2 * bodies[i].box_shape.extents.x, 2 * bodies[i].box_shape.extents.y, BLACK);
                 break;
             case POLYGON_SHAPE_TYPE:
                 DrawLineStrip((const Vector2 *)bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, BLACK);
                 break;
             case CIRCLE_SHAPE_TYPE:
-                DrawCircleLines(bodies[i].position[0], bodies[i].position[1], bodies[i].circle_shape.radius, BLACK);
-                DrawLine(bodies[i].position[0], bodies[i].position[1], bodies[i].position[0] + cosf(bodies[i].rotation) * bodies[i].circle_shape.radius, bodies[i].position[1] + sinf(bodies[i].rotation) * bodies[i].circle_shape.radius, BLACK);
+                DrawCircleLines(bodies[i].position.x, bodies[i].position.y, bodies[i].circle_shape.radius, BLACK);
+                DrawLine(bodies[i].position.x, bodies[i].position.y, bodies[i].position.x + cosf(bodies[i].rotation) * bodies[i].circle_shape.radius, bodies[i].position.y + sinf(bodies[i].rotation) * bodies[i].circle_shape.radius, BLACK);
                 break;
         }
     }
 
     if(mode == ADD_CIRCLE_MODE){
-        DrawCircleLines(spawn_info.position[0], spawn_info.position[1], spawn_info.radius, BLACK);
-        DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position[0], spawn_info.position[1], 18, GREEN);
+        DrawCircleLines(spawn_info.position.x, spawn_info.position.y, spawn_info.radius, BLACK);
+        DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position.x, spawn_info.position.y, 18, GREEN);
     }
 
     // draw debug
     for (int i = 0; i < arrlen(collisions); ++i) {
-        DrawRectangle(collisions[i].start[0] - 2, collisions[i].start[1] - 2, 4, 4, ORANGE);
-        // DrawLine(collisions[i].start[0], collisions[i].start[1], collisions[i].start[0] + (5 * collisions[i].normal[0]), collisions[i].start[1] + (5 * collisions[i].normal[1]), ORANGE);
+        DrawRectangle(collisions[i].start.x - 4, collisions[i].start.y - 4, 8, 8, ORANGE);
+        DrawLine(collisions[i].start.x, collisions[i].start.y, collisions[i].start.x + (15 * collisions[i].normal.x), collisions[i].start.y + (15 * collisions[i].normal.y), ORANGE);
     }
 
     // UI

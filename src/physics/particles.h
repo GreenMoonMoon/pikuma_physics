@@ -5,16 +5,16 @@
 #ifndef PIKUMA_PHYSICS_PARTICLES_H
 #define PIKUMA_PHYSICS_PARTICLES_H
 
-#include "cglm/cglm.h"
+#include "raylib.h"
 
 typedef struct Particle {
-    vec2 position;
-    vec2 velocity;
+    Vector2 position;
+    Vector2 velocity;
     float radius;
     float inverse_mass;
     bool anchor;
 } Particle;
 
-Particle particle(const vec2 position, float radius, float mass, bool anchor);
+Particle particle(Vector2 position, float radius, float mass, bool anchor);
 
 #endif //PIKUMA_PHYSICS_PARTICLES_H

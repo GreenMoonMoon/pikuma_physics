@@ -4,84 +4,81 @@
 
 #include "collision.h"
 #include "rigidbodies.h"
+#include "raymath.h"
 
-void circle_check_resolve_boundary(Body *body, const vec2 min, const vec2 max) {
-    if (body->position[0]-body->circle_shape.radius < min[0]) {
-        body->position[0] = body->circle_shape.radius + min[0];
-        body->linear_velocity[0] = -body->linear_velocity[0] * 0.75f;
-    } else if (body->position[0]+body->circle_shape.radius > max[0]){
-        body->position[0] = max[0] - body->circle_shape.radius;
-        body->linear_velocity[0] = -body->linear_velocity[0] * 0.75f;
+void circle_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
+    if (body->position.x -body->circle_shape.radius < min.x) {
+        body->position.x = body->circle_shape.radius + min.x;
+        body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
+    } else if (body->position.x +body->circle_shape.radius > max.x){
+        body->position.x = max.x - body->circle_shape.radius;
+        body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
     }
-    if (body->position[1]-body->circle_shape.radius < min[1]) {
-        body->position[1] = body->circle_shape.radius + min[1];
-        body->linear_velocity[1] = -body->linear_velocity[1] * 0.75f;
-    } else if (body->position[1]+body->circle_shape.radius > max[1]){
-        body->position[1] = max[1] - body->circle_shape.radius;
-        body->linear_velocity[1] = -body->linear_velocity[1] * 0.75f;
+    if (body->position.y -body->circle_shape.radius < min.y) {
+        body->position.y = body->circle_shape.radius + min.y;
+        body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
+    } else if (body->position.y + body->circle_shape.radius > max.y){
+        body->position.y = max.y - body->circle_shape.radius;
+        body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
     }
 }
 
 bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
-    vec2 ab;
-    glm_vec2_sub(b->position, a->position, ab);
-    float radius_sum  = a->circle_shape.radius + b->circle_shape.radius;
-    if (glm_vec2_norm2(ab) < glm_pow2(radius_sum)) {
+    const Vector2 ab = Vector2Subtract(b->position, a->position);
+    const float radius_sum  = a->circle_shape.radius + b->circle_shape.radius;
+    if (Vector2LengthSqr(ab) < radius_sum * radius_sum) {
         contact->a = a;
         contact->b = b;
 
-        glm_vec2_normalize_to(ab, contact->normal); // collision normal
-        contact->depth = (a->circle_shape.radius + b->circle_shape.radius) - glm_vec2_norm(ab);
+        contact->normal = Vector2Normalize(ab); // collision normal
+        contact->depth = (a->circle_shape.radius + b->circle_shape.radius) - Vector2Length(ab);
 
         // start and end of the collision. Both points at the edge of each circle along the collision normal
-        glm_vec2_mulsubs(contact->normal, b->circle_shape.radius, contact->start);
-        glm_vec2_add(contact->start, b->position, contact->start);
-        glm_vec2_muladds(contact->normal, a->circle_shape.radius, contact->end);
-        glm_vec2_add(contact->end, a->position, contact->end);
+        contact->start = Vector2Subtract(contact->start, Vector2Scale(contact->normal, b->circle_shape.radius));
+        contact->start = Vector2Add(contact->start, b->position);
+        contact->end = Vector2Add(contact->end, Vector2Scale(contact->normal, a->circle_shape.radius));
+        contact->end = Vector2Add(contact->end, a->position);
 
         return true;
     }
     return false;
 }
 
-void resolve_collision(Contact contact) {
-    float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
+void resolve_collision(const Contact contact) {
+    const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
 
     // resolve penetration
-    float depth_mass = contact.depth / inverse_mass_sum;
-    float depth_a = depth_mass * contact.b->inverse_mass;
-    float depth_b = depth_mass * contact.a->inverse_mass;
-    glm_vec2_mulsubs(contact.normal, depth_a, contact.a->position);
-    glm_vec2_muladds(contact.normal, depth_b, contact.b->position);
+    const float depth_mass = contact.depth / inverse_mass_sum;
+    const float depth_a = depth_mass * contact.b->inverse_mass;
+    const float depth_b = depth_mass * contact.a->inverse_mass;
+    contact.a->position = Vector2Subtract(contact.a->position, Vector2Scale(contact.normal, depth_a));
+    contact.b->position = Vector2Add( contact.b->position, Vector2Scale(contact.normal, depth_b));
 
     // resolve collision
-    vec2 relative_velocity;
-    glm_vec2_sub(contact.a->linear_velocity, contact.b->linear_velocity, relative_velocity);
+    const Vector2 relative_velocity = Vector2Subtract(contact.a->linear_velocity, contact.b->linear_velocity);
 
-    float e = fminf(contact.a->restitution, contact.b->restitution);
-    float impulse_magnitude = -(1 + e) * glm_vec2_dot(relative_velocity, contact.normal) / inverse_mass_sum;
+    const float e = fminf(contact.a->restitution, contact.b->restitution);
+    const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / inverse_mass_sum;
 
-    vec2 impulse_a;
-    glm_vec2_scale(contact.normal, impulse_magnitude, impulse_a);
+    const Vector2 impulse_a = Vector2Scale(contact.normal, impulse_magnitude);
     body_apply_impulse(contact.a, impulse_a);
-    vec2 impulse_b;
-    glm_vec2_scale(contact.normal, -impulse_magnitude, impulse_b);
+    const Vector2 impulse_b = Vector2Scale(contact.normal, -impulse_magnitude);
     body_apply_impulse(contact.b, impulse_b);
 }
 
-void box_check_resolve_boundary(struct Body *body, const float *min, const float *max) {
-    if (body->position[0] - body->box_shape.center[0] - body->box_shape.extents[0] < min[0]) {
-        body->position[0] = body->box_shape.center[0] + body->box_shape.extents[0] + min[0];
-        body->linear_velocity[0] = -body->linear_velocity[0] * 0.75f;
-    } else if (body->position[0] - body->box_shape.center[0] + body->box_shape.extents[0] > max[0]){
-        body->position[0] = max[0] - body->box_shape.center[0] - body->box_shape.extents[0];
-        body->linear_velocity[0] = -body->linear_velocity[0] * 0.75f;
+void box_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
+    if (body->position.x - body->box_shape.center.x - body->box_shape.extents.x < min.x) {
+        body->position.x = body->box_shape.center.x + body->box_shape.extents.x + min.x;
+        body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
+    } else if (body->position.x - body->box_shape.center.x + body->box_shape.extents.x > max.x){
+        body->position.x = max.x - body->box_shape.center.x - body->box_shape.extents.x;
+        body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
     }
-    if (body->position[1] - body->box_shape.center[1] - body->box_shape.extents[1] < min[1]) {
-        body->position[1] = body->box_shape.center[1] + body->box_shape.extents[1] + min[1];
-        body->linear_velocity[1] = -body->linear_velocity[1] * 0.75f;
-    } else if (body->position[1] - body->box_shape.center[1] + body->box_shape.extents[1] > max[1]){
-        body->position[1] = max[1] - body->box_shape.center[1] - body->box_shape.extents[1];
-        body->linear_velocity[1] = -body->linear_velocity[1] * 0.75f;
+    if (body->position.y - body->box_shape.center.y - body->box_shape.extents.y < min.y) {
+        body->position.y = body->box_shape.center.y + body->box_shape.extents.y + min.y;
+        body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
+    } else if (body->position.y - body->box_shape.center.y + body->box_shape.extents.y > max.y){
+        body->position.y = max.y - body->box_shape.center.y - body->box_shape.extents.y;
+        body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
     }
 }

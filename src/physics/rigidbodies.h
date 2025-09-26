@@ -5,7 +5,7 @@
 #ifndef PIKUMA_PHYSICS_RIGIDBODIES_H
 #define PIKUMA_PHYSICS_RIGIDBODIES_H
 
-#include "cglm/cglm.h"
+#include "raylib.h"
 
 typedef enum ShapeType {
     BOX_SHAPE_TYPE,
@@ -14,13 +14,13 @@ typedef enum ShapeType {
 } ShapeType;
 
 typedef struct BoxShape {
-    vec2 center;
-    vec2 extents;
+    Vector2 center;
+    Vector2 extents;
 } BoxShape;
 
 typedef struct PolygonShape {
-    vec2 *vertices;
-    uint32_t vertex_count;
+    Vector2 *vertices;
+    int vertex_count;
 } PolygonShape;
 
 typedef struct CircleShape {
@@ -28,9 +28,9 @@ typedef struct CircleShape {
 } CircleShape;
 
 typedef struct Body {
-    vec2 position;
+    Vector2 position;
     float rotation;
-    vec2 linear_velocity;
+    Vector2 linear_velocity;
     float angular_velocity;
     float mass;
     float inverse_angular_mass;
@@ -44,13 +44,13 @@ typedef struct Body {
     };
 } Body;
 
-Body create_circle_body(float radius, float mass, float restitution, vec2 position);
-Body create_box_body(vec2 center, vec2 extents, float mass, float restitution, vec2 position);
-Body create_polygon_body(vec2 *vertices, uint32_t vertex_count, float mass, float restitution, vec2 position);
+Body create_circle_body(float radius, float mass, float restitution, Vector2 position);
+Body create_box_body(Vector2 center, Vector2 extents, float mass, float restitution, float position);
+Body create_polygon_body(Vector2 *vertices, int vertex_count, float mass, float restitution, float position);
 
-void body_integrate_linear(Body *body, vec2 force, float delta_time);
+void body_integrate_linear(Body *body, Vector2 force, float delta_time);
 void body_integrate_angular(Body *body, float torque, float delta_time);
 
-void body_apply_impulse(Body *body, const vec2 impulse);
+void body_apply_impulse(Body *body, Vector2 impulse);
 
 #endif //PIKUMA_PHYSICS_RIGIDBODIES_H

@@ -5,23 +5,23 @@
 #ifndef PIKUMA_PHYSICS_COLLISION_H
 #define PIKUMA_PHYSICS_COLLISION_H
 
-#include "cglm/cglm.h"
+#include "raylib.h"
 
 struct Body;
 
 typedef struct Contact {
     struct Body *a;
     struct Body *b;
-    vec2 start;
-    vec2 end;
-    vec2 normal;
+    Vector2 start;
+    Vector2 end;
+    Vector2 normal;
     float depth;
 } Contact;
 
-void circle_check_resolve_boundary(struct Body *body, const vec2 min, const vec2 max);
+void circle_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
-void box_check_resolve_boundary(struct Body *body, const vec2 min, const vec2 max);
+void box_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 
 void resolve_collision(Contact contact);
 

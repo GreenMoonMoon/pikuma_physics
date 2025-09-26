@@ -4,9 +4,9 @@
 
 #include "particles.h"
 
-Particle particle(const vec2 position, const float radius, const float mass, bool anchor) {
-    Particle result = {
-            .position = {position[0], position[1]},
+Particle particle(const Vector2 position, const float radius, const float mass, const bool anchor) {
+    const Particle result = {
+            .position = position,
             .velocity = {0},
             .radius = radius,
             .inverse_mass = 1.0f/ mass,
