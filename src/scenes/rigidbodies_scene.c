@@ -36,8 +36,8 @@ static struct SpawnInfo {
 static Contact *collisions = NULL;
 
 static Texture2D background;
-static Texture2D sphere_texture;
-static Texture2D square_texture;
+// static Texture2D sphere_texture;
+// static Texture2D square_texture;
 
 static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
@@ -98,15 +98,15 @@ static void handle_inputs(void) {
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
-    sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
+    // sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
 
     arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (vec2) {300, 300}));
     arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (vec2) {325, 100}));
 
-    square_texture = LoadTexture("../assets/PNG/Wood elements/elementWood010.png");
+    // square_texture = LoadTexture("../assets/PNG/Wood elements/elementWood010.png");
 
-    arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.9f, (vec2){700, 400}));
-    arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.5f, (vec2){650, 200}));
+    // arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.9f, (vec2){700, 400}));
+    // arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.5f, (vec2){650, 200}));
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -119,22 +119,27 @@ void rigidbodies_scene_update(const float delta_time) {
 
     if (paused) { return; }
 
-    // clear collisions array
-    arrsetlen(collisions, 0);
+    // resolve previous frame contact
+    while (arrlen(collisions) > 0) {
+        const Contact contact = arrpop(collisions);
+        resolve_collision(contact);
+    }
 
     for (int i = 0; i < arrlen(bodies); ++i) {
         // add forces
         vec2 forces = {0.0f, 0.0f};
 
         if (enable_gravity) { forces[1] = 10.0f * PIXEL_PER_UNIT; } // add gravity;
-
         force_apply_drag(bodies[i].linear_velocity, 0.001f, forces);
 
+        // Integrate  forces
         body_integrate_linear(&bodies[i], forces, delta_time);
 
 
         // add torques
         float torques = 0.0f;
+
+        // integrate torques
         body_integrate_angular(&bodies[i], torques, delta_time);
 
         // check boundary collisions
@@ -144,16 +149,49 @@ void rigidbodies_scene_update(const float delta_time) {
                 box_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
             case POLYGON_SHAPE_TYPE:
-
                 break;
             case CIRCLE_SHAPE_TYPE:
                 circle_check_resolve_boundary(&bodies[i], (vec2) {0}, (vec2) {(float)GetScreenWidth(), (float)GetScreenHeight()});
-                for (int j = i + 1; j < arrlen(bodies); ++j) {
-                    if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
-                        resolve_collision(contact);
-                    }
-                }
                 break;
+        }
+    }
+
+    // Check for collisions
+    for (int i = 0; i < arrlen(bodies) - 1; ++i) {
+        for (int j = i + 1; j < arrlen(bodies); ++j) {
+            Contact contact;
+            switch (bodies[i].type) {
+                case BOX_SHAPE_TYPE:
+                    switch (bodies[j].type) {
+                        case BOX_SHAPE_TYPE:
+                            break;
+                        case POLYGON_SHAPE_TYPE:
+                            break;
+                        case CIRCLE_SHAPE_TYPE:
+                            break;
+                    }
+                    break;
+                case POLYGON_SHAPE_TYPE:
+                    switch (bodies[j].type) {
+                        case BOX_SHAPE_TYPE:
+                                break;
+                        case POLYGON_SHAPE_TYPE:
+                                break;
+                        case CIRCLE_SHAPE_TYPE:
+                                break;
+                    }
+                    break;
+                case CIRCLE_SHAPE_TYPE:
+                    switch (bodies[j].type) {
+                        case BOX_SHAPE_TYPE:
+                                break;
+                        case POLYGON_SHAPE_TYPE:
+                                break;
+                        case CIRCLE_SHAPE_TYPE:
+                            if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) { arrput(collisions, contact); } break;
+                    }
+                    break;
+            }
         }
     }
 }
@@ -180,14 +218,23 @@ void rigidbodies_scene_render(void) {
         DrawCircleLines(spawn_info.position[0], spawn_info.position[1], spawn_info.radius, BLACK);
         DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position[0], spawn_info.position[1], 18, GREEN);
     }
+
+    // draw debug
+    for (int i = 0; i < arrlen(collisions); ++i) {
+        DrawRectangle(collisions[i].start[0] - 2, collisions[i].start[1] - 2, 4, 4, ORANGE);
+        // DrawLine(collisions[i].start[0], collisions[i].start[1], collisions[i].start[0] + (5 * collisions[i].normal[0]), collisions[i].start[1] + (5 * collisions[i].normal[1]), ORANGE);
+    }
+
+    // UI
+    DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 25, 25, 20, DARKGREEN);
 }
 
 void rigidbodies_scene_cleanup(void) {
     arrfree(bodies);
     arrfree(collisions);
     UnloadTexture(background);
-    UnloadTexture(sphere_texture);
-    UnloadTexture(square_texture);
+    // UnloadTexture(sphere_texture);
+    // UnloadTexture(square_texture);
 }
 
 void rigidbodies_scene_load(PhysicScene *scene) {
