@@ -56,8 +56,8 @@ static void handle_inputs(void) {
     }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
         switch(mode){
             case ADD_CIRCLE_MODE:
-                spawn_info.radius = Clamp(fabsf(GetMouseX() - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
-                spawn_info.mass = Clamp(fabsf(GetMouseY() - spawn_info.position.y) * 0.1f, 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
+                spawn_info.radius = Clamp(fabsf((float)(GetMouseX()) - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
+                spawn_info.mass = Clamp(fabsf((float)(GetMouseY()) - spawn_info.position.y) * 0.1f, 1.0f, 100.0f);
                 break;
             default:
                 break;
