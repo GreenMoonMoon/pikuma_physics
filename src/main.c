@@ -1,8 +1,8 @@
 #define STB_DS_IMPLEMENTATION
-#include "external/stb_ds.h"
+#include "extern/stb_ds.h"
 
 #include "raylib.h"
-//#include "scenes/particles_scene.h"
+// #include "scenes/particles_scene.h"
 #include "scenes/rigidbodies_scene.h"
 
 static PhysicScene active_scene;
@@ -39,7 +39,7 @@ void cleanup(void) {
 
 
 int main() {
-    // particles_scene_load(&scene);
+    // particles_scene_load(&active_scene);
     rigidbodies_scene_load(&active_scene);
 
     setup();

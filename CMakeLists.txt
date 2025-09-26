@@ -17,8 +17,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib cglm)
 
-include_directories(src)
-
 add_executable(pikuma_physics src/main.c
         src/physics/particles.c
         src/physics/rigidbodies.c

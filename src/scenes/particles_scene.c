@@ -5,10 +5,10 @@
 #include <time.h>
 
 #include "particles_scene.h"
-#include "physics/particles.h"
+#include "../physics/particles.h"
 #define RANDOM_IMPLEMENTATION
-#include "utils/random.h"
-#include "external/stb_ds.h"
+#include "../utils/random.h"
+#include "../extern/stb_ds.h"
 
 #include "cglm/cglm.h"
 

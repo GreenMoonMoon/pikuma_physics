@@ -7,7 +7,7 @@
 
 #define PIXEL_PER_UNIT 25
 
-typedef struct Scene {
+typedef struct PhysicScene {
     void (*init)(void);
     void (*update)(float delta_time);
     void (*render)(void);
