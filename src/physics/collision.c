@@ -6,6 +6,10 @@
 #include "rigidbodies.h"
 #include "raymath.h"
 
+bool is_aabb_aabb_overlapping(const BoundingBox a, const BoundingBox b) {
+    return !(a.min.x > b.max.x || a.max.x < b.min.x || a.min.y > b.max.y || a.max.y < b.min.y);
+}
+
 void circle_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
     if (body->position.x -body->circle_shape.radius < min.x) {
         body->position.x = body->circle_shape.radius + min.x;
@@ -27,18 +31,15 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
     const Vector2 ab = Vector2Subtract(b->position, a->position);
     const float radius_sum  = a->circle_shape.radius + b->circle_shape.radius;
     if (Vector2LengthSqr(ab) < radius_sum * radius_sum) {
-        contact->a = a;
-        contact->b = b;
-
-        contact->normal = Vector2Normalize(ab); // collision normal
-        contact->depth = (a->circle_shape.radius + b->circle_shape.radius) - Vector2Length(ab);
-
-        // start and end of the collision. Both points at the edge of each circle along the collision normal
-        contact->start = Vector2Subtract(contact->start, Vector2Scale(contact->normal, b->circle_shape.radius));
-        contact->start = Vector2Add(contact->start, b->position);
-        contact->end = Vector2Add(contact->end, Vector2Scale(contact->normal, a->circle_shape.radius));
-        contact->end = Vector2Add(contact->end, a->position);
-
+        const Vector2 normal = Vector2Normalize(ab);
+        *contact = (Contact) {
+            .a = a,
+            .b = b,
+            .start = Vector2Add(a->position, Vector2Scale(normal, a->circle_shape.radius)),
+            .end =  Vector2Subtract(b->position, Vector2Scale(normal, b->circle_shape.radius)),
+            .normal = normal,
+            .depth = a->circle_shape.radius + b->circle_shape.radius - Vector2Length(ab)
+        };
         return true;
     }
     return false;
@@ -81,4 +82,8 @@ void box_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max
         body->position.y = max.y - body->box_shape.center.y - body->box_shape.extents.y;
         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
     }
+}
+
+void box_box_collision_check(Body* a, Body* b, Contact* contact) {
+
 }

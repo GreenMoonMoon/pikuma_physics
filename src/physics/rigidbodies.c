@@ -33,7 +33,7 @@ Body create_circle_body(const float radius, const float mass, const float restit
     return result;
 }
 
-Body create_box_body(const Vector2 center, const Vector2 extents, const float mass, const float restitution, const float position) {
+Body create_box_body(const Vector2 center, const Vector2 extents, const float mass, const float restitution, const Vector2 position) {
     Body result ={
             .position = position,
             .rotation = 0.0f,
@@ -51,7 +51,7 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
     return result;
 }
 
-Body create_polygon_body(Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const float position) {
+Body create_polygon_body(Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const Vector2 position) {
     const Body result = {
         .position = position,
         .rotation = 0.0f,

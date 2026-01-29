@@ -9,10 +9,14 @@
 #include "../physics/collision.h"
 #include "../physics/forces.h"
 #include "../extern/stb_ds.h"
+#include "../utils/debug_draw.h"
 
-static Body *bodies = NULL;
+static Body *bodies = nullptr;
+static Contact *collisions = nullptr;
 
 static bool paused = false;
+static int step = 0;
+
 static bool enable_gravity = true;
 static enum {
     NONE_MODE,
@@ -31,8 +35,6 @@ static struct SpawnInfo {
         .set = false,
 };
 
-static Contact *collisions = NULL;
-
 static Texture2D background;
 // static Texture2D sphere_texture;
 // static Texture2D square_texture;
@@ -41,6 +43,12 @@ static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = NONE_MODE; }
     if (IsKeyPressed(KEY_N)) { mode = ADD_CIRCLE_MODE; }
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
+
+    if (IsKeyPressed(KEY_LEFT) || IsKeyPressedRepeat(KEY_LEFT)) {
+        step = 1;
+    } else if (IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) {
+        step = -1; // TODO: implement a caching system ?
+    }
 
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         switch(mode){
@@ -56,8 +64,8 @@ static void handle_inputs(void) {
     }else if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
         switch(mode){
             case ADD_CIRCLE_MODE:
-                spawn_info.radius = Clamp(fabsf((float)(GetMouseX()) - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
-                spawn_info.mass = Clamp(fabsf((float)(GetMouseY()) - spawn_info.position.y) * 0.1f, 1.0f, 100.0f);
+                spawn_info.radius = Clamp(fabsf((float)GetMouseX() - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
+                spawn_info.mass = Clamp(fabsf((float)GetMouseY() - spawn_info.position.y) * 0.1f, 1.0f, 100.0f);
                 break;
             default:
                 break;
@@ -83,31 +91,31 @@ static void handle_inputs(void) {
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
-    // sphere_texture = LoadTexture("../assets/PNG/Wood elements/elementWood006.png");
 
     arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
     arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
-    // square_texture = LoadTexture("../assets/PNG/Wood elements/elementWood010.png");
-
-    // arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.9f, (vec2){700, 400}));
-    // arrput(bodies, create_box_body((vec2){0}, (vec2){50,50}, 2.0f, 0.5f, (vec2){650, 200}));
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
 }
 
 void rigidbodies_scene_update(const float delta_time) {
+    // INPUTS
     handle_inputs();
 
+    // Handle spawning new bodies
     if(mode == ADD_CIRCLE_MODE && !spawn_info.set){
         spawn_info.position = GetMousePosition();
     }
 
-    if (paused) { return; }
-
-    // resolve previous frame contact
-    while (arrlen(collisions) > 0) {
-        const Contact contact = arrpop(collisions);
-        resolve_collision(contact);
+    // Handle pause and step
+    if (paused) {
+        if (step == 0) { return; }
+        step = 0;
     }
+
+    // clear collisions
+    arrsetlen(collisions, 0);
 
     // Apply forces and check boundary collisions
     for (int i = 0; i < arrlen(bodies); ++i) {
@@ -144,11 +152,12 @@ void rigidbodies_scene_update(const float delta_time) {
     // Check for collisions
     for (int i = 0; i < arrlen(bodies) - 1; ++i) {
         for (int j = i + 1; j < arrlen(bodies); ++j) {
-            Contact contact;
+            Contact contact = {nullptr};
             switch (bodies[i].type) {
                 case BOX_SHAPE_TYPE:
                     switch (bodies[j].type) {
                         case BOX_SHAPE_TYPE:
+
                             break;
                         case POLYGON_SHAPE_TYPE:
                             break;
@@ -179,6 +188,13 @@ void rigidbodies_scene_update(const float delta_time) {
             }
         }
     }
+
+    // resolve previous frame contact
+    for (int i = 0; i < arrlen(collisions); ++i) {
+        resolve_collision(collisions[i]);
+    }
+    // commented out for now and cleared at the beginning of the frame to allow debug draw
+    // arrsetlen(debug_collisions, 0);
 }
 
 void rigidbodies_scene_render(void) {
@@ -190,11 +206,10 @@ void rigidbodies_scene_render(void) {
                 DrawRectangleLines(bodies[i].position.x - bodies[i].box_shape.extents.x, bodies[i].position.y - bodies[i].box_shape.extents.y, 2 * bodies[i].box_shape.extents.x, 2 * bodies[i].box_shape.extents.y, BLACK);
                 break;
             case POLYGON_SHAPE_TYPE:
-                DrawLineStrip((const Vector2 *)bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, BLACK);
+                DrawLineStrip(bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, BLACK);
                 break;
             case CIRCLE_SHAPE_TYPE:
-                DrawCircleLines(bodies[i].position.x, bodies[i].position.y, bodies[i].circle_shape.radius, BLACK);
-                DrawLine(bodies[i].position.x, bodies[i].position.y, bodies[i].position.x + cosf(bodies[i].rotation) * bodies[i].circle_shape.radius, bodies[i].position.y + sinf(bodies[i].rotation) * bodies[i].circle_shape.radius, BLACK);
+                draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, BLACK);
                 break;
         }
     }
@@ -204,14 +219,16 @@ void rigidbodies_scene_render(void) {
         DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position.x, spawn_info.position.y, 18, GREEN);
     }
 
-    // draw debug
+    // DEBUG
     for (int i = 0; i < arrlen(collisions); ++i) {
-        DrawRectangle(collisions[i].start.x - 4, collisions[i].start.y - 4, 8, 8, ORANGE);
-        DrawLine(collisions[i].start.x, collisions[i].start.y, collisions[i].start.x + (15 * collisions[i].normal.x), collisions[i].start.y + (15 * collisions[i].normal.y), ORANGE);
+        draw_collision(collisions[i].start, collisions[i].normal, ORANGE);
     }
 
     // UI
-    DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 25, 25, 20, DARKGREEN);
+    DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 10, 10, 20, DARKGREEN);
+    DrawText("Add circle (N)", 10, 35, 20, BLACK);
+    DrawText("Pause (Pause)", 10, 60, 20, BLACK);
+    DrawText("Step (Right arrow)", 10, 85, 20, BLACK);
 }
 
 void rigidbodies_scene_cleanup(void) {

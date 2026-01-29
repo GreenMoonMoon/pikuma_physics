@@ -18,10 +18,13 @@ typedef struct Contact {
     float depth;
 } Contact;
 
+bool is_aabb_aabb_overlapping(BoundingBox a, BoundingBox b);
+
 void circle_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
 void box_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
+void box_box_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
 void resolve_collision(Contact contact);
 
