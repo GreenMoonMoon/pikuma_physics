@@ -92,11 +92,11 @@ static void handle_inputs(void) {
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
-    arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
+    // arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
+    // arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -229,6 +229,36 @@ void rigidbodies_scene_render(void) {
     DrawText("Add circle (N)", 10, 35, 20, BLACK);
     DrawText("Pause (Pause)", 10, 60, 20, BLACK);
     DrawText("Step (Right arrow)", 10, 85, 20, BLACK);
+
+    // DEBUG
+    for (int i = 0; i < arrlen(bodies) - 1; ++i) {
+        for (int j = i + 1; j < arrlen(bodies); ++j) {
+            const BoundingSquare a = {
+                .min = Vector2Add(bodies[i].position, Vector2Subtract(bodies[i].box_shape.center,  bodies[i].box_shape.extents)),
+                .max = Vector2Add(bodies[i].position, Vector2Add(bodies[i].box_shape.center,  bodies[i].box_shape.extents)),
+            };
+            const BoundingSquare b = {
+                .min = Vector2Add(bodies[j].position, Vector2Subtract(bodies[j].box_shape.center,  bodies[j].box_shape.extents)),
+                .max = Vector2Add(bodies[j].position, Vector2Add(bodies[j].box_shape.center,  bodies[j].box_shape.extents)),
+            };
+            if (is_aabb_aabb_overlapping(a, b)) {
+                DrawRectangleLines(
+                    bodies[i].position.x + bodies[i].box_shape.center.x - bodies[i].box_shape.extents.x,
+                    bodies[i].position.y + bodies[i].box_shape.center.y - bodies[i].box_shape.extents.y,
+                    2 * bodies[i].box_shape.extents.x,
+                    2 * bodies[i].box_shape.extents.y,
+                    RED
+                );
+                DrawRectangleLines(
+                    bodies[j].position.x + bodies[j].box_shape.center.x - bodies[j].box_shape.extents.x,
+                    bodies[j].position.y + bodies[j].box_shape.center.y - bodies[j].box_shape.extents.y,
+                    2 * bodies[j].box_shape.extents.x,
+                    2 * bodies[j].box_shape.extents.y,
+                    RED
+                );
+            }
+        }
+    }
 }
 
 void rigidbodies_scene_cleanup(void) {

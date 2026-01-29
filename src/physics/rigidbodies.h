@@ -6,26 +6,7 @@
 #define PIKUMA_PHYSICS_RIGIDBODIES_H
 
 #include "raylib.h"
-
-typedef enum ShapeType {
-    BOX_SHAPE_TYPE,
-    POLYGON_SHAPE_TYPE,
-    CIRCLE_SHAPE_TYPE,
-} ShapeType;
-
-typedef struct BoxShape {
-    Vector2 center;
-    Vector2 extents;
-} BoxShape;
-
-typedef struct PolygonShape {
-    Vector2 *vertices;
-    int vertex_count;
-} PolygonShape;
-
-typedef struct CircleShape {
-    float radius;
-} CircleShape;
+#include "physic_types.h"
 
 typedef struct Body {
     Vector2 position;

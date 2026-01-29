@@ -6,7 +6,7 @@
 #include "rigidbodies.h"
 #include "raymath.h"
 
-bool is_aabb_aabb_overlapping(const BoundingBox a, const BoundingBox b) {
+bool is_aabb_aabb_overlapping(const BoundingSquare a, const BoundingSquare b) {
     return !(a.min.x > b.max.x || a.max.x < b.min.x || a.min.y > b.max.y || a.max.y < b.min.y);
 }
 

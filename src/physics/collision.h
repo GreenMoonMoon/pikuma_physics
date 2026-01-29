@@ -6,6 +6,7 @@
 #define PIKUMA_PHYSICS_COLLISION_H
 
 #include "raylib.h"
+#include "physic_types.h"
 
 struct Body;
 
@@ -18,7 +19,7 @@ typedef struct Contact {
     float depth;
 } Contact;
 
-bool is_aabb_aabb_overlapping(BoundingBox a, BoundingBox b);
+bool is_aabb_aabb_overlapping(BoundingSquare a, BoundingSquare b);
 
 void circle_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
