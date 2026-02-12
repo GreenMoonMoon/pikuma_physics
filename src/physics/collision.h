@@ -19,13 +19,14 @@ typedef struct Contact {
     float depth;
 } Contact;
 
+float get_minimum_separation(const PolygonShape* a, const PolygonShape* b);
+
 bool is_aabb_aabb_overlapping(BoundingSquare a, BoundingSquare b);
 
 void circle_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
 void box_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
-void box_box_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
 void resolve_collision(Contact contact);
 

@@ -57,3 +57,18 @@ void draw_circle_shape(const Vector2 position, const float radius, const float a
     rlVertex2f(position.x + cosf(angle) * radius, position.y + sinf(angle) * radius);
     rlEnd();
 }
+
+void draw_polygon(const Vector2 position, const Vector2 *points, const int point_count, const Color color) {
+    if (point_count < 2) return; // Security check
+
+    rlBegin(RL_LINES);
+    rlColor4ub(color.r, color.g, color.b, color.a);
+
+    for (int i = 0; i < point_count; i++) {
+        int j = (i + 1) % point_count;
+        rlVertex2f(points[i].x + position.x, points[i].y + position.y);
+        rlVertex2f(points[j].x + position.x, points[j].y + position.y);
+    }
+
+    rlEnd();
+}

@@ -3,8 +3,30 @@
 //
 
 #include "collision.h"
+
+#include <float.h>
+
 #include "rigidbodies.h"
 #include "raymath.h"
+
+float get_minimum_separation(const PolygonShape* a, const PolygonShape* b) {
+    float separation = -(FLT_MAX);
+
+    for (int i = 0; i < a->vertex_count; ++i) {
+        // Vector2 normal = Vector2Normalize(Vector2Subtract(a->vertices[i % (a->vertex_count - 1)], a->vertices[i]));
+        Vector2 normal = Vector2Subtract(a->vertices[i % (a->vertex_count - 1)], a->vertices[i]);
+
+        normal = (Vector2){normal.y, -normal.x}; // rotate 90 degrees
+        float min_sep = FLT_MAX;
+        for (int j = 0; j < b->vertex_count; ++j) {
+            min_sep = fminf(min_sep, Vector2DotProduct(Vector2Subtract(b->vertices[j], a->vertices[i]), normal));
+        }
+
+        if (min_sep > separation) { separation = min_sep; }
+    }
+
+    return separation;
+}
 
 bool is_aabb_aabb_overlapping(const BoundingSquare a, const BoundingSquare b) {
     return !(a.min.x > b.max.x || a.max.x < b.min.x || a.min.y > b.max.y || a.max.y < b.min.y);
@@ -12,8 +34,8 @@ bool is_aabb_aabb_overlapping(const BoundingSquare a, const BoundingSquare b) {
 
 void circle_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
     if (body->position.x -body->circle_shape.radius < min.x) {
-        body->position.x = body->circle_shape.radius + min.x;
         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
+        body->position.x = body->circle_shape.radius + min.x;
     } else if (body->position.x +body->circle_shape.radius > max.x){
         body->position.x = max.x - body->circle_shape.radius;
         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
@@ -82,8 +104,4 @@ void box_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max
         body->position.y = max.y - body->box_shape.center.y - body->box_shape.extents.y;
         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
     }
-}
-
-void box_box_collision_check(Body* a, Body* b, Contact* contact) {
-
 }

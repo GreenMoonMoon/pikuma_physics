@@ -65,7 +65,7 @@ Body create_polygon_body(Vector2 *vertices, const int vertex_count, const float 
         .polygon_shape = (PolygonShape){
             .vertices = vertices,
             .vertex_count = vertex_count,
-            },
+        }
     };
     return result;
 }

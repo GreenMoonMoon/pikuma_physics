@@ -3,6 +3,8 @@ project(pikuma_physics)
 
 set(CMAKE_C_STANDARD 23)
 
+set(GLFW_BUILD_WAYLAND OFF)
+set(GLFW_BUILD_X11 ON)
 include(FetchContent)
 FetchContent_Declare(
         raylib
@@ -22,3 +24,5 @@ add_executable(pikuma_physics src/main.c
         src/scenes/rigidbodies_scene.c
 )
 target_link_libraries(pikuma_physics PRIVATE raylib)
+# tests
+add_subdirectory(tests)
