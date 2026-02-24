@@ -96,7 +96,7 @@ void body_apply_impulse(Body *body, const Vector2 impulse) {
     body->linear_velocity = Vector2Add(body->linear_velocity, j);
 }
 
-BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, Vector2 position) {
+BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, const Vector2 position) {
     float min_x = FLT_MAX;
     float min_y = FLT_MAX;
     float max_x = -FLT_MAX;

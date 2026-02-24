@@ -23,7 +23,9 @@ typedef struct Body {
         BoxShape box_shape;
         PolygonShape polygon_shape;
     };
-    // BoundingSquare bounding_square;
+
+    // bounding square for broad-phase collisions
+    BoundingSquare bounding_square;
 } Body;
 
 Body create_circle_body(float radius, float mass, float restitution, Vector2 position);

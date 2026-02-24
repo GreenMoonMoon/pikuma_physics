@@ -107,9 +107,7 @@ void rigidbodies_scene_init(void) {
     vertex_buffer[1] = (Vector2){0.0f, -100.0f};
     vertex_buffer[2] = (Vector2){100.0f, 100.0f};
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
-
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){600, 300}));
-
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
 }
 
@@ -133,33 +131,48 @@ void rigidbodies_scene_update(const float delta_time) {
 
     // Apply forces and check boundary collisions
     for (int i = 0; i < arrlen(bodies); ++i) {
+        Body *body = &bodies[i];
+
         // add forces
         Vector2 forces = {0.0f, 0.0f};
 
         if (enable_gravity) { forces.y = 10.0f * PIXEL_PER_UNIT; } // add gravity;
-        force_apply_drag(bodies[i].linear_velocity, 0.001f, &forces);
+        force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // Integrate  forces
-        body_integrate_linear(&bodies[i], forces, delta_time);
+        body_integrate_linear(body, forces, delta_time);
 
 
         // add torques
         float torques = 0.0f;
 
         // integrate torques
-        body_integrate_angular(&bodies[i], torques, delta_time);
+        body_integrate_angular(body, torques, delta_time);
 
         // check boundary collisions
+
+        // update bounding square
         Contact contact;
         switch (bodies[i].type) {
             case BOX_SHAPE_TYPE:
-                box_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                body->bounding_square = (BoundingSquare){
+                    .min = Vector2Add(body->position, Vector2Subtract(body->box_shape.center, body->box_shape.extents)),
+                    .max = Vector2Add(body->position, Vector2Add(body->box_shape.center, body->box_shape.extents))
+                };
+                // box_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
             case POLYGON_SHAPE_TYPE:
-                polygon_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                body->bounding_square = get_polygon_bounding_square(body->polygon_shape, body->position);
+                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
             case CIRCLE_SHAPE_TYPE:
-                circle_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                body->bounding_square = (BoundingSquare) {
+                    .min = Vector2Subtract(body->position, (Vector2){body->circle_shape.radius, body->circle_shape.radius}),
+                    .max = Vector2Add(body->position, (Vector2){body->circle_shape.radius, body->circle_shape.radius}),
+                };
+                // circle_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
         }
     }
