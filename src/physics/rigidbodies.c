@@ -3,6 +3,9 @@
 //
 
 #include "rigidbodies.h"
+
+#include <float.h>
+
 #include "raymath.h"
 
 float calculate_circle_angular_mass(float radius, float mass){
@@ -91,4 +94,22 @@ void body_apply_impulse(Body *body, const Vector2 impulse) {
     */
     Vector2 j = Vector2Scale(impulse, body->inverse_mass);
     body->linear_velocity = Vector2Add(body->linear_velocity, j);
+}
+
+BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, Vector2 position) {
+    float min_x = FLT_MAX;
+    float min_y = FLT_MAX;
+    float max_x = -FLT_MAX;
+    float max_y = -FLT_MAX;
+    for (int i = 0; i < polygon_shape.vertex_count; ++i) {
+        if (polygon_shape.vertices[i].x < min_x) { min_x = polygon_shape.vertices[i].x; }
+        if (polygon_shape.vertices[i].x > max_x) { max_x = polygon_shape.vertices[i].x; }
+        if (polygon_shape.vertices[i].y < min_y) { min_y = polygon_shape.vertices[i].y; }
+        if (polygon_shape.vertices[i].y > max_y) { max_y = polygon_shape.vertices[i].y; }
+    }
+
+    return (BoundingSquare){
+        .min = {.x = min_x + position.x, .y = min_y + position.y},
+        .max = {.x = max_y + position.x, .y = max_y + position.y}
+    };
 }

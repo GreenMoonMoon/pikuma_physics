@@ -23,6 +23,7 @@ typedef struct Body {
         BoxShape box_shape;
         PolygonShape polygon_shape;
     };
+    // BoundingSquare bounding_square;
 } Body;
 
 Body create_circle_body(float radius, float mass, float restitution, Vector2 position);
@@ -33,5 +34,7 @@ void body_integrate_linear(Body *body, Vector2 force, float delta_time);
 void body_integrate_angular(Body *body, float torque, float delta_time);
 
 void body_apply_impulse(Body *body, Vector2 impulse);
+
+BoundingSquare get_polygon_bounding_square(PolygonShape polygon_shape, Vector2 position);
 
 #endif //PIKUMA_PHYSICS_RIGIDBODIES_H

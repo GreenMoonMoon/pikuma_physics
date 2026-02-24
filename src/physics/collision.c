@@ -105,3 +105,22 @@ void box_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max
         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
     }
 }
+
+static bool bounding_square_check_boundary_offset(const BoundingSquare bs, const Vector2 min, const Vector2 max, Vector2 *offset) {
+    bool collide = false;
+    if (bs.min.x < min.x) { offset->x = min.x - bs.min.x; collide = true; }
+    else if (bs.max.x > max.x) { offset->x = max.x - bs.max.x; collide = true; }
+    if (bs.min.y < min.y) { offset->y = min.y - bs.min.y; collide = true; }
+    else if (bs.max.y > max.y){ offset->y = max.y - bs.max.y; collide = true; }
+
+    return collide;
+}
+
+void polygon_check_resolve_boundary(Body* body, const Vector2 min, const Vector2 max) {
+    const BoundingSquare bs = get_polygon_bounding_square(body->polygon_shape, body->position);
+    Vector2 offset = {0};
+    if (bounding_square_check_boundary_offset(bs, min, max, &offset)) {
+        body->position = Vector2Add(body->position, offset);
+        body->linear_velocity = Vector2Multiply(body->linear_velocity, Vector2Scale(Vector2Normalize(offset), 0.75f));
+    }
+}
