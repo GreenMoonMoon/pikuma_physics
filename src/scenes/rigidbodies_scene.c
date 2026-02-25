@@ -37,7 +37,11 @@ static struct SpawnInfo spawn_info = {
         .set = false,
 };
 
-static Vector2 *vertex_buffer = NULL;
+static Vector2 vertex_buffer[3] = {
+    {-100.0f, 100.0f},
+    {0.0f, -100.0f},
+    {100.0f, 100.0f}
+};
 
 static Texture2D background;
 // static Texture2D sphere_texture;
@@ -102,13 +106,12 @@ void rigidbodies_scene_init(void) {
     // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
     // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
 
-    vertex_buffer = malloc(sizeof(Vector2) * 3);
-    vertex_buffer[0] = (Vector2){-100.0f, 100.0f};
-    vertex_buffer[1] = (Vector2){0.0f, -100.0f};
-    vertex_buffer[2] = (Vector2){100.0f, 100.0f};
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){600, 300}));
+    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
+
+    bodies[1].angular_velocity = 0.1f;
+    bodies[2].angular_velocity = -0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -142,15 +145,13 @@ void rigidbodies_scene_update(const float delta_time) {
         // Integrate  forces
         body_integrate_linear(body, forces, delta_time);
 
-
         // add torques
-        float torques = 0.0f;
+        float torques = 0;
 
         // integrate torques
         body_integrate_angular(body, torques, delta_time);
 
         // check boundary collisions
-
         // update bounding square
         Contact contact;
         switch (bodies[i].type) {
@@ -159,60 +160,63 @@ void rigidbodies_scene_update(const float delta_time) {
                     .min = Vector2Add(body->position, Vector2Subtract(body->box_shape.center, body->box_shape.extents)),
                     .max = Vector2Add(body->position, Vector2Add(body->box_shape.center, body->box_shape.extents))
                 };
-                // box_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
-                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
             case POLYGON_SHAPE_TYPE:
-                body->bounding_square = get_polygon_bounding_square(body->polygon_shape, body->position);
-                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+                body->bounding_square = get_polygon_bounding_square(body->polygon_shape, body->position, body->rotation);
                 break;
             case CIRCLE_SHAPE_TYPE:
                 body->bounding_square = (BoundingSquare) {
                     .min = Vector2Subtract(body->position, (Vector2){body->circle_shape.radius, body->circle_shape.radius}),
                     .max = Vector2Add(body->position, (Vector2){body->circle_shape.radius, body->circle_shape.radius}),
                 };
-                // circle_check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
-                check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
                 break;
         }
+        check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
     }
 
     // Check for collisions
     for (int i = 0; i < arrlen(bodies) - 1; ++i) {
         for (int j = i + 1; j < arrlen(bodies); ++j) {
             Contact contact = {nullptr};
-            switch (bodies[i].type) {
+            if (are_aabs_overlapping(bodies[i].bounding_square, bodies[j].bounding_square)) {
+                switch (bodies[i].type) {
                 case BOX_SHAPE_TYPE:
                     switch (bodies[j].type) {
-                        case BOX_SHAPE_TYPE:
-
-                            break;
-                        case POLYGON_SHAPE_TYPE:
-                            break;
-                        case CIRCLE_SHAPE_TYPE:
-                            break;
+                    case BOX_SHAPE_TYPE:
+                        break;
+                    case POLYGON_SHAPE_TYPE:
+                        break;
+                    case CIRCLE_SHAPE_TYPE:
+                        break;
                     }
                     break;
                 case POLYGON_SHAPE_TYPE:
                     switch (bodies[j].type) {
-                        case BOX_SHAPE_TYPE:
-                                break;
-                        case POLYGON_SHAPE_TYPE:
-                                break;
-                        case CIRCLE_SHAPE_TYPE:
-                                break;
+                    case BOX_SHAPE_TYPE:
+                        break;
+                    case POLYGON_SHAPE_TYPE:
+                        if (polygon_polygon_collision_check(&bodies[i], &bodies[j], &contact)) {
+                            arrput(collisions, contact);
+                        }
+                        break;
+                    case CIRCLE_SHAPE_TYPE:
+                        break;
                     }
                     break;
                 case CIRCLE_SHAPE_TYPE:
                     switch (bodies[j].type) {
-                        case BOX_SHAPE_TYPE:
-                                break;
-                        case POLYGON_SHAPE_TYPE:
-                                break;
-                        case CIRCLE_SHAPE_TYPE:
-                            if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) { arrput(collisions, contact); } break;
+                    case BOX_SHAPE_TYPE:
+                        break;
+                    case POLYGON_SHAPE_TYPE:
+                        break;
+                    case CIRCLE_SHAPE_TYPE:
+                        if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
+                            arrput(collisions, contact);
+                        }
+                        break;
                     }
                     break;
+                }
             }
         }
     }
@@ -234,8 +238,7 @@ void rigidbodies_scene_render(void) {
                 DrawRectangleLines(bodies[i].position.x - bodies[i].box_shape.extents.x, bodies[i].position.y - bodies[i].box_shape.extents.y, 2 * bodies[i].box_shape.extents.x, 2 * bodies[i].box_shape.extents.y, BLACK);
                 break;
             case POLYGON_SHAPE_TYPE:
-                draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, BLACK);
-                // DrawLineStrip(bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, BLACK);
+                draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, bodies[i].rotation, BLACK);
                 break;
             case CIRCLE_SHAPE_TYPE:
                 draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, BLACK);
@@ -261,7 +264,6 @@ void rigidbodies_scene_render(void) {
 }
 
 void rigidbodies_scene_cleanup(void) {
-    free(vertex_buffer);
     arrfree(bodies);
     arrfree(collisions);
     UnloadTexture(background);

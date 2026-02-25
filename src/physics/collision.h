@@ -21,13 +21,11 @@ typedef struct Contact {
 
 float get_minimum_separation(const PolygonShape* a, const PolygonShape* b);
 
-bool is_aabb_aabb_overlapping(BoundingSquare a, BoundingSquare b);
-
-// void circle_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
+bool are_aabs_overlapping(BoundingSquare a, BoundingSquare b);
 
 bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
-// void box_check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
+bool polygon_polygon_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
 void check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 

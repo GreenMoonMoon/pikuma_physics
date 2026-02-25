@@ -6,6 +6,8 @@
 #include "rlgl.h"
 #include <math.h>
 
+#include "raymath.h"
+
 void draw_collision(const Vector2 point, const Vector2 normal, const Color color) {
 
     const Vector2 topLeft = { point.x - 4, point.y - 4 };
@@ -57,16 +59,24 @@ void draw_circle_shape(const Vector2 position, const float radius, const float a
     rlEnd();
 }
 
-void draw_polygon(const Vector2 position, const Vector2 *points, const int point_count, const Color color) {
+void draw_polygon(const Vector2 position, const Vector2 *points, const int point_count, const float angle, const Color color) {
     if (point_count < 2) return; // Security check
 
     rlBegin(RL_LINES);
     rlColor4ub(color.r, color.g, color.b, color.a);
 
+    Vector2 a = Vector2Rotate(points[0], angle);
     for (int i = 0; i < point_count; i++) {
-        int j = (i + 1) % point_count;
-        rlVertex2f(points[i].x + position.x, points[i].y + position.y);
-        rlVertex2f(points[j].x + position.x, points[j].y + position.y);
+        const int j = (i + 1) % point_count;
+
+        const Vector2 b = Vector2Rotate(points[j], angle);
+
+        // rlVertex2f(points[i].x + position.x, points[i].y + position.y);
+        // rlVertex2f(points[j].x + position.x, points[j].y + position.y);
+        rlVertex2f(a.x + position.x, a.y + position.y);
+        rlVertex2f(b.x + position.x, b.y + position.y);
+
+        a = b;
     }
 
     rlEnd();

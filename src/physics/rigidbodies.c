@@ -96,16 +96,17 @@ void body_apply_impulse(Body *body, const Vector2 impulse) {
     body->linear_velocity = Vector2Add(body->linear_velocity, j);
 }
 
-BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, const Vector2 position) {
+BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, const Vector2 position, const float angle) {
     float min_x = FLT_MAX;
     float min_y = FLT_MAX;
     float max_x = -FLT_MAX;
     float max_y = -FLT_MAX;
     for (int i = 0; i < polygon_shape.vertex_count; ++i) {
-        if (polygon_shape.vertices[i].x < min_x) { min_x = polygon_shape.vertices[i].x; }
-        if (polygon_shape.vertices[i].x > max_x) { max_x = polygon_shape.vertices[i].x; }
-        if (polygon_shape.vertices[i].y < min_y) { min_y = polygon_shape.vertices[i].y; }
-        if (polygon_shape.vertices[i].y > max_y) { max_y = polygon_shape.vertices[i].y; }
+        const Vector2 point = Vector2Rotate(polygon_shape.vertices[i], angle);
+        if (point.x < min_x) { min_x = point.x; }
+        if (point.x > max_x) { max_x = point.x; }
+        if (point.y < min_y) { min_y = point.y; }
+        if (point.y > max_y) { max_y = point.y; }
     }
 
     return (BoundingSquare){

@@ -38,26 +38,9 @@ float get_minimum_separation(const PolygonShape* a, const PolygonShape* b) {
     return separation;
 }
 
-bool is_aabb_aabb_overlapping(const BoundingSquare a, const BoundingSquare b) {
+bool are_aabs_overlapping(const BoundingSquare a, const BoundingSquare b) {
     return !(a.min.x > b.max.x || a.max.x < b.min.x || a.min.y > b.max.y || a.max.y < b.min.y);
 }
-
-// void circle_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
-//     if (body->position.x -body->circle_shape.radius < min.x) {
-//         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
-//         body->position.x = body->circle_shape.radius + min.x;
-//     } else if (body->position.x +body->circle_shape.radius > max.x){
-//         body->position.x = max.x - body->circle_shape.radius;
-//         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
-//     }
-//     if (body->position.y -body->circle_shape.radius < min.y) {
-//         body->position.y = body->circle_shape.radius + min.y;
-//         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
-//     } else if (body->position.y + body->circle_shape.radius > max.y){
-//         body->position.y = max.y - body->circle_shape.radius;
-//         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
-//     }
-// }
 
 bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
     const Vector2 ab = Vector2Subtract(b->position, a->position);
@@ -74,6 +57,22 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
         };
         return true;
     }
+    return false;
+}
+
+bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
+    if (get_minimum_separation(&a->polygon_shape, &b->polygon_shape) <= 0 && get_minimum_separation(&b->polygon_shape, &a->polygon_shape) <= 0) {
+        *contact = (Contact) {
+            .a = a,
+            .b = b,
+            .start = (Vector2){0},
+            .end = (Vector2){0},
+            .normal = (Vector2){0},
+            .depth = 0
+        };
+        return true;
+    }
+
     return false;
 }
 
@@ -98,23 +97,6 @@ void resolve_collision(const Contact contact) {
     const Vector2 impulse_b = Vector2Scale(contact.normal, -impulse_magnitude);
     body_apply_impulse(contact.b, impulse_b);
 }
-
-// void box_check_resolve_boundary(Body *body, const Vector2 min, const Vector2 max) {
-//     if (body->position.x - body->box_shape.center.x - body->box_shape.extents.x < min.x) {
-//         body->position.x = body->box_shape.center.x + body->box_shape.extents.x + min.x;
-//         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
-//     } else if (body->position.x - body->box_shape.center.x + body->box_shape.extents.x > max.x){
-//         body->position.x = max.x - body->box_shape.center.x - body->box_shape.extents.x;
-//         body->linear_velocity.x = -body->linear_velocity.x * 0.75f;
-//     }
-//     if (body->position.y - body->box_shape.center.y - body->box_shape.extents.y < min.y) {
-//         body->position.y = body->box_shape.center.y + body->box_shape.extents.y + min.y;
-//         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
-//     } else if (body->position.y - body->box_shape.center.y + body->box_shape.extents.y > max.y){
-//         body->position.y = max.y - body->box_shape.center.y - body->box_shape.extents.y;
-//         body->linear_velocity.y = -body->linear_velocity.y * 0.75f;
-//     }
-// }
 
 void check_resolve_boundary(Body* body, const Vector2 min, const Vector2 max) {
     Vector2 offset = {0};
