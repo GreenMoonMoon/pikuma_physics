@@ -71,8 +71,6 @@ void draw_polygon(const Vector2 position, const Vector2 *points, const int point
 
         const Vector2 b = Vector2Rotate(points[j], angle);
 
-        // rlVertex2f(points[i].x + position.x, points[i].y + position.y);
-        // rlVertex2f(points[j].x + position.x, points[j].y + position.y);
         rlVertex2f(a.x + position.x, a.y + position.y);
         rlVertex2f(b.x + position.x, b.y + position.y);
 

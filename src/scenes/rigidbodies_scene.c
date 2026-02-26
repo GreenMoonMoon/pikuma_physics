@@ -103,15 +103,15 @@ void rigidbodies_scene_init(void) {
     // arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
     // arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
 
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
+    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
+    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
+    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
 
     bodies[1].angular_velocity = 0.1f;
-    bodies[2].angular_velocity = -0.1f;
+    // bodies[2].angular_velocity = -0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -153,14 +153,7 @@ void rigidbodies_scene_update(const float delta_time) {
 
         // check boundary collisions
         // update bounding square
-        Contact contact;
         switch (bodies[i].type) {
-            case BOX_SHAPE_TYPE:
-                body->bounding_square = (BoundingSquare){
-                    .min = Vector2Add(body->position, Vector2Subtract(body->box_shape.center, body->box_shape.extents)),
-                    .max = Vector2Add(body->position, Vector2Add(body->box_shape.center, body->box_shape.extents))
-                };
-                break;
             case POLYGON_SHAPE_TYPE:
                 body->bounding_square = get_polygon_bounding_square(body->polygon_shape, body->position, body->rotation);
                 break;
@@ -180,20 +173,8 @@ void rigidbodies_scene_update(const float delta_time) {
             Contact contact = {nullptr};
             if (are_aabs_overlapping(bodies[i].bounding_square, bodies[j].bounding_square)) {
                 switch (bodies[i].type) {
-                case BOX_SHAPE_TYPE:
-                    switch (bodies[j].type) {
-                    case BOX_SHAPE_TYPE:
-                        break;
-                    case POLYGON_SHAPE_TYPE:
-                        break;
-                    case CIRCLE_SHAPE_TYPE:
-                        break;
-                    }
-                    break;
                 case POLYGON_SHAPE_TYPE:
                     switch (bodies[j].type) {
-                    case BOX_SHAPE_TYPE:
-                        break;
                     case POLYGON_SHAPE_TYPE:
                         if (polygon_polygon_collision_check(&bodies[i], &bodies[j], &contact)) {
                             arrput(collisions, contact);
@@ -205,8 +186,6 @@ void rigidbodies_scene_update(const float delta_time) {
                     break;
                 case CIRCLE_SHAPE_TYPE:
                     switch (bodies[j].type) {
-                    case BOX_SHAPE_TYPE:
-                        break;
                     case POLYGON_SHAPE_TYPE:
                         break;
                     case CIRCLE_SHAPE_TYPE:
@@ -234,9 +213,6 @@ void rigidbodies_scene_render(void) {
 
     for (int i = 0; i < arrlen(bodies); ++i) {
         switch (bodies[i].type) {
-            case BOX_SHAPE_TYPE:
-                DrawRectangleLines(bodies[i].position.x - bodies[i].box_shape.extents.x, bodies[i].position.y - bodies[i].box_shape.extents.y, 2 * bodies[i].box_shape.extents.x, 2 * bodies[i].box_shape.extents.y, BLACK);
-                break;
             case POLYGON_SHAPE_TYPE:
                 draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, bodies[i].rotation, BLACK);
                 break;
@@ -264,6 +240,9 @@ void rigidbodies_scene_render(void) {
 }
 
 void rigidbodies_scene_cleanup(void) {
+    for (int i = 0; i < arrlen(bodies); ++i) {
+        free_polygon_shape(bodies[i].polygon_shape);
+    }
     arrfree(bodies);
     arrfree(collisions);
     UnloadTexture(background);

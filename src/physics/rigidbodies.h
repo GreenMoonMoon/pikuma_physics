@@ -20,7 +20,6 @@ typedef struct Body {
     ShapeType type;
     union {
         CircleShape circle_shape;
-        BoxShape box_shape;
         PolygonShape polygon_shape;
     };
 
@@ -30,7 +29,9 @@ typedef struct Body {
 
 Body create_circle_body(float radius, float mass, float restitution, Vector2 position);
 Body create_box_body(Vector2 center, Vector2 extents, float mass, float restitution, Vector2 position);
-Body create_polygon_body(Vector2 *vertices, int vertex_count, float mass, float restitution, Vector2 position);
+Body create_polygon_body(const Vector2 *vertices, int vertex_count, float mass, float restitution, Vector2 position);
+
+void free_polygon_shape(PolygonShape polygon_shape);
 
 void body_integrate_linear(Body *body, Vector2 force, float delta_time);
 void body_integrate_angular(Body *body, float torque, float delta_time);

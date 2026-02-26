@@ -2,10 +2,10 @@
 // Created by josue on 2024-07-22.
 //
 
-#include "rigidbodies.h"
-
+#include <stdlib.h>
+#include <string.h>
 #include <float.h>
-
+#include "rigidbodies.h"
 #include "raymath.h"
 
 float calculate_circle_angular_mass(float radius, float mass){
@@ -46,15 +46,22 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
             .mass = mass,
             .inverse_angular_mass = calculate_square_angular_mass(extents, mass),
             .restitution = restitution,
-            .type = BOX_SHAPE_TYPE,
-            .box_shape = {0},
+            .type = POLYGON_SHAPE_TYPE,
+            .polygon_shape = {0},
     };
-    result.box_shape.center = center;
-    result.box_shape.extents = extents;
+    result.polygon_shape.vertices = malloc(sizeof(Vector2) * 4);
+    if (result.polygon_shape.vertices != NULL) {
+        result.polygon_shape.vertex_count = 4;
+        result.polygon_shape.vertices[0] = (Vector2){center.x + extents.x, center.y + extents.y};
+        result.polygon_shape.vertices[1] = (Vector2){center.x + extents.y, center.y - extents.y};
+        result.polygon_shape.vertices[2] = (Vector2){center.x - extents.y, center.y - extents.y};
+        result.polygon_shape.vertices[3] = (Vector2){center.x - extents.x, center.y + extents.y};
+    }
+
     return result;
 }
 
-Body create_polygon_body(Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const Vector2 position) {
+Body create_polygon_body(const Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const Vector2 position) {
     const Body result = {
         .position = position,
         .rotation = 0.0f,
@@ -66,11 +73,21 @@ Body create_polygon_body(Vector2 *vertices, const int vertex_count, const float 
         .inverse_angular_mass = calculate_polygon_angular_mass(mass),
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = (PolygonShape){
-            .vertices = vertices,
+            .vertices = malloc(sizeof(Vector2) * vertex_count),
             .vertex_count = vertex_count,
         }
     };
+    memcpy(result.polygon_shape.vertices, vertices, sizeof(Vector2) * vertex_count);
+
     return result;
+}
+
+void free_polygon_shape(PolygonShape polygon_shape) {
+    if (polygon_shape.vertices != NULL) {
+        free(polygon_shape.vertices);
+        polygon_shape.vertices = NULL;
+        polygon_shape.vertex_count = 0;
+    }
 }
 
 void body_integrate_linear(Body *body, const Vector2 force, float delta_time) {
