@@ -10,7 +10,13 @@
 typedef enum ShapeType {
     POLYGON_SHAPE_TYPE,
     CIRCLE_SHAPE_TYPE,
+    BOX_SHAPE_TYPE,
 } ShapeType;
+
+typedef struct BoxShape {
+    Vector2 center;
+    Vector2 extents;
+} BoxShape;
 
 typedef struct PolygonShape {
     Vector2 *vertices;
