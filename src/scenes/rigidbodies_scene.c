@@ -44,8 +44,6 @@ static Vector2 vertex_buffer[3] = {
 };
 
 static Texture2D background;
-// static Texture2D sphere_texture;
-// static Texture2D square_texture;
 
 static void handle_inputs(void) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = MODE_NONE; }
@@ -106,12 +104,13 @@ void rigidbodies_scene_init(void) {
     arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
     arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
 
-    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
-    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
-    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
+    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
+    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
+    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
 
-    bodies[1].angular_velocity = 0.1f;
-    // bodies[2].angular_velocity = -0.1f;
+    bodies[1].angular_velocity = -0.2f;
+    bodies[3].angular_velocity = 0.1f;
+    bodies[4].angular_velocity = -0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -171,6 +170,7 @@ void rigidbodies_scene_update(const float delta_time) {
     for (int i = 0; i < arrlen(bodies) - 1; ++i) {
         for (int j = i + 1; j < arrlen(bodies); ++j) {
             Contact contact = {nullptr};
+            // check aabs overlap before checking more detailed collisions
             if (are_aabs_overlapping(bodies[i].bounding_square, bodies[j].bounding_square)) {
                 switch (bodies[i].type) {
                 case POLYGON_SHAPE_TYPE:
@@ -228,6 +228,9 @@ void rigidbodies_scene_render(void) {
     }
 
     // DEBUG
+    for (int i = 0; i < arrlen(bodies); ++i) {
+        draw_aabs(bodies[i].bounding_square.min, bodies[i].bounding_square.max, BLUE);
+    }
     for (int i = 0; i < arrlen(collisions); ++i) {
         draw_collision(collisions[i].start, collisions[i].normal, ORANGE);
     }
@@ -246,8 +249,6 @@ void rigidbodies_scene_cleanup(void) {
     arrfree(bodies);
     arrfree(collisions);
     UnloadTexture(background);
-    // UnloadTexture(sphere_texture);
-    // UnloadTexture(square_texture);
 }
 
 void rigidbodies_scene_load(PhysicScene *scene) {

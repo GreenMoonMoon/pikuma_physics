@@ -79,3 +79,22 @@ void draw_polygon(const Vector2 position, const Vector2 *points, const int point
 
     rlEnd();
 }
+
+void draw_aabs(Vector2 min, Vector2 max, Color color) {
+    rlBegin(RL_LINES);
+    rlColor4ub(color.r, color.g, color.b, color.a);
+
+    rlVertex2f(min.x, min.y);
+    rlVertex2f(min.x, max.y);
+
+    rlVertex2f(min.x, max.y);
+    rlVertex2f(max.x, max.y);
+
+    rlVertex2f(max.x, max.y);
+    rlVertex2f(max.x, min.y);
+
+    rlVertex2f(max.x, min.y);
+    rlVertex2f(min.x, min.y);
+
+    rlEnd();
+}
