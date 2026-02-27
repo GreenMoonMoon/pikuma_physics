@@ -19,7 +19,7 @@ typedef struct Contact {
     float depth;
 } Contact;
 
-float get_minimum_separation(const PolygonShape* a, const PolygonShape* b);
+float get_minimum_separation(const PolygonShape* a, const PolygonShape* b, Vector2 *out_normal);
 
 bool are_aabs_overlapping(BoundingSquare a, BoundingSquare b);
 

@@ -17,11 +17,11 @@ static bool bounding_square_check_boundary_offset(const BoundingSquare bs, const
     return collide;
 }
 
-float get_minimum_separation(const PolygonShape* a, const PolygonShape* b) {
+float get_minimum_separation(const PolygonShape* a, const PolygonShape* b, Vector2 *out_normal) {
     float separation = -(FLT_MAX);
 
     for (int i = 0; i < a->vertex_count; ++i) {
-        Vector2 normal = Vector2Subtract(a->transformed_vertices[i % (a->vertex_count - 1)], a->transformed_vertices[i]);
+        Vector2 normal = Vector2Subtract(a->transformed_vertices[(i) % (a->vertex_count)], a->transformed_vertices[i]);
 
         normal = (Vector2){normal.y, -normal.x}; // rotate 90 degrees
         float min_sep = FLT_MAX;
@@ -29,7 +29,10 @@ float get_minimum_separation(const PolygonShape* a, const PolygonShape* b) {
             min_sep = fminf(min_sep, Vector2DotProduct(Vector2Subtract(b->transformed_vertices[j], a->transformed_vertices[i]), normal));
         }
 
-        if (min_sep > separation) { separation = min_sep; }
+        if (min_sep > separation) {
+            *out_normal = normal;
+            separation = min_sep;
+        }
     }
 
     return separation;
@@ -58,15 +61,29 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
 }
 
 bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
-    if (get_minimum_separation(&a->polygon_shape, &b->polygon_shape) <= 0 && get_minimum_separation(&b->polygon_shape, &a->polygon_shape) <= 0) {
-        *contact = (Contact) {
-            .a = a,
-            .b = b,
-            .start = (Vector2){0},
-            .end = (Vector2){0},
-            .normal = (Vector2){0},
-            .depth = 0
-        };
+    Vector2 normal_ab, normal_ba;
+    const float min_sep_ab = get_minimum_separation(&a->polygon_shape, &b->polygon_shape, &normal_ab);
+    const float min_sep_ba = get_minimum_separation(&b->polygon_shape, &a->polygon_shape, &normal_ba);
+    if (min_sep_ab <= 0 && min_sep_ba <= 0) {
+        if (min_sep_ab < min_sep_ba) {
+            *contact = (Contact) {
+                .a = a,
+                .b = b,
+                .start = (Vector2){0},
+                .end = (Vector2){0},
+                .normal = normal_ab,
+                .depth = -min_sep_ab
+            };
+        } else {
+            *contact = (Contact) {
+                .a = a,
+                .b = b,
+                .start = (Vector2){0},
+                .end = (Vector2){0},
+                .normal = normal_ba,
+                .depth = -min_sep_ba
+            };
+        }
         return true;
     }
 
