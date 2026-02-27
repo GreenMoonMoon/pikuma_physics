@@ -247,6 +247,7 @@ void rigidbodies_scene_update(const float delta_time) {
         // check boundary collisions
         // update bounding square
         switch (bodies[i].type) {
+        case BOX_SHAPE_TYPE:
             case POLYGON_SHAPE_TYPE:
                 body->bounding_square = get_polygon_bounding_square(body->polygon_shape, body->position, body->rotation);
                 break;
@@ -261,16 +262,23 @@ void rigidbodies_scene_update(const float delta_time) {
     }
 
     // Check for collisions
+    // Loop over each bodies pair and check for collisions
     for (int i = 0; i < arrlen(bodies) - 1; ++i) {
         for (int j = i + 1; j < arrlen(bodies); ++j) {
             Contact contact = {nullptr};
+
             // check aabs overlap before checking more detailed collisions
             if (are_aabs_overlapping(bodies[i].bounding_square, bodies[j].bounding_square)) {
+
                 switch (bodies[i].type) {
+                case BOX_SHAPE_TYPE:
                 case POLYGON_SHAPE_TYPE:
                     switch (bodies[j].type) {
+                    case BOX_SHAPE_TYPE:
                     case POLYGON_SHAPE_TYPE:
                         if (polygon_polygon_collision_check(&bodies[i], &bodies[j], &contact)) {
+                            bodies[i].is_colliding = true;
+                            bodies[j].is_colliding = true;
                             arrput(collisions, contact);
                         }
                         break;
@@ -280,16 +288,20 @@ void rigidbodies_scene_update(const float delta_time) {
                     break;
                 case CIRCLE_SHAPE_TYPE:
                     switch (bodies[j].type) {
+                    case BOX_SHAPE_TYPE:
                     case POLYGON_SHAPE_TYPE:
                         break;
                     case CIRCLE_SHAPE_TYPE:
                         if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
+                            bodies[i].is_colliding = true;
+                            bodies[j].is_colliding = true;
                             arrput(collisions, contact);
                         }
                         break;
                     }
                     break;
                 }
+
             }
         }
     }
@@ -298,6 +310,7 @@ void rigidbodies_scene_update(const float delta_time) {
     for (int i = 0; i < arrlen(collisions); ++i) {
         resolve_collision(collisions[i]);
     }
+
     // commented out for now and cleared at the beginning of the frame to allow debug draw
     // arrsetlen(debug_collisions, 0);
 }
@@ -306,14 +319,17 @@ void rigidbodies_scene_render(void) {
     DrawTexture(background, 0, -100, WHITE);
 
     for (int i = 0; i < arrlen(bodies); ++i) {
+        const Color color = bodies[i].is_colliding ? RED : BLACK;
         switch (bodies[i].type) {
-            case POLYGON_SHAPE_TYPE:
-                draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, bodies[i].rotation, BLACK);
-                break;
-            case CIRCLE_SHAPE_TYPE:
-                draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, BLACK);
-                break;
+        case BOX_SHAPE_TYPE:
+        case POLYGON_SHAPE_TYPE:
+            draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, bodies[i].rotation, color);
+            break;
+        case CIRCLE_SHAPE_TYPE:
+            draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, color);
+            break;
         }
+        bodies[i].is_colliding = false; // clear flag for next frame
     }
 
     if(mode == MODE_ADD_SHAPE){
@@ -348,7 +364,7 @@ void rigidbodies_scene_render(void) {
 
     // UI
     DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 10, 10, 20, DARKGREEN);
-    DrawText("Add circle (N)", 10, 35, 20, BLACK);
+    DrawText("Add new shape (N)", 10, 35, 20, BLACK);
     DrawText("Pause (Pause)", 10, 60, 20, BLACK);
     DrawText("Step (Right arrow)", 10, 85, 20, BLACK);
 }

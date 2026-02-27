@@ -10,8 +10,10 @@
 
 typedef struct Body {
     Vector2 position;
-    float rotation;
     Vector2 linear_velocity;
+    // bounding square for broad-phase collisions
+    BoundingSquare bounding_square;
+    float rotation;
     float angular_velocity;
     float mass;
     float inverse_angular_mass;
@@ -23,8 +25,8 @@ typedef struct Body {
         PolygonShape polygon_shape;
     };
 
-    // bounding square for broad-phase collisions
-    BoundingSquare bounding_square;
+    // DEBUG
+    bool is_colliding;
 } Body;
 
 Body create_circle_body(float radius, float mass, float restitution, Vector2 position);

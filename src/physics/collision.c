@@ -3,9 +3,7 @@
 //
 
 #include "collision.h"
-
 #include <float.h>
-
 #include "rigidbodies.h"
 #include "raymath.h"
 

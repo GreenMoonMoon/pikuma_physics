@@ -128,6 +128,6 @@ BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, con
 
     return (BoundingSquare){
         .min = {.x = min_x + position.x, .y = min_y + position.y},
-        .max = {.x = max_y + position.x, .y = max_y + position.y}
+        .max = {.x = max_x + position.x, .y = max_y + position.y}
     };
 }
