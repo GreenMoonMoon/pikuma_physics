@@ -40,6 +40,8 @@ void body_integrate_angular(Body *body, float torque, float delta_time);
 
 void body_apply_impulse(Body *body, Vector2 impulse);
 
+void update_polygon_shape(PolygonShape *shape, Vector2 position, float angle);
+
 BoundingSquare get_polygon_bounding_square(PolygonShape polygon_shape, Vector2 position, float angle);
 
 #endif //PIKUMA_PHYSICS_RIGIDBODIES_H

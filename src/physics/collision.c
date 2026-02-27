@@ -21,13 +21,12 @@ float get_minimum_separation(const PolygonShape* a, const PolygonShape* b) {
     float separation = -(FLT_MAX);
 
     for (int i = 0; i < a->vertex_count; ++i) {
-        // Vector2 normal = Vector2Normalize(Vector2Subtract(a->vertices[i % (a->vertex_count - 1)], a->vertices[i]));
-        Vector2 normal = Vector2Subtract(a->vertices[i % (a->vertex_count - 1)], a->vertices[i]);
+        Vector2 normal = Vector2Subtract(a->transformed_vertices[i % (a->vertex_count - 1)], a->transformed_vertices[i]);
 
         normal = (Vector2){normal.y, -normal.x}; // rotate 90 degrees
         float min_sep = FLT_MAX;
         for (int j = 0; j < b->vertex_count; ++j) {
-            min_sep = fminf(min_sep, Vector2DotProduct(Vector2Subtract(b->vertices[j], a->vertices[i]), normal));
+            min_sep = fminf(min_sep, Vector2DotProduct(Vector2Subtract(b->transformed_vertices[j], a->transformed_vertices[i]), normal));
         }
 
         if (min_sep > separation) { separation = min_sep; }

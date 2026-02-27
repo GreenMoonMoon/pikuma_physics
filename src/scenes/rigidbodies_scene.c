@@ -323,7 +323,7 @@ void rigidbodies_scene_render(void) {
         switch (bodies[i].type) {
         case BOX_SHAPE_TYPE:
         case POLYGON_SHAPE_TYPE:
-            draw_polygon(bodies[i].position, bodies[i].polygon_shape.vertices, bodies[i].polygon_shape.vertex_count, bodies[i].rotation, color);
+            draw_polygon(bodies[i].polygon_shape.transformed_vertices, bodies[i].polygon_shape.vertex_count, color);
             break;
         case CIRCLE_SHAPE_TYPE:
             draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, color);
@@ -347,7 +347,7 @@ void rigidbodies_scene_render(void) {
             );
             break;
         case ADD_MODE_POLYGON:
-            draw_polygon(spawn_info.position, spawn_info.polygon_info.vertices, spawn_info.polygon_info.vertex_count, 0, DARKGRAY);
+            draw_polygon(spawn_info.polygon_info.transformed_vertices, spawn_info.polygon_info.vertex_count, DARKGRAY);
             break;
         default: break;
         }

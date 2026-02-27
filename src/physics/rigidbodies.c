@@ -49,20 +49,23 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
             .type = POLYGON_SHAPE_TYPE,
             .polygon_shape = {0},
     };
-    result.polygon_shape.vertices = malloc(sizeof(Vector2) * 4);
+    result.polygon_shape.vertices = malloc(sizeof(Vector2) * 8);
+    result.polygon_shape.transformed_vertices = &result.polygon_shape.vertices[4];
     if (result.polygon_shape.vertices != NULL) {
         result.polygon_shape.vertex_count = 4;
         result.polygon_shape.vertices[0] = (Vector2){center.x + extents.x, center.y + extents.y};
         result.polygon_shape.vertices[1] = (Vector2){center.x + extents.y, center.y - extents.y};
         result.polygon_shape.vertices[2] = (Vector2){center.x - extents.y, center.y - extents.y};
         result.polygon_shape.vertices[3] = (Vector2){center.x - extents.x, center.y + extents.y};
+
+        update_polygon_shape(&result.polygon_shape, result.position, result.rotation);
     }
 
     return result;
 }
 
 Body create_polygon_body(const Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const Vector2 position) {
-    const Body result = {
+    Body result = {
         .position = position,
         .rotation = 0.0f,
         .linear_velocity = {0},
@@ -73,11 +76,13 @@ Body create_polygon_body(const Vector2 *vertices, const int vertex_count, const 
         .inverse_angular_mass = calculate_polygon_angular_mass(mass),
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = (PolygonShape){
-            .vertices = malloc(sizeof(Vector2) * vertex_count),
+            .vertices = malloc(sizeof(Vector2) * vertex_count * 2),
             .vertex_count = vertex_count,
         }
     };
+    result.polygon_shape.transformed_vertices = &result.polygon_shape.vertices[vertex_count];
     memcpy(result.polygon_shape.vertices, vertices, sizeof(Vector2) * vertex_count);
+    update_polygon_shape(&result.polygon_shape, result.position, result.rotation);
 
     return result;
 }
@@ -113,21 +118,27 @@ void body_apply_impulse(Body *body, const Vector2 impulse) {
     body->linear_velocity = Vector2Add(body->linear_velocity, j);
 }
 
-BoundingSquare get_polygon_bounding_square(const PolygonShape polygon_shape, const Vector2 position, const float angle) {
+void update_polygon_shape(PolygonShape *shape, const Vector2 position, const float angle) {
+    for (int i = 0; i < shape->vertex_count; ++i) {
+        shape->transformed_vertices[i] = Vector2Add(Vector2Rotate(shape->vertices[i], angle), position);
+    }
+}
+
+BoundingSquare get_polygon_bounding_square(PolygonShape polygon_shape, const Vector2 position, const float angle) {
+    update_polygon_shape(&polygon_shape, position, angle);
     float min_x = FLT_MAX;
     float min_y = FLT_MAX;
     float max_x = -FLT_MAX;
     float max_y = -FLT_MAX;
     for (int i = 0; i < polygon_shape.vertex_count; ++i) {
-        const Vector2 point = Vector2Rotate(polygon_shape.vertices[i], angle);
-        if (point.x < min_x) { min_x = point.x; }
-        if (point.x > max_x) { max_x = point.x; }
-        if (point.y < min_y) { min_y = point.y; }
-        if (point.y > max_y) { max_y = point.y; }
+        if (polygon_shape.transformed_vertices[i].x < min_x) { min_x = polygon_shape.transformed_vertices[i].x; }
+        if (polygon_shape.transformed_vertices[i].x > max_x) { max_x = polygon_shape.transformed_vertices[i].x; }
+        if (polygon_shape.transformed_vertices[i].y < min_y) { min_y = polygon_shape.transformed_vertices[i].y; }
+        if (polygon_shape.transformed_vertices[i].y > max_y) { max_y = polygon_shape.transformed_vertices[i].y; }
     }
 
     return (BoundingSquare){
-        .min = {.x = min_x + position.x, .y = min_y + position.y},
-        .max = {.x = max_x + position.x, .y = max_y + position.y}
+        .min = {.x = min_x, .y = min_y},
+        .max = {.x = max_x, .y = max_y}
     };
 }
