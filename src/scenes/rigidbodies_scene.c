@@ -195,17 +195,17 @@ void rigidbodies_scene_init(void) {
     // arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
     // arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
-    // bodies[0].rotation = 0.1f;
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
+    bodies[0].rotation = 0.1f;
 
-    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
+    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
 
     bodies[1].angular_velocity = -0.2f;
-    // bodies[3].angular_velocity = 0.1f;
-    // bodies[4].angular_velocity = -0.1f;
+    bodies[3].angular_velocity = 0.1f;
+    bodies[4].angular_velocity = -0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -311,7 +311,7 @@ void rigidbodies_scene_update(const float delta_time) {
 
     // resolve previous frame contact
     for (int i = 0; i < arrlen(collisions); ++i) {
-        // resolve_collision(collisions[i]);
+        resolve_collision(collisions[i]);
     }
 
     // commented out for now and cleared at the beginning of the frame to allow debug draw

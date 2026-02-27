@@ -26,16 +26,18 @@ float get_minimum_separation(const PolygonShape* a, const PolygonShape* b, Vecto
         const Vector2 normal = {edge_n.y, -edge_n.x};
 
         float min_sep = FLT_MAX;
+        Vector2 point = {0};
         for (int j = 0; j < b->vertex_count; ++j) {
             const float sep = Vector2DotProduct(Vector2Subtract(b->tfmd_vertices[j], a->tfmd_vertices[i]), normal);
             if (sep < min_sep) {
                 min_sep = sep;
-                *out_point = b->tfmd_vertices[j];
+                point = b->tfmd_vertices[j];
             }
         }
 
         if (min_sep > separation) {
             *out_normal = normal;
+            *out_point = point;
             separation = min_sep;
         }
     }
