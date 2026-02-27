@@ -20,7 +20,7 @@ typedef struct BoxShape {
 
 typedef struct PolygonShape {
     Vector2 *vertices;
-    Vector2 *transformed_vertices;
+    Vector2 *tfmd_vertices;
     int vertex_count;
 } PolygonShape;
 

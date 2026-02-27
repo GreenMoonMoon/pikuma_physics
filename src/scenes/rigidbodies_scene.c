@@ -195,16 +195,17 @@ void rigidbodies_scene_init(void) {
     // arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
     // arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
+    // bodies[0].rotation = 0.1f;
 
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
+    // arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
     arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
 
     bodies[1].angular_velocity = -0.2f;
-    bodies[3].angular_velocity = 0.1f;
-    bodies[4].angular_velocity = -0.1f;
+    // bodies[3].angular_velocity = 0.1f;
+    // bodies[4].angular_velocity = -0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -269,6 +270,8 @@ void rigidbodies_scene_update(const float delta_time) {
 
             // check aabs overlap before checking more detailed collisions
             if (are_aabs_overlapping(bodies[i].bounding_square, bodies[j].bounding_square)) {
+                bodies[i].aabs_is_overlapping = true;
+                bodies[j].aabs_is_overlapping = true;
 
                 switch (bodies[i].type) {
                 case BOX_SHAPE_TYPE:
@@ -308,7 +311,7 @@ void rigidbodies_scene_update(const float delta_time) {
 
     // resolve previous frame contact
     for (int i = 0; i < arrlen(collisions); ++i) {
-        resolve_collision(collisions[i]);
+        // resolve_collision(collisions[i]);
     }
 
     // commented out for now and cleared at the beginning of the frame to allow debug draw
@@ -323,7 +326,7 @@ void rigidbodies_scene_render(void) {
         switch (bodies[i].type) {
         case BOX_SHAPE_TYPE:
         case POLYGON_SHAPE_TYPE:
-            draw_polygon(bodies[i].polygon_shape.transformed_vertices, bodies[i].polygon_shape.vertex_count, color);
+            draw_polygon(bodies[i].polygon_shape.tfmd_vertices, bodies[i].polygon_shape.vertex_count, color);
             break;
         case CIRCLE_SHAPE_TYPE:
             draw_circle_shape(bodies[i].position, bodies[i].circle_shape.radius, bodies[i].rotation, color);
@@ -347,7 +350,7 @@ void rigidbodies_scene_render(void) {
             );
             break;
         case ADD_MODE_POLYGON:
-            draw_polygon(spawn_info.polygon_info.transformed_vertices, spawn_info.polygon_info.vertex_count, DARKGRAY);
+            draw_polygon(spawn_info.polygon_info.tfmd_vertices, spawn_info.polygon_info.vertex_count, DARKGRAY);
             break;
         default: break;
         }
@@ -355,11 +358,15 @@ void rigidbodies_scene_render(void) {
     }
 
     // DEBUG
+    // draw aabs
     for (int i = 0; i < arrlen(bodies); ++i) {
-        draw_aabs(bodies[i].bounding_square.min, bodies[i].bounding_square.max, BLUE);
+        const Color color = bodies[i].aabs_is_overlapping ? ORANGE : BLUE;
+        draw_aabs(bodies[i].bounding_square.min, bodies[i].bounding_square.max, color);
+        bodies[i].aabs_is_overlapping = false; // clear flag
     }
+    // draw collisions
     for (int i = 0; i < arrlen(collisions); ++i) {
-        draw_collision(collisions[i].start, collisions[i].normal, ORANGE);
+        draw_collision(collisions[i].start, collisions[i].normal, collisions[i].depth, ORANGE);
     }
 
     // UI

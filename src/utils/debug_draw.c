@@ -8,7 +8,7 @@
 
 #include "raymath.h"
 
-void draw_collision(const Vector2 point, const Vector2 normal, const Color color) {
+void draw_collision(const Vector2 point, const Vector2 normal, const float depth, const Color color) {
 
     const Vector2 topLeft = { point.x - 4, point.y - 4 };
     const Vector2 topRight = { point.x + 4, point.y - 4 };
@@ -41,7 +41,7 @@ void draw_collision(const Vector2 point, const Vector2 normal, const Color color
     rlBegin(RL_LINES);
     rlColor4ub(color.r, color.g, color.b, color.a);
     rlVertex2f(point.x, point.y);
-    rlVertex2f(point.x + normal.x * 15.0f, point.y + normal.y * 15.0f);
+    rlVertex2f(point.x + normal.x * depth, point.y + normal.y * depth);
     rlEnd();
 }
 
@@ -67,8 +67,18 @@ void draw_polygon(const Vector2 *points, const int point_count, const Color colo
 
     for (int i = 0; i < point_count; i++) {
         const int j = (i + 1) % point_count;
+
+        // calculate normal
+        const Vector2 edge = Vector2Subtract(points[j], points[i]);
+        const Vector2 edge_n = Vector2Normalize(edge);
+        const Vector2 normal = {edge_n.y, -edge_n.x};
+        const Vector2 start = Vector2Add(points[i], Vector2Scale(edge, 0.5f));
+
         rlVertex2f(points[i].x, points[i].y);
         rlVertex2f(points[j].x, points[j].y);
+
+        rlVertex2f(start.x, start.y);
+        rlVertex2f(start.x + normal.x * 20.0f, start.y + normal.y * 20.0f);
     }
 
     rlEnd();

@@ -7,7 +7,7 @@
 
 #include "raylib.h"
 
-void draw_collision(Vector2 point, Vector2 normal, Color color);
+void draw_collision(Vector2 point, Vector2 normal, float depth, Color color);
 
 void draw_circle_shape(Vector2 position, float radius, float angle, Color color);
 
