@@ -17,7 +17,10 @@ static Contact *collisions = nullptr;
 static bool paused = false;
 static int step = 0;
 
+static Vector2 wind_input = {0};
+
 static bool enable_gravity = true;
+
 enum Mode {
     MODE_NONE,
     MODE_ADD_SHAPE,
@@ -68,144 +71,27 @@ static Vector2 spawn_polygon_vertices[3] = {
 static Texture2D background;
 
 static void handle_inputs(void) {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) { mode = MODE_NONE; }
-    if (IsKeyPressed(KEY_N)) {
-        if (mode == MODE_NONE) {
-            mode = MODE_ADD_SHAPE;
-            add_mode = ADD_MODE_CIRCLE;
-
-            // initialize the spawn information
-            spawn_info = (struct SpawnInfo) {
-                .position = (Vector2){0},
-                .mass = 1.0f,
-                .setup = false,
-                .set = false,
-                .circle_info = (CircleShape) { .radius = PIXEL_PER_UNIT }
-            };
-        } else if (mode == MODE_ADD_SHAPE) {
-            // loop over add mode shapes
-            add_mode = (add_mode + 1) % ADD_MODE_COUNT;
-
-            // initialize spawn info each time the tool change shapes
-            switch (add_mode) {
-            case ADD_MODE_CIRCLE:
-                spawn_info.circle_info = (CircleShape) {
-                    .radius = PIXEL_PER_UNIT
-                };
-                break;
-            case ADD_MODE_BOX:
-                spawn_info.box_info  = (BoxShape) {
-                    .center = (Vector2){0},
-                    .extents = (Vector2){(float)PIXEL_PER_UNIT / 2, (float)PIXEL_PER_UNIT / 2}
-                };
-                break;
-            case ADD_MODE_POLYGON:
-                spawn_info.polygon_info = (PolygonShape) {
-                    .vertices = NULL,
-                    .vertex_count = 3
-                };
-                arrput(spawn_info.polygon_info.vertices, spawn_polygon_vertices[0]);
-                arrput(spawn_info.polygon_info.vertices, spawn_polygon_vertices[1]);
-                arrput(spawn_info.polygon_info.vertices, spawn_polygon_vertices[2]);
-                break;
-            default: break;
-            }
-        }
+    if (paused) {
+        if (IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) { step++; }
+    } else {
+        wind_input = (Vector2){
+            IsKeyDown(KEY_RIGHT) - IsKeyDown(KEY_LEFT),
+            IsKeyDown(KEY_UP) - IsKeyDown(KEY_DOWN)
+        };
     }
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
 
-    if (IsKeyPressed(KEY_LEFT) || IsKeyPressedRepeat(KEY_LEFT)) {
-        step = 1;
-    } else if (IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) {
-        step = -1; // TODO: implement a caching system ?
-    }
-
-    // Check inputs based on mode
-    switch (mode) {
-    case MODE_ADD_SHAPE:
-        switch (add_mode) {
-        case ADD_MODE_CIRCLE:
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-                if (spawn_info.setup) {
-                    spawn_info.circle_info.radius = Clamp(fabsf((float)GetMouseX() - spawn_info.position.x), 1.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT);
-                    spawn_info.mass = Clamp(fabsf((float)GetMouseY() - spawn_info.position.y) * 0.1f, 1.0f, 100.0f);
-                } else {
-                    spawn_info.position = GetMousePosition();
-                    spawn_info.setup = true;
-                }
-            }
-            if (IsMouseButtonUp(MOUSE_BUTTON_LEFT)) {
-                if (spawn_info.setup && !spawn_info.set) {
-                    spawn_info.set = true;
-                }
-            }
-            if (IsKeyDown(KEY_ENTER)) {
-                arrput(bodies, create_circle_body(spawn_info.circle_info.radius, spawn_info.mass, 0.9f, spawn_info.position));
-                mode = MODE_NONE;
-            }
-            break;
-        case ADD_MODE_BOX:
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-                if (spawn_info.setup) {
-                    spawn_info.box_info.extents = Vector2Clamp(
-                        (Vector2){
-                            fabsf((float)GetMouseX() - spawn_info.position.x),
-                            fabsf((float)GetMouseY() - spawn_info.position.y)
-                        },
-                        (Vector2){PIXEL_PER_UNIT, PIXEL_PER_UNIT},
-                        (Vector2){100.0f * PIXEL_PER_UNIT, 100.0f * PIXEL_PER_UNIT}
-                    );
-                } else {
-                    spawn_info.position = GetMousePosition();
-                    spawn_info.setup = true;
-                }
-            }
-            if (IsMouseButtonUp(MOUSE_BUTTON_LEFT)) {
-                if (spawn_info.setup && !spawn_info.set) {
-                    spawn_info.set = true;
-                }
-            }
-            if (IsKeyDown(KEY_ENTER)) {
-                arrput(bodies, create_box_body(spawn_info.box_info.center, spawn_info.box_info.extents, spawn_info.mass, 0.9f, spawn_info.position));
-                mode = MODE_NONE;
-            }
-            break;
-        case ADD_MODE_POLYGON:
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                spawn_info.position = GetMousePosition();
-                spawn_info.setup = true;
-            }
-            if (IsKeyDown(KEY_ENTER)) {
-                arrput(bodies, create_polygon_body(spawn_info.polygon_info.vertices, spawn_info.polygon_info.vertex_count, spawn_info.mass, 0.9f, spawn_info.position));
-                mode = MODE_NONE;
-            }
-            break;
-        default: break;
-        }
-        break;
-    case MODE_DRAG_DEBUG_WINDOW:
-        break;
-    default: break;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        arrput(bodies, create_box_body((Vector2){0}, (Vector2){50, 50}, 1.0f, 0.5f, GetMousePosition()));
     }
 }
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    // arrput(bodies, create_circle_body(1.0f * PIXEL_PER_UNIT, 1.0f, 0.9f, (Vector2){300, 300}));
-    // arrput(bodies, create_circle_body(2.0f * PIXEL_PER_UNIT, 2.0f, 0.9f, (Vector2){325, 100}));
-
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.9f, (Vector2){700, 400}));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 2.0f, 0.5f, (Vector2){650, 200}));
-    bodies[0].rotation = 0.1f;
-
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){200, 200}));
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){450, 50}));
-    arrput(bodies, create_polygon_body(vertex_buffer, 3, 1.0f, 0.5f, (Vector2){300, 230}));
-
-    bodies[1].angular_velocity = -0.2f;
-    bodies[3].angular_velocity = 0.1f;
-    bodies[4].angular_velocity = -0.1f;
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, -1.0f, 0.5f, (Vector2){0, GetScreenHeight() - 20}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, -1.0f, 0.9f, (Vector2){700, 400}));
+    bodies[1].rotation = 0.1f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -231,9 +117,11 @@ void rigidbodies_scene_update(const float delta_time) {
         Body *body = &bodies[i];
 
         // add forces
-        Vector2 forces = {0.0f, 0.0f};
+        Vector2 forces = Vector2Scale(wind_input, 100.0f);
 
-        if (enable_gravity) { forces.y = 10.0f * PIXEL_PER_UNIT; } // add gravity;
+        if (enable_gravity && bodies[i].mass > EPSILON) {
+            forces.y = 10.0f * PIXEL_PER_UNIT;
+        } // add gravity;
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // Integrate  forces
@@ -245,7 +133,6 @@ void rigidbodies_scene_update(const float delta_time) {
         // integrate torques
         body_integrate_angular(body, torques, delta_time);
 
-        // check boundary collisions
         // update bounding square
         switch (bodies[i].type) {
         case BOX_SHAPE_TYPE:
@@ -259,7 +146,12 @@ void rigidbodies_scene_update(const float delta_time) {
                 };
                 break;
         }
-        check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+
+        // check boundary collisions
+        // check_resolve_boundary(&bodies[i], (Vector2){0}, (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()});
+        if (bodies[i].bounding_square.min.y - 100 > GetScreenHeight()) { // the 100 is a small buffer
+            arrdelswap(bodies, i);
+        }
     }
 
     // Check for collisions
@@ -335,28 +227,6 @@ void rigidbodies_scene_render(void) {
         bodies[i].is_colliding = false; // clear flag for next frame
     }
 
-    if(mode == MODE_ADD_SHAPE){
-        switch (add_mode) {
-        case ADD_MODE_CIRCLE:
-            DrawCircleLines(spawn_info.position.x, spawn_info.position.y, spawn_info.circle_info.radius, DARKGRAY);
-            break;
-        case ADD_MODE_BOX:
-            DrawRectangleLines(
-                spawn_info.position.x - spawn_info.box_info.extents.x,
-                spawn_info.position.y - spawn_info.box_info.extents.y,
-                spawn_info.box_info.extents.x * 2.0f,
-                spawn_info.box_info.extents.y * 2.0f,
-                DARKGRAY
-            );
-            break;
-        case ADD_MODE_POLYGON:
-            draw_polygon(spawn_info.polygon_info.tfmd_vertices, spawn_info.polygon_info.vertex_count, DARKGRAY);
-            break;
-        default: break;
-        }
-        DrawText(TextFormat("%.1f", spawn_info.mass), spawn_info.position.x, spawn_info.position.y, 18, DARKGRAY);
-    }
-
     // DEBUG
     // draw aabs
     for (int i = 0; i < arrlen(bodies); ++i) {
@@ -370,10 +240,10 @@ void rigidbodies_scene_render(void) {
     }
 
     // UI
-    DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 10, 10, 20, DARKGREEN);
-    DrawText("Add new shape (N)", 10, 35, 20, BLACK);
-    DrawText("Pause (Pause)", 10, 60, 20, BLACK);
-    DrawText("Step (Right arrow)", 10, 85, 20, BLACK);
+    DrawText(TextFormat("Body count: %d", arrlen(bodies)), 10, 10, 20, DARKGREEN);
+    DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 10, 40, 20, DARKGREEN);
+    DrawText("Pause (Pause)", 10, 85, 20, BLACK);
+    DrawText("Step (Right arrow)", 10, 120, 20, BLACK);
 }
 
 void rigidbodies_scene_cleanup(void) {
