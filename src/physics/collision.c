@@ -84,8 +84,8 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
             };
         } else {
             *contact = (Contact) {
-                .a = a,
-                .b = b,
+                .a = b,
+                .b = a,
                 .start = start_ba,
                 .end = Vector2Add(start_ba, Vector2Scale(normal_ba, min_sep_ba)),
                 .normal = normal_ba,
@@ -98,37 +98,32 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
     return false;
 }
 
-void resolve_collision(const Contact contact) {
-    float inverse_mass_sum = 0;
-    if (contact.a->mass > 0) { inverse_mass_sum += contact.a->inverse_mass; }
-    if (contact.b->mass > 0) { inverse_mass_sum += contact.b->inverse_mass; }
-    // const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
+void resolve_penetration(const Contact contact) {
+    if (contact.a->is_static && contact.b->is_static) { return; }
 
-    // resolve penetration
+    const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
     const float depth_mass = contact.depth / inverse_mass_sum;
-    const float depth_a = depth_mass * contact.b->inverse_mass;
-    const float depth_b = depth_mass * contact.a->inverse_mass;
-    if (contact.a->mass > 0) {
-        contact.a->position = Vector2Subtract(contact.a->position, Vector2Scale(contact.normal, depth_a));
-    }
-    if (contact.b->mass > 0) {
-        contact.b->position = Vector2Add( contact.b->position, Vector2Scale(contact.normal, depth_b));
-    }
+    const float depth_a = depth_mass * contact.a->inverse_mass;
+    const float depth_b = depth_mass * contact.b->inverse_mass;
 
-    // resolve collision
+    contact.a->position = Vector2Subtract(contact.a->position, Vector2Scale(contact.normal, depth_a));
+    contact.b->position = Vector2Add( contact.b->position, Vector2Scale(contact.normal, depth_b));
+}
+
+void resolve_collision(const Contact contact) {
+    resolve_penetration(contact);
+
+    const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
+
     const Vector2 relative_velocity = Vector2Subtract(contact.a->linear_velocity, contact.b->linear_velocity);
 
     const float e = fminf(contact.a->restitution, contact.b->restitution);
     const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / inverse_mass_sum;
 
-    if (contact.a->mass > 0) {
-        const Vector2 impulse_a = Vector2Scale(contact.normal, impulse_magnitude);
-        body_apply_impulse(contact.a, impulse_a);
-    }
-    if (contact.b->mass > 0) {
-        const Vector2 impulse_b = Vector2Scale(contact.normal, -impulse_magnitude);
-        body_apply_impulse(contact.b, impulse_b);
-    }
+    const Vector2 impulse_a = Vector2Scale(contact.normal, impulse_magnitude);
+    body_apply_impulse(contact.a, impulse_a);
+    const Vector2 impulse_b = Vector2Scale(contact.normal, -impulse_magnitude);
+    body_apply_impulse(contact.b, impulse_b);
 }
 
 void check_resolve_boundary(Body* body, const Vector2 min, const Vector2 max) {

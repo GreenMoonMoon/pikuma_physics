@@ -19,6 +19,7 @@ typedef struct Body {
     float inverse_angular_mass;
     float inverse_mass;
     float restitution;
+    bool is_static;
     ShapeType type;
     union {
         CircleShape circle_shape;
@@ -32,7 +33,7 @@ typedef struct Body {
 
 Body create_circle_body(float radius, float mass, float restitution, Vector2 position);
 
-Body create_box_body(Vector2 center, Vector2 extents, float mass, float restitution, Vector2 position);
+Body create_box_body(Vector2 center, Vector2 extents, float mass, float restitution, Vector2 position, bool is_static);
 
 Body create_polygon_body(const Vector2 *vertices, int vertex_count, float mass, float restitution, Vector2 position);
 

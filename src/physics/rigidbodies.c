@@ -42,7 +42,7 @@ Body create_circle_body(const float radius, const float mass, const float restit
     return result;
 }
 
-Body create_box_body(const Vector2 center, const Vector2 extents, const float mass, const float restitution, const Vector2 position) {
+Body create_box_body(const Vector2 center, const Vector2 extents, const float mass, const float restitution, const Vector2 position, const bool is_static) {
     Body result ={
         .position = position,
         .rotation = 0.0f,
@@ -52,6 +52,8 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
         .mass = mass,
         .inverse_angular_mass = calculate_square_angular_mass(extents, mass),
         .restitution = restitution,
+        // .is_static = mass < EPSILON,
+        .is_static = is_static,
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = {0},
         .bounding_square = {0},
@@ -83,6 +85,7 @@ Body create_polygon_body(const Vector2 *vertices, const int vertex_count, const 
         .mass = mass,
         .restitution = restitution,
         .inverse_angular_mass = calculate_polygon_angular_mass(mass),
+        .is_static = mass < EPSILON,
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = (PolygonShape){
             .vertices = malloc(sizeof(Vector2) * vertex_count * 2),
@@ -108,6 +111,7 @@ void free_polygon_shape(PolygonShape polygon_shape) {
 }
 
 void body_integrate_linear(Body *body, const Vector2 force, float delta_time) {
+    if (body->is_static) { return; }
     const Vector2 acceleration = Vector2Scale(force, delta_time);
     body->linear_velocity = Vector2Add(body->linear_velocity, acceleration);
 
@@ -126,6 +130,7 @@ void body_apply_impulse(Body *body, const Vector2 impulse) {
      An impulse is the change in that momentum: J = deltaP = m*deltaV (mass doesn't change)
     so j/m = deltaV.
     */
+    if (body->is_static) { return; }
     Vector2 j = Vector2Scale(impulse, body->inverse_mass);
     body->linear_velocity = Vector2Add(body->linear_velocity, j);
 }

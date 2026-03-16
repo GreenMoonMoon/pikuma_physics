@@ -82,15 +82,18 @@ static void handle_inputs(void) {
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        arrput(bodies, create_box_body((Vector2){0}, (Vector2){50, 50}, 1.0f, 0.5f, GetMousePosition()));
+        arrput(bodies, create_box_body((Vector2){0}, (Vector2){50, 50}, 1.0f, 0.5f, GetMousePosition(), false));
+    }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        arrput(bodies, create_circle_body(50.0f, 1.0f, 0.5f, GetMousePosition()));
     }
 }
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, -1.0f, 0.5f, (Vector2){0, GetScreenHeight() - 20}));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, -1.0f, 0.9f, (Vector2){700, 400}));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 10000.0f, 0.5f, (Vector2){0, GetScreenHeight() - 20}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 10000.0f, 0.9f, (Vector2){700, 400}, true));
     bodies[1].rotation = 0.1f;
 }
 
@@ -119,13 +122,13 @@ void rigidbodies_scene_update(const float delta_time) {
         // add forces
         Vector2 forces = Vector2Scale(wind_input, 100.0f);
 
-        if (enable_gravity && bodies[i].mass > EPSILON) {
+        if (enable_gravity) {
             forces.y = 10.0f * PIXEL_PER_UNIT;
         } // add gravity;
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // Integrate  forces
-        body_integrate_linear(body, forces, delta_time);
+        if (!body->is_static) { body_integrate_linear(body, forces, delta_time); }
 
         // add torques
         float torques = 0;
