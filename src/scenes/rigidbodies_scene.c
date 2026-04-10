@@ -21,53 +21,6 @@ static Vector2 wind_input = {0};
 
 static bool enable_gravity = true;
 
-enum Mode {
-    MODE_NONE,
-    MODE_ADD_SHAPE,
-    MODE_DRAG_DEBUG_WINDOW,
-};
-enum AddMode {
-    ADD_MODE_CIRCLE,
-    ADD_MODE_BOX,
-    ADD_MODE_POLYGON,
-
-    ADD_MODE_COUNT
-};
-
-struct SpawnInfo {
-    Vector2 position;
-    float mass;
-    bool setup;
-    bool set;
-    union {
-        PolygonShape polygon_info;
-        CircleShape circle_info;
-        BoxShape box_info;
-    };
-};
-static enum Mode mode = MODE_NONE;
-static enum AddMode add_mode =  ADD_MODE_CIRCLE;
-static struct SpawnInfo spawn_info = {
-        .position = {0},
-        .mass = 1.0f,
-        .setup = false,
-        .set = false,
-        .circle_info = (CircleShape){
-            .radius = PIXEL_PER_UNIT
-        }
-};
-
-static Vector2 vertex_buffer[3] = {
-    {-100.0f, 100.0f},
-    {0.0f, -100.0f},
-    {100.0f, 100.0f}
-};
-static Vector2 spawn_polygon_vertices[3] = {
-    {-PIXEL_PER_UNIT, PIXEL_PER_UNIT},
-    {0, -PIXEL_PER_UNIT},
-    {PIXEL_PER_UNIT, PIXEL_PER_UNIT}
-};
-
 static Texture2D background;
 
 static void handle_inputs(void) {
@@ -92,7 +45,7 @@ static void handle_inputs(void) {
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 10000.0f, 0.5f, (Vector2){0, GetScreenHeight() - 20}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 10000.0f, 0.2f, (Vector2){0, GetScreenHeight() - 20}, true));
     arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 10000.0f, 0.9f, (Vector2){700, 400}, true));
     bodies[1].rotation = 0.1f;
 }
@@ -100,11 +53,6 @@ void rigidbodies_scene_init(void) {
 void rigidbodies_scene_update(const float delta_time) {
     // INPUTS
     handle_inputs();
-
-    // Handle spawning new bodies
-    if(mode == MODE_ADD_SHAPE && !spawn_info.setup){
-        spawn_info.position = GetMousePosition();
-    }
 
     // Handle pause and step
     if (paused) {

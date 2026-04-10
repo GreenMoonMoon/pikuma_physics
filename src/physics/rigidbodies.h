@@ -16,7 +16,8 @@ typedef struct Body {
     float rotation;
     float angular_velocity;
     float mass;
-    float inverse_angular_mass;
+    float angular_mass; // moment of inertia
+    float inverse_angular_mass; // inverse of the moment of inertia
     float inverse_mass;
     float restitution;
     bool is_static;
@@ -43,7 +44,9 @@ void body_integrate_linear(Body *body, Vector2 force, float delta_time);
 
 void body_integrate_angular(Body *body, float torque, float delta_time);
 
-void body_apply_impulse(Body *body, Vector2 impulse);
+void body_apply_impulse(Body *body, Vector2 impulse, Vector2 r);
+
+void body_apply_linear_impulse(Body *body, Vector2 impulse);
 
 void update_polygon_shape(PolygonShape *shape, Vector2 position, float angle);
 
