@@ -45,8 +45,8 @@ static void handle_inputs(void) {
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 0, 0.2f, (Vector2){0, GetScreenHeight() - 20}, true));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 0, 0.9f, (Vector2){700, 400}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 0, -0.98f, (Vector2){0, GetScreenHeight() - 10}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 0, -0.9f, (Vector2){700, 400}, true));
     bodies[1].rotation = 0.1f;
 }
 
@@ -185,9 +185,11 @@ void rigidbodies_scene_render(void) {
         draw_aabs(bodies[i].bounding_square.min, bodies[i].bounding_square.max, color);
         bodies[i].aabs_is_overlapping = false; // clear flag
     }
+
+    // DEBUG
     // draw collisions
     for (int i = 0; i < arrlen(collisions); ++i) {
-        DrawRectangle(collisions[i].start.x - 3, collisions[i].start.y - 3, 6, 6, RED);
+        DrawRectangle((int)collisions[i].start.x - 3, (int)collisions[i].start.y - 3, 6, 6, RED);
         DrawLineV(collisions[i].start, collisions[i].end, BLUE);
     }
 
