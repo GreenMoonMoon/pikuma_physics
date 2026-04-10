@@ -45,8 +45,8 @@ static void handle_inputs(void) {
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 0, -0.98f, (Vector2){0, GetScreenHeight() - 10}, true));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 0, -0.9f, (Vector2){700, 400}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){GetScreenWidth(), 20}, 0, 0.5f, (Vector2){0, GetScreenHeight() - 10}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50,50}, 0, 0.5f, (Vector2){700, 400}, true));
     bodies[1].rotation = 0.1f;
 }
 
@@ -68,7 +68,8 @@ void rigidbodies_scene_update(const float delta_time) {
         Body *body = &bodies[i];
 
         // add forces
-        Vector2 forces = Vector2Scale(wind_input, 100.0f);
+        Vector2 forces = {0};
+        // forces = Vector2Add(forces, Vector2Scale(wind_input, 100.0f));
 
         if (enable_gravity) {
             forces.y = 10.0f * PIXEL_PER_UNIT;

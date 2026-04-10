@@ -68,35 +68,34 @@ bool circle_circle_collision_check(Body *a, Body *b, Contact *contact) {
 }
 
 bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
-    Vector2 normal_ab, normal_ba;
-    Vector2 start_ab, start_ba;
+    Vector2 normal_ab, start_ab;
     const float min_sep_ab = get_minimum_separation(&a->polygon_shape, &b->polygon_shape, &normal_ab, &start_ab);
+    if (min_sep_ab >= 0) { return false; }
+
+    Vector2 normal_ba, start_ba;
     const float min_sep_ba = get_minimum_separation(&b->polygon_shape, &a->polygon_shape, &normal_ba, &start_ba);
+    if (min_sep_ba >= 0) { return false; }
 
-    if (min_sep_ab <= 0 && min_sep_ba <= 0) {
-        if (min_sep_ab > min_sep_ba) {
-            *contact = (Contact) {
-                .a = a,
-                .b = b,
-                .start = start_ab,
-                .end = Vector2Add(start_ab, Vector2Scale(normal_ab, -min_sep_ab)),
-                .normal = normal_ab,
-                .depth = -min_sep_ab // make the depth positive
-            };
-        } else {
-            *contact = (Contact) {
-                .a = a,
-                .b = b,
-                .start = start_ba,
-                .end = Vector2Add(start_ba, Vector2Scale(Vector2Negate(normal_ba), min_sep_ba)),
-                .normal = Vector2Negate(normal_ba),
-                .depth = -min_sep_ba // make the depth positive
-            };
-        }
-        return true;
+    if (min_sep_ab > min_sep_ba) {
+        *contact = (Contact) {
+            .a = a,
+            .b = b,
+            .start = start_ab,
+            .end = Vector2Add(start_ab, Vector2Scale(normal_ab, -min_sep_ab)),
+            .normal = normal_ab,
+            .depth = -min_sep_ab // make the depth positive
+        };
+    } else {
+        *contact = (Contact) {
+            .a = a,
+            .b = b,
+            .start = start_ba,
+            .end = Vector2Add(start_ba, Vector2Scale(Vector2Negate(normal_ba), min_sep_ba)),
+            .normal = Vector2Negate(normal_ba),
+            .depth = -min_sep_ba // make the depth positive
+        };
     }
-
-    return false;
+    return true;
 }
 
 void resolve_penetration(const Contact contact) {
