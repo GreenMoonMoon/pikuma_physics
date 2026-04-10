@@ -140,7 +140,7 @@ void resolve_collision(const Contact contact) {
     // 2D cross product (sort of) yield scalar
     const float ran = ra.x * contact.normal.y - ra.y * contact.normal.x;
     const float rbn = rb.x * contact.normal.y - rb.y * contact.normal.x;
-    const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / (inverse_mass_sum + ran * contact.a->inverse_angular_mass + rbn * contact.b->inverse_angular_mass);
+    const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / (inverse_mass_sum + ran * ran * contact.a->inverse_angular_mass + rbn * rbn * contact.b->inverse_angular_mass);
 
     // apply impulse
     const Vector2 impulse_a = Vector2Scale(contact.normal, impulse_magnitude);

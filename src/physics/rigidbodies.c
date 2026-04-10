@@ -163,10 +163,10 @@ void body_apply_impulse(Body* body, const Vector2 impulse, const Vector2 r) {
 
     // apply linear impulse
     const Vector2 j = Vector2Scale(impulse, body->inverse_mass);
-    body->linear_velocity = Vector2Add(body->linear_velocity, j);
+    // body->linear_velocity = Vector2Add(body->linear_velocity, j);
 
     // apply angular impulse ( j X r)
-    body->angular_velocity += (j.x * r.y - j.y * r.y) * body->inverse_angular_mass;
+    body->angular_velocity += (r.x * j.y - r.y * j.x) * body->inverse_angular_mass;
 }
 
 void body_apply_linear_impulse(Body *body, const Vector2 impulse) {
