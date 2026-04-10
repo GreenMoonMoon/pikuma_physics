@@ -7,8 +7,6 @@
 
 #include "raylib.h"
 
-void draw_collision(Vector2 point, Vector2 normal, float depth, Color color);
-
 void draw_circle_shape(Vector2 position, float radius, float angle, Color color);
 
 void draw_polygon(const Vector2 *points, int point_count, Color color);

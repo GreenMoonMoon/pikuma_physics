@@ -8,43 +8,6 @@
 
 #include "raymath.h"
 
-void draw_collision(const Vector2 point, const Vector2 normal, const float depth, const Color color) {
-    // draw point as a quad
-    const Vector2 topLeft = { point.x - 4, point.y - 4 };
-    const Vector2 topRight = { point.x + 4, point.y - 4 };
-    const Vector2 bottomLeft = { point.x - 4, point.y + 4 };
-    const Vector2 bottomRight = { point.x + 4, point.y + 4 };
-
-    rlSetTexture(GetShapesTexture().id);
-    const Rectangle shape_rect = GetShapesTextureRectangle();
-    rlBegin(RL_QUADS);
-
-    rlNormal3f(0.0f, 0.0f, 1.0f);
-    rlColor4ub(color.r, color.g, color.b, color.a);
-
-    rlTexCoord2f(shape_rect.x/GetShapesTexture().width, shape_rect.y/GetShapesTexture().height);
-    rlVertex2f(topLeft.x, topLeft.y);
-
-    rlTexCoord2f(shape_rect.x/GetShapesTexture().width, (shape_rect.y + shape_rect.height)/GetShapesTexture().height);
-    rlVertex2f(bottomLeft.x, bottomLeft.y);
-
-    rlTexCoord2f((shape_rect.x + shape_rect.width)/GetShapesTexture().width, (shape_rect.y + shape_rect.height)/GetShapesTexture().height);
-    rlVertex2f(bottomRight.x, bottomRight.y);
-
-    rlTexCoord2f((shape_rect.x + shape_rect.width)/GetShapesTexture().width, shape_rect.y/GetShapesTexture().height);
-    rlVertex2f(topRight.x, topRight.y);
-
-    rlEnd();
-
-    rlSetTexture(0);
-
-    rlBegin(RL_LINES);
-    rlColor4ub(color.r, color.g, color.b, color.a);
-    rlVertex2f(point.x, point.y);
-    rlVertex2f(point.x + normal.x * depth, point.y + normal.y * depth);
-    rlEnd();
-}
-
 void draw_circle_shape(const Vector2 position, const float radius, const float angle, const Color color) {
     rlBegin(RL_LINES);
     rlColor4ub(color.r, color.g, color.b, color.a);

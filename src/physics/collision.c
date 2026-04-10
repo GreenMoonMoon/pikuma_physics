@@ -79,18 +79,18 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
                 .a = a,
                 .b = b,
                 .start = start_ab,
-                .end = Vector2Add(start_ab, Vector2Scale(normal_ab, min_sep_ab)),
+                .end = Vector2Add(start_ab, Vector2Scale(normal_ab, -min_sep_ab)),
                 .normal = normal_ab,
-                .depth = -min_sep_ab
+                .depth = -min_sep_ab // make the depth positive
             };
         } else {
             *contact = (Contact) {
                 .a = a,
                 .b = b,
                 .start = start_ba,
-                .end = Vector2Add(start_ba, Vector2Scale(normal_ba, min_sep_ba)),
+                .end = Vector2Add(start_ba, Vector2Scale(Vector2Negate(normal_ba), min_sep_ba)),
                 .normal = Vector2Negate(normal_ba),
-                .depth = -min_sep_ba
+                .depth = -min_sep_ba // make the depth positive
             };
         }
         return true;
@@ -124,12 +124,12 @@ void resolve_collision(const Contact contact) {
 
     // relative velocity is (linear A + angular A) - (linear B + angular B) at point p
     Vector2 va = Vector2Add(contact.a->linear_velocity, (Vector2){
-        -ra.y * contact.a->angular_velocity,
-        ra.x * contact.a->angular_velocity
+        -contact.a->angular_velocity * ra.y,
+        contact.a->angular_velocity * ra.x
     });
     Vector2 vb = Vector2Add(contact.b->linear_velocity, (Vector2){
-        -rb.y * contact.b->angular_velocity,
-        rb.x * contact.b->angular_velocity
+        -contact.b->angular_velocity * rb.y,
+        contact.b->angular_velocity * rb.x
     });
 
     const Vector2 relative_velocity = Vector2Subtract(va, vb);
@@ -138,10 +138,8 @@ void resolve_collision(const Contact contact) {
     const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
 
     // 2D cross product (sort of) yield scalar
-    // const float ran = ra.x * contact.normal.y - ra.y * contact.normal.x;
-    // const float rbn = rb.x * contact.normal.y - rb.y * contact.normal.x;
-    const float ran = contact.normal.x * ra.y - contact.normal.y * ra.x;
-    const float rbn = contact.normal.x * rb.y - contact.normal.y * rb.x;
+    const float ran = ra.x * contact.normal.y - ra.y * contact.normal.x;
+    const float rbn = rb.x * contact.normal.y - rb.y * contact.normal.x;
     const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / (inverse_mass_sum + ran / contact.a->inverse_angular_mass + rbn / contact.b->inverse_angular_mass);
 
     // apply impulse
