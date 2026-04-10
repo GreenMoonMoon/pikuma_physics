@@ -8,29 +8,38 @@
 #include "rigidbodies.h"
 #include "raymath.h"
 
-float calculate_circle_angular_mass(const float radius, const float mass){
-    return 0.5f * (radius * radius) * mass;
+float calculate_circle_angular_mass(const float radius){
+    return 0.5f * (radius * radius);
 }
 
-float calculate_square_angular_mass(const Vector2 extents, const float mass) {
-    return 12.0f * ((extents.x * 2) * (extents.x * 2) + (2 * extents.y) * (2 * extents.y)) * mass;
+float calculate_square_angular_mass(const Vector2 extents) {
+    // return 1/12 * ((extents.x * 2) * (extents.x * 2) + (2 * extents.y) * (2 * extents.y)) * mass;
+    return (0.083333f) * (extents.x * extents.x + extents.y * extents.y);
 }
 
-float calculate_polygon_angular_mass(float mass){
+float calculate_polygon_angular_mass(){
     return 1.0f;
 }
 
 Body create_circle_body(const float radius, const float mass, const float restitution, const Vector2 position) {
-    const float angular_mass = calculate_circle_angular_mass(radius, mass);
+    float inverse_mass = 0.0f;
+    if (!FloatEquals(mass, 0.0f)) {
+        inverse_mass = 1.0f / mass;
+    };
+    const float angular_mass = calculate_circle_angular_mass(radius) * mass;
+    float inverse_angular_mass = 0.0f;
+    if (!FloatEquals(angular_mass, 0.0f)) {
+        inverse_angular_mass = 1.0f / angular_mass;
+    }
     const Body result = {
         .position = position,
         .rotation = 0.0f,
         .linear_velocity = {0},
         .angular_velocity = 0.0f,
-        .inverse_mass = 1.0f / mass,
+        .inverse_mass = inverse_mass,
         .mass = mass,
         .angular_mass = angular_mass,
-        .inverse_angular_mass = 1.0f / angular_mass,
+        .inverse_angular_mass = inverse_angular_mass,
         .restitution = restitution,
         .type = CIRCLE_SHAPE_TYPE,
         .circle_shape = (CircleShape){.radius = radius},
@@ -45,16 +54,24 @@ Body create_circle_body(const float radius, const float mass, const float restit
 }
 
 Body create_box_body(const Vector2 center, const Vector2 extents, const float mass, const float restitution, const Vector2 position, const bool is_static) {
-    const float angular_mass = calculate_square_angular_mass(extents, mass);
+    float inverse_mass = 0.0f;
+    if (!FloatEquals(mass, 0.0f)) {
+        inverse_mass = 1.0f / mass;
+    };
+    const float angular_mass = calculate_square_angular_mass(extents) * mass;
+    float inverse_angular_mass = 0.0f;
+    if (!FloatEquals(angular_mass, 0.0f)) {
+        inverse_angular_mass = 1.0f / angular_mass;
+    }
     Body result ={
         .position = position,
         .rotation = 0.0f,
         .linear_velocity = {0},
         .angular_velocity = 0.0f,
-        .inverse_mass = 1.0f / mass,
+        .inverse_mass = inverse_mass,
         .mass = mass,
         .angular_mass = angular_mass,
-        .inverse_angular_mass = 1.0f / angular_mass,
+        .inverse_angular_mass = inverse_angular_mass,
         .restitution = restitution,
         // .is_static = mass < EPSILON,
         .is_static = is_static,
@@ -80,17 +97,25 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
 }
 
 Body create_polygon_body(const Vector2 *vertices, const int vertex_count, const float mass, const float restitution, const Vector2 position) {
-    const float angular_mass = calculate_polygon_angular_mass(mass);
+    float inverse_mass = 0.0f;
+    if (!FloatEquals(mass, 0.0f)) {
+        inverse_mass = 1.0f / mass;
+    };
+    const float angular_mass = calculate_polygon_angular_mass() * mass;
+    float inverse_angular_mass = 0.0f;
+    if (!FloatEquals(angular_mass, 0.0f)) {
+        inverse_angular_mass = 1.0f / angular_mass;
+    }
     Body result = {
         .position = position,
         .rotation = 0.0f,
         .linear_velocity = {0},
         .angular_velocity = 0.0f,
-        .inverse_mass = 1.0f / mass,
+        .inverse_mass = inverse_mass,
         .mass = mass,
         .restitution = restitution,
         .angular_mass = angular_mass,
-        .inverse_angular_mass = 1.0f / angular_mass,
+        .inverse_angular_mass = inverse_angular_mass,
         .is_static = mass < EPSILON,
         .type = POLYGON_SHAPE_TYPE,
         .polygon_shape = (PolygonShape){

@@ -11,21 +11,25 @@
 typedef struct Body {
     Vector2 position;
     Vector2 linear_velocity;
-    // bounding square for broad-phase collisions
-    BoundingSquare bounding_square;
+    float mass;
+    float inverse_mass;
+
     float rotation;
     float angular_velocity;
-    float mass;
     float angular_mass; // moment of inertia
     float inverse_angular_mass; // inverse of the moment of inertia
-    float inverse_mass;
+
     float restitution;
     bool is_static;
+
     ShapeType type;
     union {
         CircleShape circle_shape;
         PolygonShape polygon_shape;
     };
+
+    // bounding square for broad-phase collisions
+    BoundingSquare bounding_square;
 
     // DEBUG
     bool is_colliding;

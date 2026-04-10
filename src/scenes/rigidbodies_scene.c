@@ -187,7 +187,10 @@ void rigidbodies_scene_render(void) {
     }
     // draw collisions
     for (int i = 0; i < arrlen(collisions); ++i) {
-        draw_collision(collisions[i].start, collisions[i].normal, collisions[i].depth, ORANGE);
+        // draw_collision(collisions[i].start, collisions[i].normal, collisions[i].depth, ORANGE);
+        // DrawPoint3D(collisions->start, RED);
+        DrawRectangle(collisions[i].start.x - 3, collisions[i].start.y - 3, 6, 6, RED);
+        DrawLineV(collisions[i].start, collisions[i].end, BLUE);
     }
 
     // UI

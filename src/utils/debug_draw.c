@@ -9,7 +9,7 @@
 #include "raymath.h"
 
 void draw_collision(const Vector2 point, const Vector2 normal, const float depth, const Color color) {
-
+    // draw point as a quad
     const Vector2 topLeft = { point.x - 4, point.y - 4 };
     const Vector2 topRight = { point.x + 4, point.y - 4 };
     const Vector2 bottomLeft = { point.x - 4, point.y + 4 };
