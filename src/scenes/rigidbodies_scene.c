@@ -76,13 +76,11 @@ void rigidbodies_scene_update(const float delta_time) {
         } // add gravity;
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
-        // Integrate  forces
-        if (!body->is_static) { body_integrate_linear(body, forces, delta_time); }
-
         // add torques
         float torques = 0;
 
-        // integrate torques
+        // Integrate  forces and torques
+        body_integrate_linear(body, forces, delta_time);
         body_integrate_angular(body, torques, delta_time);
 
         // update bounding square

@@ -151,7 +151,9 @@ void body_integrate_linear(Body *body, const Vector2 force, float delta_time) {
 }
 
 void body_integrate_angular(Body *body, const float torque, const float delta_time) {
-    body->angular_velocity += torque * delta_time;
+    if (body->is_static) { return; }
+    const float accel = torque * body->inverse_angular_mass;
+    body->angular_velocity += accel * delta_time;
     body->rotation += body->angular_velocity * delta_time;
 }
 
@@ -162,11 +164,10 @@ void body_apply_impulse(Body* body, const Vector2 impulse, const Vector2 r) {
     if (body->is_static) { return; }
 
     // apply linear impulse
-    const Vector2 j = Vector2Scale(impulse, body->inverse_mass);
-    // body->linear_velocity = Vector2Add(body->linear_velocity, j);
+    body->linear_velocity = Vector2Add(body->linear_velocity, Vector2Scale(impulse, body->inverse_mass));
 
     // apply angular impulse ( j X r)
-    body->angular_velocity += (r.x * j.y - r.y * j.x) * body->inverse_angular_mass;
+    body->angular_velocity += (r.x * impulse.y - r.y * impulse.x) * body->inverse_angular_mass;
 }
 
 void body_apply_linear_impulse(Body *body, const Vector2 impulse) {

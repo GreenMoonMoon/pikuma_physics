@@ -89,8 +89,8 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
         *contact = (Contact) {
             .a = a,
             .b = b,
-            .start = start_ba,
-            .end = Vector2Add(start_ba, Vector2Scale(Vector2Negate(normal_ba), min_sep_ba)),
+            .start = Vector2Subtract(start_ba, Vector2Scale(normal_ba, min_sep_ba)),
+            .end = start_ba,
             .normal = Vector2Negate(normal_ba),
             .depth = -min_sep_ba // make the depth positive
         };
