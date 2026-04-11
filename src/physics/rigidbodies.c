@@ -86,8 +86,8 @@ Body create_box_body(const Vector2 center, const Vector2 extents, const float ma
     if (result.polygon_shape.vertices != NULL) {
         result.polygon_shape.vertex_count = 4;
         result.polygon_shape.vertices[0] = (Vector2){center.x + extents.x, center.y + extents.y};
-        result.polygon_shape.vertices[1] = (Vector2){center.x - extents.y, center.y + extents.y};
-        result.polygon_shape.vertices[2] = (Vector2){center.x - extents.y, center.y - extents.y};
+        result.polygon_shape.vertices[1] = (Vector2){center.x - extents.x, center.y + extents.y};
+        result.polygon_shape.vertices[2] = (Vector2){center.x - extents.x, center.y - extents.y};
         result.polygon_shape.vertices[3] = (Vector2){center.x + extents.x, center.y - extents.y};
 
         update_polygon_shape(&result.polygon_shape, result.position, result.rotation);
