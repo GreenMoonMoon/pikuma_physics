@@ -111,15 +111,15 @@ void resolve_penetration(const Contact contact) {
 }
 
 void resolve_collision(const Contact contact) {
+#define VEC2CROSS(A, B) ((A).x * (B).y - (A).y * (B).x)
     resolve_penetration(contact);
 
     // elasticity coefficient of restitution
     const float e = fminf(contact.a->restitution, contact.b->restitution);
+    const float f = fminf(contact.a->friction, contact.b->friction);
 
-    // radius contact to point a
-    const Vector2 ra = Vector2Subtract(contact.end, contact.a->position);
-    // radius contact to point b
-    const Vector2 rb = Vector2Subtract(contact.start, contact.b->position);
+    const Vector2 ra = Vector2Subtract(contact.end, contact.a->position);   // radius contact to point a
+    const Vector2 rb = Vector2Subtract(contact.start, contact.b->position); // radius contact to point b
 
     // relative velocity is (linear A + angular A) - (linear B + angular B) at point p
     Vector2 va = Vector2Add(contact.a->linear_velocity, (Vector2){
@@ -136,16 +136,21 @@ void resolve_collision(const Contact contact) {
     // calculate impulse
     const float inverse_mass_sum = contact.a->inverse_mass + contact.b->inverse_mass;
 
-    // 2D cross product (sort of) yield scalar
-    const float ran = ra.x * contact.normal.y - ra.y * contact.normal.x;
-    const float rbn = rb.x * contact.normal.y - rb.y * contact.normal.x;
-    const float impulse_magnitude = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / (inverse_mass_sum + ran * ran * contact.a->inverse_angular_mass + rbn * rbn * contact.b->inverse_angular_mass);
+    // calculate the impulse along the normal
+    const float ran = VEC2CROSS(ra, contact.normal);
+    const float rbn = VEC2CROSS(rb, contact.normal);
+    const float jn = -(1 + e) * Vector2DotProduct(relative_velocity, contact.normal) / (inverse_mass_sum + ran * ran * contact.a->inverse_angular_mass + rbn * rbn * contact.b->inverse_angular_mass);
 
-    // apply impulse
-    const Vector2 impulse_a = Vector2Scale(contact.normal, impulse_magnitude);
-    body_apply_impulse(contact.a, impulse_a, ra);
-    const Vector2 impulse_b = Vector2Scale(contact.normal, -impulse_magnitude);
-    body_apply_impulse(contact.b, impulse_b, rb);
+    // calculate the impulse along the tangent
+    const Vector2 tangent = {contact.normal.y, -contact.normal.x};
+    const float rat = VEC2CROSS(ra, tangent);
+    const float rbt = VEC2CROSS(rb, tangent);
+    const float jt = -(1 + f) * Vector2DotProduct(relative_velocity, tangent) / (inverse_mass_sum * rat * rat * contact.a->inverse_angular_mass + rbt * rbt * contact.b->inverse_angular_mass);
+
+    // const Vector2 j = Vector2Add(Vector2Scale(contact.normal, jn), Vector2Scale(tangent, jt));
+    const Vector2 j = Vector2Scale(tangent, jt);
+    body_apply_impulse(contact.a, j, ra);
+    body_apply_impulse(contact.b, Vector2Negate(j), rb);
 }
 
 void check_resolve_boundary(Body* body, const Vector2 min, const Vector2 max) {

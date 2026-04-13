@@ -19,7 +19,8 @@ typedef struct Body {
     float angular_mass; // moment of inertia
     float inverse_angular_mass; // inverse of the moment of inertia
 
-    float restitution;
+    float restitution;  // coefficient of restitution
+    float friction;     // coefficient of friction
     bool is_static;
 
     ShapeType type;
@@ -36,11 +37,11 @@ typedef struct Body {
     bool aabs_is_overlapping;
 } Body;
 
-Body create_circle_body(float radius, float mass, float restitution, Vector2 position);
+Body create_circle_body(float radius, float mass, Vector2 position, bool is_static);
 
-Body create_box_body(Vector2 center, Vector2 extents, float mass, float restitution, Vector2 position, bool is_static);
+Body create_box_body(Vector2 center, Vector2 extents, float mass, Vector2 position, bool is_static);
 
-Body create_polygon_body(const Vector2 *vertices, int vertex_count, float mass, float restitution, Vector2 position);
+Body create_polygon_body(const Vector2 *vertices, int vertex_count, float mass, Vector2 position, bool is_static);
 
 void free_polygon_shape(PolygonShape polygon_shape);
 

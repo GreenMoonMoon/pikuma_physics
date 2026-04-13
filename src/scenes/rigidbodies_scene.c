@@ -35,20 +35,27 @@ static void handle_inputs(void) {
     if (IsKeyPressed(KEY_PAUSE)) { paused = !paused; }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        arrput(bodies, create_box_body((Vector2){0}, (Vector2){25.0f, 25.0f}, 1.0f, 0.5f, GetMousePosition(), false));
+        arrput(bodies, create_box_body((Vector2){0}, (Vector2){25.0f, 25.0f}, 1.0f, GetMousePosition(), false));
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        arrput(bodies, create_circle_body(25.0f, 1.0f, 0.5f, GetMousePosition()));
+        arrput(bodies, create_circle_body(25.0f, 1.0f, GetMousePosition(), false));
+    }
+
+    // clear scene
+    if (IsKeyPressed(KEY_DELETE)) {
+        arrsetlen(bodies, 4);
     }
 }
 
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){600, 20}, 0, 0.5f, (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() - 10}, true));
-    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, 0.5f, (Vector2){20, (float)GetScreenHeight() / 2.0f}, true));
-    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, 0.5f, (Vector2){GetScreenWidth() - 20.0f, (float)GetScreenHeight() / 2.0f}, true));
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){25.0f, 25.0f}, 0, 0.5f, (Vector2){600, 300}, true));
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){600, 20}, 0, (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() - 10}, true));
+    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){20, (float)GetScreenHeight() / 2.0f}, true));
+    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){GetScreenWidth() - 20.0f, (float)GetScreenHeight() / 2.0f}, true));
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){25.0f, 25.0f}, 0, (Vector2){600, 300}, true));
+    arrput(bodies, create_circle_body(50.0f, 0, (Vector2){600, 300}, true));
+    bodies[3].rotation = 1.0f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
