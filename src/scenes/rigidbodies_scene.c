@@ -68,10 +68,7 @@ void rigidbodies_scene_update(const float delta_time) {
         step = 0;
     }
 
-    // clear collisions
-    arrsetlen(collisions, 0);
-
-    // Apply forces and check boundary collisions
+    // Apply forces
     for (int i = 0; i < arrlen(bodies); ++i) {
         Body *body = &bodies[i];
 
@@ -79,9 +76,7 @@ void rigidbodies_scene_update(const float delta_time) {
         Vector2 forces = {0};
         // forces = Vector2Add(forces, Vector2Scale(wind_input, 100.0f));
 
-        if (enable_gravity) {
-            forces.y = 10.0f * PIXEL_PER_UNIT;
-        } // add gravity;
+        forces.y = 10.0f * PIXEL_PER_UNIT; // weight force, 10 is the approximative gravity constant
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // add torques
@@ -133,6 +128,7 @@ void rigidbodies_scene_update(const float delta_time) {
                             bodies[i].is_colliding = true;
                             bodies[j].is_colliding = true;
                             arrput(collisions, contact);
+                            resolve_collision(contact);
                         }
                         break;
                     case CIRCLE_SHAPE_TYPE:
@@ -149,6 +145,7 @@ void rigidbodies_scene_update(const float delta_time) {
                             bodies[i].is_colliding = true;
                             bodies[j].is_colliding = true;
                             arrput(collisions, contact);
+                            resolve_collision(contact);
                         }
                         break;
                     }
@@ -158,14 +155,6 @@ void rigidbodies_scene_update(const float delta_time) {
             }
         }
     }
-
-    // resolve previous frame contact
-    for (int i = 0; i < arrlen(collisions); ++i) {
-        resolve_collision(collisions[i]);
-    }
-
-    // commented out for now and cleared at the beginning of the frame to allow debug draw
-    // arrsetlen(debug_collisions, 0);
 }
 
 void rigidbodies_scene_render(void) {
@@ -205,6 +194,8 @@ void rigidbodies_scene_render(void) {
     DrawText(TextFormat("Collision count: %d", arrlen(collisions)), 10, 40, 20, DARKGREEN);
     DrawText("Pause (Pause)", 10, 85, 20, BLACK);
     DrawText("Step (Right arrow)", 10, 120, 20, BLACK);
+
+    arrsetlen(collisions, 0);
 }
 
 void rigidbodies_scene_cleanup(void) {

@@ -37,13 +37,13 @@ static Body get_default_body(void) {
 }
 
 Body create_circle_body(const float radius, const float mass, const Vector2 position, const bool is_static) {
-    float inverse_mass = 0.0f;
-    if (!FloatEquals(mass, 0.0f)) {
+    float inverse_mass = 0;
+    if (mass > EPSILON) {
         inverse_mass = 1.0f / mass;
     };
     const float angular_mass = calculate_circle_angular_mass(radius) * mass;
-    float inverse_angular_mass = 0.0f;
-    if (!FloatEquals(angular_mass, 0.0f)) {
+    float inverse_angular_mass = 0;
+    if (angular_mass > EPSILON) {
         inverse_angular_mass = 1.0f / angular_mass;
     }
 

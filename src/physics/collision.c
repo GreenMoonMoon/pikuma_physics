@@ -145,10 +145,9 @@ void resolve_collision(const Contact contact) {
     const Vector2 tangent = {contact.normal.y, -contact.normal.x};
     const float rat = VEC2CROSS(ra, tangent);
     const float rbt = VEC2CROSS(rb, tangent);
-    const float jt = -(1 + f) * Vector2DotProduct(relative_velocity, tangent) / (inverse_mass_sum * rat * rat * contact.a->inverse_angular_mass + rbt * rbt * contact.b->inverse_angular_mass);
+    const float jt = f * -(1 + e) * Vector2DotProduct(relative_velocity, tangent) / (inverse_mass_sum * rat * rat * contact.a->inverse_angular_mass + rbt * rbt * contact.b->inverse_angular_mass);
 
-    // const Vector2 j = Vector2Add(Vector2Scale(contact.normal, jn), Vector2Scale(tangent, jt));
-    const Vector2 j = Vector2Scale(tangent, jt);
+    const Vector2 j = Vector2Add(Vector2Scale(contact.normal, jn), Vector2Scale(tangent, jt));
     body_apply_impulse(contact.a, j, ra);
     body_apply_impulse(contact.b, Vector2Negate(j), rb);
 }
