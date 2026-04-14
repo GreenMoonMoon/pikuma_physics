@@ -27,6 +27,13 @@ bool circle_circle_collision_check(struct Body *a, struct Body *b, Contact *cont
 
 bool polygon_polygon_collision_check(struct Body *a, struct Body *b, Contact *contact);
 
+/// Check if a collision occurs between a circle and a polygon.
+/// @param circle Circle body
+/// @param polygon Polygon body
+/// @param contact Contact object pointer
+/// @return if a collision occurred or not
+bool circle_polygon_collision_check(const struct Body *circle, const struct Body *polygon, Contact *contact);
+
 void check_resolve_boundary(struct Body *body, Vector2 min, Vector2 max);
 
 void resolve_collision(Contact contact);

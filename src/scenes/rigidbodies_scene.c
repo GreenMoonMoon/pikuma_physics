@@ -50,12 +50,14 @@ static void handle_inputs(void) {
 void rigidbodies_scene_init(void) {
     background = LoadTexture("../assets/PNG/Backgrounds/blue_grass.png");
 
-    arrput(bodies, create_box_body((Vector2){0}, (Vector2){600, 20}, 0, (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() - 10}, true));
-    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){20, (float)GetScreenHeight() / 2.0f}, true));
-    arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){GetScreenWidth() - 20.0f, (float)GetScreenHeight() / 2.0f}, true));
-    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){25.0f, 25.0f}, 0, (Vector2){600, 300}, true));
-    arrput(bodies, create_circle_body(50.0f, 0, (Vector2){600, 300}, true));
-    bodies[3].rotation = 1.0f;
+    // arrput(bodies, create_box_body((Vector2){0}, (Vector2){600, 20}, 0, (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() - 10}, true));
+    // arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){20, (float)GetScreenHeight() / 2.0f}, true));
+    // arrput(bodies, create_box_body((Vector2){0, -10}, (Vector2){20.0f, 340}, 0, (Vector2){GetScreenWidth() - 20.0f, (float)GetScreenHeight() / 2.0f}, true));
+
+    arrput(bodies, create_box_body((Vector2){0}, (Vector2){50.0f, 50.0f}, 0, (Vector2){600, 300}, true));
+    // arrput(bodies, create_circle_body(50.0f, 0, (Vector2){600, 300}, true));
+    arrput(bodies, create_circle_body(50.0f, 0, (Vector2){0, 0}, true));
+    bodies[0].rotation = 1.0f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -68,6 +70,9 @@ void rigidbodies_scene_update(const float delta_time) {
         step = 0;
     }
 
+    // DEBUG: manually update the ball position
+    bodies[1].position = GetMousePosition();
+
     // Apply forces
     for (int i = 0; i < arrlen(bodies); ++i) {
         Body *body = &bodies[i];
@@ -76,7 +81,7 @@ void rigidbodies_scene_update(const float delta_time) {
         Vector2 forces = {0};
         // forces = Vector2Add(forces, Vector2Scale(wind_input, 100.0f));
 
-        forces.y = 10.0f * PIXEL_PER_UNIT; // weight force, 10 is the approximative gravity constant
+        // forces.y = 10.0f * PIXEL_PER_UNIT; // weight force, 10 is the approximative gravity constant
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // add torques
@@ -118,20 +123,18 @@ void rigidbodies_scene_update(const float delta_time) {
                 bodies[i].aabs_is_overlapping = true;
                 bodies[j].aabs_is_overlapping = true;
 
+                bool is_colliding = false;
+
                 switch (bodies[i].type) {
                 case BOX_SHAPE_TYPE:
                 case POLYGON_SHAPE_TYPE:
                     switch (bodies[j].type) {
                     case BOX_SHAPE_TYPE:
                     case POLYGON_SHAPE_TYPE:
-                        if (polygon_polygon_collision_check(&bodies[i], &bodies[j], &contact)) {
-                            bodies[i].is_colliding = true;
-                            bodies[j].is_colliding = true;
-                            arrput(collisions, contact);
-                            resolve_collision(contact);
-                        }
+                        is_colliding = polygon_polygon_collision_check(&bodies[i], &bodies[j], &contact);
                         break;
                     case CIRCLE_SHAPE_TYPE:
+                        is_colliding = circle_polygon_collision_check(&bodies[j], &bodies[i], &contact);
                         break;
                     }
                     break;
@@ -139,17 +142,20 @@ void rigidbodies_scene_update(const float delta_time) {
                     switch (bodies[j].type) {
                     case BOX_SHAPE_TYPE:
                     case POLYGON_SHAPE_TYPE:
+                        is_colliding = circle_polygon_collision_check(&bodies[i], &bodies[j], &contact);
                         break;
                     case CIRCLE_SHAPE_TYPE:
-                        if (circle_circle_collision_check(&bodies[i], &bodies[j], &contact)) {
-                            bodies[i].is_colliding = true;
-                            bodies[j].is_colliding = true;
-                            arrput(collisions, contact);
-                            resolve_collision(contact);
-                        }
+                        is_colliding = circle_circle_collision_check(&bodies[i], &bodies[j], &contact);
                         break;
                     }
                     break;
+                }
+
+                if (is_colliding) {
+                    bodies[i].is_colliding = true;
+                    bodies[j].is_colliding = true;
+                    arrput(collisions, contact);
+                    // resolve_collision(contact);
                 }
 
             }

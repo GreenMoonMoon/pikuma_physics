@@ -98,6 +98,47 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
     return true;
 }
 
+bool circle_polygon_collision_check(const Body* circle, const Body* polygon, Contact* contact) {
+    int current_vertex = 0;
+    int next_vertex = 0;
+    Vector2 circle_direction = {0};
+    Vector2 normalized_edge = {0};
+    Vector2 edge_normal = {0};
+
+    for (int i = 0; i < polygon->polygon_shape.vertex_count; ++i) {
+        current_vertex = i;
+        next_vertex = i + 1 % polygon->polygon_shape.vertex_count;
+
+        circle_direction = Vector2Subtract(circle->position, polygon->polygon_shape.tfmd_vertices[current_vertex]);
+        normalized_edge = Vector2Normalize(Vector2Subtract(polygon->polygon_shape.tfmd_vertices[next_vertex], polygon->polygon_shape.tfmd_vertices[current_vertex]));
+        edge_normal = (Vector2){normalized_edge.y, -normalized_edge.x};
+        const float normal_projection = Vector2DotProduct(circle_direction, edge_normal);
+
+        if (normal_projection > 0) { break; }
+    }
+
+    // closest point on the edge is greater or lesser than the circle radius...
+    const float udv = Vector2DotProduct(circle_direction, normalized_edge);
+    const float d = Vector2LengthSqr(circle_direction) - udv * udv;
+
+    if (d < circle->circle_shape.radius * circle->circle_shape.radius) {
+        const Vector2 start = Vector2Add(polygon->polygon_shape.tfmd_vertices[current_vertex], Vector2Scale(normalized_edge, udv));
+        const float depth = circle->circle_shape.radius - sqrtf(d);
+        *contact = (Contact){
+            .a = circle,
+            .b = polygon,
+            .start = start,
+            .end = Vector2Add(start, Vector2Scale(edge_normal, -depth)),
+            .normal = edge_normal,
+            .depth = depth
+        };
+
+        return true;
+    }
+
+    return false;
+}
+
 void resolve_penetration(const Contact contact) {
     if (contact.a->is_static && contact.b->is_static) { return; }
 
