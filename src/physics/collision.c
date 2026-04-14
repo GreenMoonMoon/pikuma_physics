@@ -100,21 +100,27 @@ bool polygon_polygon_collision_check(Body* a, Body* b, Contact* contact) {
 
 bool circle_polygon_collision_check(const Body* circle, const Body* polygon, Contact* contact) {
     int current_vertex = 0;
-    int next_vertex = 0;
     Vector2 circle_direction = {0};
     Vector2 normalized_edge = {0};
     Vector2 edge_normal = {0};
 
+    float np = -1.0f;
+
     for (int i = 0; i < polygon->polygon_shape.vertex_count; ++i) {
-        current_vertex = i;
-        next_vertex = i + 1 % polygon->polygon_shape.vertex_count;
+        const int next = (i + 1) % polygon->polygon_shape.vertex_count;
 
-        circle_direction = Vector2Subtract(circle->position, polygon->polygon_shape.tfmd_vertices[current_vertex]);
-        normalized_edge = Vector2Normalize(Vector2Subtract(polygon->polygon_shape.tfmd_vertices[next_vertex], polygon->polygon_shape.tfmd_vertices[current_vertex]));
-        edge_normal = (Vector2){normalized_edge.y, -normalized_edge.x};
-        const float normal_projection = Vector2DotProduct(circle_direction, edge_normal);
+        const Vector2 cd = Vector2Subtract(circle->position, polygon->polygon_shape.tfmd_vertices[i]);
+        const Vector2 e = Vector2Normalize(Vector2Subtract(polygon->polygon_shape.tfmd_vertices[next], polygon->polygon_shape.tfmd_vertices[i]));
+        const Vector2 n = (Vector2){e.y, -e.x};
+        const float normal_projection = Vector2DotProduct(cd, n);
 
-        if (normal_projection > 0) { break; }
+        if (normal_projection > 0 && normal_projection > np) {
+            current_vertex = i;
+            np = normal_projection;
+            circle_direction = cd;
+            normalized_edge = e;
+            edge_normal = n;
+        }
     }
 
     // closest point on the edge is greater or lesser than the circle radius...
@@ -125,8 +131,8 @@ bool circle_polygon_collision_check(const Body* circle, const Body* polygon, Con
         const Vector2 start = Vector2Add(polygon->polygon_shape.tfmd_vertices[current_vertex], Vector2Scale(normalized_edge, udv));
         const float depth = circle->circle_shape.radius - sqrtf(d);
         *contact = (Contact){
-            .a = circle,
-            .b = polygon,
+            .a = polygon,
+            .b = circle,
             .start = start,
             .end = Vector2Add(start, Vector2Scale(edge_normal, -depth)),
             .normal = edge_normal,

@@ -57,7 +57,7 @@ void rigidbodies_scene_init(void) {
     arrput(bodies, create_box_body((Vector2){0}, (Vector2){50.0f, 50.0f}, 0, (Vector2){600, 300}, true));
     // arrput(bodies, create_circle_body(50.0f, 0, (Vector2){600, 300}, true));
     arrput(bodies, create_circle_body(50.0f, 0, (Vector2){0, 0}, true));
-    bodies[0].rotation = 1.0f;
+    // bodies[0].rotation = 1.0f;
 }
 
 void rigidbodies_scene_update(const float delta_time) {
@@ -81,7 +81,7 @@ void rigidbodies_scene_update(const float delta_time) {
         Vector2 forces = {0};
         // forces = Vector2Add(forces, Vector2Scale(wind_input, 100.0f));
 
-        // forces.y = 10.0f * PIXEL_PER_UNIT; // weight force, 10 is the approximative gravity constant
+        forces.y = 10.0f * PIXEL_PER_UNIT; // weight force, 10 is the approximative gravity constant
         force_apply_drag(body->linear_velocity, 0.001f, &forces);
 
         // add torques
